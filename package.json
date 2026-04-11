@@ -36,7 +36,7 @@
     "build:lib:watch": "vite build --watch",
     "dev:example": "npm --prefix example run dev",
     "dev": "npm run build:lib && concurrently -k -n lib,example -c blue,magenta \"npm run build:lib:watch\" \"npm run dev:example\"",
-    "build": "npm run build:lib && cd example && npm run build",
+    "build": "npm run build:lib",
     "preview": "npm run build:lib && cd example && npm run preview"
   },
   "dependencies": {
