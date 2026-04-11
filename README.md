@@ -67,6 +67,8 @@ Add `"dev": "vue-site dev"` (or `vs dev`) in `package.json` scripts if you like.
 | `links` | Header links: Lucide `icon` + `link`, optional `title` |
 | `packageRepository` | Usually set by CLI from `package.json`; omit when using `createSiteApp` alone |
 | `env` | Dev/build options — see below |
+| `bootstrap` | Optional path from site root (e.g. `./bootstrap.ts`) — module loaded once before the Vue app |
+| `configureApp` | Optional `(app) => void` after router install, before `mount` |
 
 ### `NavItem`
 
@@ -106,8 +108,11 @@ import { createSiteApp } from '@bndynet/vue-site'
 import '@bndynet/vue-site/style.css'
 import config from './site.config'
 
-createSiteApp(config).mount('#app')
+const app = await createSiteApp(config)
+app.mount('#app')
 ```
+
+Use a top-level `await` in your entry (or an async IIFE): `createSiteApp` is async. If you set optional `bootstrap` in config, that module loads before the app is created; if you omit `bootstrap`, that step is skipped.
 
 Exports: `createSiteApp`, `defineConfig`, `useTheme`, `useSiteConfig`, `themeRefKey`. Types: `SiteConfig`, `SiteEnvConfig`, `SiteViteConfig`, `SiteExternalLink`, `NavItem`, `ThemeConfig`, `ThemeOption`, `ThemePaletteVars`, `ResolvedNavItem`.
 

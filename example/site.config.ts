@@ -1,7 +1,16 @@
+import type { App } from 'vue'
 import { defineConfig } from '@bndynet/vue-site'
 
 export default defineConfig({
   title: 'My Site',
+  // Optional: remove this line to skip loading `bootstrap.ts`.
+  bootstrap: './bootstrap.ts',
+  configureApp(app: App) {
+    console.log(
+      '[vue-site example] configureApp: ran after router install (before mount)',
+      app,
+    )
+  },
   logo: 'https://static.bndy.net/images/logo.png',
   // footer: 'Copyright © 2026 BNDY.NET',
   links: [

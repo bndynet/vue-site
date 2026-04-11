@@ -104,7 +104,10 @@ const entryCode = [
   `import '${pkgDir.replace(/\\/g, '/')}/dist/style.css'`,
   `import siteConfig from '/${foundConfig}'`,
   `import { repositoryUrl } from '${VIRTUAL_PACKAGE}'`,
-  `createSiteApp({ ...siteConfig, packageRepository: repositoryUrl }).mount('#app')`,
+  `;(async () => {`,
+  `  const app = await createSiteApp({ ...siteConfig, packageRepository: repositoryUrl })`,
+  `  app.mount('#app')`,
+  `})()`,
 ].join('\n')
 
 const htmlTemplate = `<!DOCTYPE html>
@@ -324,7 +327,10 @@ import { createSiteApp } from '${pkgDir.replace(/\\/g, '/')}/dist/index.es.js'
 import '${pkgDir.replace(/\\/g, '/')}/dist/style.css'
 import siteConfig from './${foundConfig}'
 import { repositoryUrl } from '${VIRTUAL_PACKAGE}'
-createSiteApp({ ...siteConfig, packageRepository: repositoryUrl }).mount('#app')
+;(async () => {
+  const app = await createSiteApp({ ...siteConfig, packageRepository: repositoryUrl })
+  app.mount('#app')
+})()
   </script>
 </body>
 </html>`

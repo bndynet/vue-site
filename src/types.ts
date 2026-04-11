@@ -1,4 +1,4 @@
-import type { Component } from 'vue'
+import type { App, Component } from 'vue'
 import type { UserConfig as ViteUserConfig } from 'vite'
 
 export interface NavItem {
@@ -98,6 +98,18 @@ export interface SiteConfig {
   packageRepository?: string | null
   /** Development / build environment configuration */
   env?: SiteEnvConfig
+  /**
+   * Optional. Path to a module under the site root (Vite `root`), loaded once **before** the Vue app
+   * is created. Omit or leave unset to skip. Use for global side effects (polyfills, telemetry,
+   * `window` setup). Relative to root, e.g. `./bootstrap.ts` or `src/bootstrap.ts` (resolved as
+   * `/bootstrap.ts`, `/src/bootstrap.ts`).
+   */
+  bootstrap?: string
+  /**
+   * Called after the app is created, context is provided, and the router is installed — before
+   * `createSiteApp` resolves (call `.mount()` after `await`). Use for `app.use()`, global directives, etc.
+   */
+  configureApp?: (app: App) => void
 }
 
 export interface ResolvedNavItem extends NavItem {
