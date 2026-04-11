@@ -67,7 +67,7 @@ export interface SiteEnvConfig {
   /**
    * Local packages to watch for source changes and exclude from pre-bundling.
    * - `string` -- symlinked package name (npm workspaces / npm link)
-   * - `{ name, entryPath }` -- resolve imports to a source entry file so Vite compiles it directly (e.g. `'../my-lib/src/index.ts'`)
+   * - `{ name, entryPath }` -- resolve imports to a source entry file so Vite compiles it directly; `entryPath` is relative to the directory where you run `vue-site` (the folder that contains `site.config.*`)
    */
   watchPackages?: (string | { name: string; entryPath: string })[]
   /** Raw Vite configuration overrides merged into the CLI's base config */
@@ -108,8 +108,9 @@ export interface SiteConfig {
   /**
    * Called after the app is created, context is provided, and the router is installed — before
    * `createSiteApp` resolves (call `.mount()` after `await`). Use for `app.use()`, global directives, etc.
+   * May return a Promise (e.g. after `await import()` of a package listed in `env.watchPackages`).
    */
-  configureApp?: (app: App) => void
+  configureApp?: (app: App) => void | Promise<void>
 }
 
 export interface ResolvedNavItem extends NavItem {

@@ -20,7 +20,28 @@ function resolvePkgDir(pkg) {
 const vuePath = resolvePkgDir('vue')
 const vueRouterPath = resolvePkgDir('vue-router')
 const cwd = process.cwd()
+/** Lets `import('../file.md?raw')` work when `site.config` lives in a subfolder (README next to cwd). In-repo, ../ often falls under pkgDir; from npm install it does not, so we allow cwd's parent explicitly. */
+const cwdParent = resolve(cwd, '..')
+/** Two levels up: monorepos (`apps/docs` importing `../../packages/...`). Omitted when that would be the FS root (too permissive for dev). */
+const cwdGrandparent = resolve(cwd, '../..')
 const command = process.argv[2] || 'dev'
+
+function isLikelyFilesystemRoot(dir) {
+  if (dir === '/' || dir === '//') return true
+  if (process.platform === 'win32') {
+    return /^[a-zA-Z]:[\\/]$/i.test(dir)
+  }
+  return false
+}
+
+const defaultServerFsAllow = [cwd, pkgDir, cwdParent]
+if (
+  cwdGrandparent !== cwdParent &&
+  cwdGrandparent !== cwd &&
+  !isLikelyFilesystemRoot(cwdGrandparent)
+) {
+  defaultServerFsAllow.push(cwdGrandparent)
+}
 
 const configCandidates = [
   'site.config.ts',
@@ -230,10 +251,16 @@ async function buildViteConfig() {
         watchPatterns.push(`!**/node_modules/${pkg}/**`)
       } else {
         const entryAbs = resolve(cwd, pkg.entryPath)
-        const entryDir = entryAbs.replace(/\/[^/]+$/, '')
+        const entryDir = dirname(entryAbs)
+        if (!fs.existsSync(entryAbs)) {
+          console.warn(
+            `[vue-site] env.watchPackages: entry not found (entryPath is relative to the directory where you run the CLI):\n  ${entryAbs}\n  package: ${pkg.name}`,
+          )
+        }
         excludeNames.push(pkg.name)
         localAliases[pkg.name] = entryAbs
-        watchPatterns.push(`!${entryDir}/**`)
+        const dirForGlob = entryDir.replace(/\\/g, '/')
+        watchPatterns.push(`!${dirForGlob}/**`)
         fsAllowPaths.push(entryDir)
       }
     }
@@ -256,9 +283,22 @@ async function buildViteConfig() {
       },
     }
     if (Object.keys(localAliases).length) {
+      const prevAlias = userViteRest.resolve?.alias
+      const extraPairs = Object.entries(localAliases).map(([find, replacement]) => ({
+        find,
+        replacement,
+      }))
+      let mergedAlias
+      if (prevAlias == null) {
+        mergedAlias = { ...localAliases }
+      } else if (Array.isArray(prevAlias)) {
+        mergedAlias = [...prevAlias, ...extraPairs]
+      } else {
+        mergedAlias = { ...prevAlias, ...localAliases }
+      }
       userViteRest.resolve = {
         ...userViteRest.resolve,
-        alias: { ...userViteRest.resolve?.alias, ...localAliases },
+        alias: mergedAlias,
       }
     }
     if (fsAllowPaths.length) {
@@ -288,7 +328,7 @@ async function buildViteConfig() {
       open: true,
       ...(port != null && { port }),
       fs: {
-        allow: [cwd, pkgDir],
+        allow: defaultServerFsAllow,
       },
     },
     build: {

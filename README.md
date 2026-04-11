@@ -68,7 +68,7 @@ Add `"dev": "vue-site dev"` (or `vs dev`) in `package.json` scripts if you like.
 | `packageRepository` | Usually set by CLI from `package.json`; omit when using `createSiteApp` alone |
 | `env` | Dev/build options — see below |
 | `bootstrap` | Optional path from site root (e.g. `./bootstrap.ts`) — module loaded once before the Vue app |
-| `configureApp` | Optional `(app) => void` after router install, before `mount` |
+| `configureApp` | Optional `(app) => void \| Promise<void>` after router install, before `mount` (see [Local packages in `configureApp`](#local-packages-in-configureapp)) |
 
 ### `NavItem`
 
@@ -96,8 +96,35 @@ Add `"dev": "vue-site dev"` (or `vs dev`) in `package.json` scripts if you like.
 | `port` | Dev server port |
 | `outDir` | Build output (relative to site root; default `{folder}-dist`) |
 | `customElements` | Tag prefixes for custom elements (e.g. `['chat-', 'i-']`) |
-| `watchPackages` | Local packages: package name string, or `{ name, entryPath }` for source HMR |
+| `watchPackages` | Local packages — see [env.watchPackages](#envwatchpackages) |
 | `vite` | Vite overrides (not `root`); framework merges aliases, `server.fs.allow`, `build.outDir`, etc. |
+
+### `env.watchPackages`
+
+- **String** — package name only (e.g. workspace symlink / `npm link`). Dependency pre-bundling is skipped; file watching follows Vite defaults.
+- **`{ name, entryPath }`** — `name` must match the import specifier (e.g. `@scope/pkg`). `entryPath` is **relative to the directory where you run the CLI** (the folder that contains `site.config.*`). Vite resolves that package to your **source entry** for dev HMR and adds the package directory to `server.fs.allow`.
+- If you use **`env.vite.resolve.alias` as an array** (`{ find, replacement }[]`), the CLI still merges `watchPackages` aliases correctly (object-only spread would break this).
+- **Do not** add a **top-level value import** of the same package in `site.config.ts` if it is listed here — the config preload runs in Node and would resolve `node_modules`, while the app uses Vite. Use **`configureApp` + dynamic `import()`** instead (see next section).
+
+### Local packages in `configureApp`
+
+`configureApp` may be **`async`** so you can `await import('your-package')` after the router is installed. That dynamic import runs in the browser under Vite, so it respects `watchPackages` and does not run during CLI config loading.
+
+```typescript
+export default defineConfig({
+  env: {
+    watchPackages: [{ name: '@acme/widgets', entryPath: '../widgets/src/index.ts' }],
+  },
+  async configureApp(app) {
+    const w = await import('@acme/widgets')
+    w.register(app)
+  },
+})
+```
+
+### Dev server filesystem access
+
+The CLI allows `server.fs` reads under the site root, the installed `vue-site` package directory, the **parent** of the site root (for `../…` imports), and — when it would not widen to the filesystem root — the **grandparent** (common in monorepos, e.g. `../../packages/...`). Add more paths with `env.vite.server.fs.allow` if needed. Entries from `watchPackages` with `{ entryPath }` also extend `fs.allow` for those package trees.
 
 ## Library mode
 
@@ -112,7 +139,7 @@ const app = await createSiteApp(config)
 app.mount('#app')
 ```
 
-Use a top-level `await` in your entry (or an async IIFE): `createSiteApp` is async. If you set optional `bootstrap` in config, that module loads before the app is created; if you omit `bootstrap`, that step is skipped.
+Use a top-level `await` in your entry (or an async IIFE): `createSiteApp` is async and **awaits** `configureApp` when it returns a `Promise`. If you set optional `bootstrap` in config, that module loads before the app is created; if you omit `bootstrap`, that step is skipped.
 
 Exports: `createSiteApp`, `defineConfig`, `useTheme`, `useSiteConfig`, `themeRefKey`. Types: `SiteConfig`, `SiteEnvConfig`, `SiteViteConfig`, `SiteExternalLink`, `NavItem`, `ThemeConfig`, `ThemeOption`, `ThemePaletteVars`, `ResolvedNavItem`.
 
@@ -155,6 +182,21 @@ npm install
 npm run dev    # watch-build lib + example site
 npm run build  # `dist/` + `example/example-dist`
 ```
+
+### Using a local build in another project
+
+The published entry points at `dist/`. After changing library **source** under `src/`, run `npm run build:lib` (or `build:lib:watch`) before the consumer sees updates. Changes to **`bin/vue-site.mjs`** apply on the next `vue-site` run without a lib rebuild.
+
+```bash
+cd /path/to/vue-site
+npm install && npm run build:lib
+npm link
+
+cd /path/to/consumer
+npm link @bndynet/vue-site
+```
+
+You do not need to run `npm link` again after editing files; the symlink stays. Use `npm unlink @bndynet/vue-site` and `npm install` in the consumer when done.
 
 ## License
 

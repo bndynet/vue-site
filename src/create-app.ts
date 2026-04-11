@@ -54,7 +54,9 @@ export async function createSiteApp(config: SiteConfig) {
   app.provide(siteContextKey, { config, resolvedNav })
   app.use(router)
 
-  config.configureApp?.(app)
+  if (config.configureApp) {
+    await Promise.resolve(config.configureApp(app))
+  }
 
   return app
 }
