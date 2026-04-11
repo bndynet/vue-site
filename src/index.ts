@@ -1,5 +1,5 @@
 export { createSiteApp } from './create-app'
-export { useTheme } from './composables/useTheme'
+export { useTheme, themeRefKey } from './composables/useTheme'
 export { useSiteConfig } from './composables/useSiteConfig'
 export { builtinThemePalettes } from './theme/presets'
 export type {

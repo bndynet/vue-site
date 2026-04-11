@@ -1,7 +1,7 @@
-import { createApp } from 'vue'
+import { createApp, ref } from 'vue'
 import type { SiteConfig } from './types'
 import { resolveNavItems, createSiteRouter } from './router'
-import { initTheme } from './composables/useTheme'
+import { initTheme, themeRefKey } from './composables/useTheme'
 import { siteContextKey } from './composables/useSiteConfig'
 import { resolveThemePalettes } from './theme/resolve-palettes'
 import AppLayout from './components/AppLayout.vue'
@@ -21,7 +21,9 @@ export function createSiteApp(config: SiteConfig) {
       .map((t) => t.id) ?? []
   const themeIds = ['light', 'dark', ...extraThemeIds]
   const palettes = resolveThemePalettes(config.theme)
+  const themeRef = ref<string>('light')
   initTheme(
+    themeRef,
     config.theme?.default ?? 'light',
     themeIds,
     palettes,
@@ -32,6 +34,7 @@ export function createSiteApp(config: SiteConfig) {
 
   const app = createApp(AppLayout)
 
+  app.provide(themeRefKey, themeRef)
   app.provide(siteContextKey, { config, resolvedNav })
   app.use(router)
 

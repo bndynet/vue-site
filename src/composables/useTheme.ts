@@ -1,8 +1,13 @@
-import { ref } from 'vue'
+import { inject } from 'vue'
+import type { InjectionKey, Ref } from 'vue'
 
 const STORAGE_KEY = 'vue-site-theme'
 
-const currentTheme = ref<string>('light')
+/** Use `Symbol.for` so the key matches even if multiple copies of this package are resolved. */
+export const themeRefKey: InjectionKey<Ref<string>> =
+  Symbol.for('vue-site.themeRef')
+
+let activeThemeRef: Ref<string> | null = null
 
 let allowedThemeIds: string[] = ['light', 'dark']
 
@@ -17,8 +22,12 @@ function applyCssVars(vars: Record<string, string>) {
 }
 
 function applyTheme(mode: string) {
-  document.documentElement.setAttribute('data-theme', mode)
-  currentTheme.value = mode
+  if (typeof document !== 'undefined') {
+    document.documentElement.setAttribute('data-theme', mode)
+  }
+  if (activeThemeRef) {
+    activeThemeRef.value = mode
+  }
 
   const palette = resolvedPalettes[mode]
   if (palette) {
@@ -48,17 +57,21 @@ function storeTheme(mode: string) {
 }
 
 /**
+ * @param themeRef — ref created next to `createApp` so it uses the same Vue runtime as the app (fixes `watch(theme)` when npm/Vite dedupes `vue` imperfectly).
  * @param defaultMode — used when nothing valid is in localStorage
  * @param themeIds — full list of allowed ids (built-in `light`/`dark` plus any `extraThemes`)
  * @param palettes — resolved CSS variable maps per id
  * @param overlay — optional `:root` overrides applied after the active palette
  */
 export function initTheme(
+  themeRef: Ref<string>,
   defaultMode: string = 'light',
   themeIds?: readonly string[],
   palettes?: Record<string, Record<string, string>>,
   overlay?: Record<string, string>,
 ) {
+  activeThemeRef = themeRef
+
   allowedThemeIds =
     themeIds?.length && themeIds.length > 0 ? [...themeIds] : ['light', 'dark']
 
@@ -75,6 +88,14 @@ export function initTheme(
 }
 
 export function useTheme() {
+  const injected = inject(themeRefKey)
+  if (!injected) {
+    throw new Error(
+      '[vue-site] useTheme() must be used within an app created by createSiteApp().',
+    )
+  }
+  const theme = injected
+
   function setTheme(mode: string) {
     if (!allowedThemeIds.includes(mode)) return
     applyTheme(mode)
@@ -82,14 +103,14 @@ export function useTheme() {
   }
 
   function toggleTheme() {
-    const i = allowedThemeIds.indexOf(currentTheme.value)
+    const i = allowedThemeIds.indexOf(theme.value)
     const next =
-      allowedThemeIds[(i + 1) % allowedThemeIds.length] ?? currentTheme.value
+      allowedThemeIds[(i + 1) % allowedThemeIds.length] ?? theme.value
     setTheme(next)
   }
 
   return {
-    theme: currentTheme,
+    theme,
     setTheme,
     toggleTheme,
   }
