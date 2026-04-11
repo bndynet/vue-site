@@ -1,0 +1,16 @@
+{
+  "name": "vue-site-example",
+  "private": true,
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bndynet/vue-template.git"
+  },
+  "scripts": {
+    "dev": "vue-site dev",
+    "build": "vue-site build",
+    "preview": "vue-site preview"
+  },
+  "dependencies": {
+    "@bndynet/vue-site": "file:.."
+  }
+}

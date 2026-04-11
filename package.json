@@ -1,0 +1,58 @@
+{
+  "name": "@bndynet/vue-site",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "A configurable Vue 3 site framework with sidebar navigation, markdown rendering, and theme switching.",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bndynet/vue-site.git"
+  },
+  "main": "./dist/index.es.js",
+  "module": "./dist/index.es.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.es.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./style.css": "./dist/style.css"
+  },
+  "bin": {
+    "vue-site": "./bin/vue-site.mjs",
+    "vs": "./bin/vue-site.mjs"
+  },
+  "files": [
+    "dist",
+    "bin"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "test": "node -e \"process.exit(0)\"",
+    "lint": "node -e \"process.exit(0)\"",
+    "clean": "rimraf dist example/example-dist",
+    "build:lib": "vite build",
+    "build:lib:watch": "vite build --watch",
+    "dev:example": "npm --prefix example run dev",
+    "dev": "npm run build:lib && concurrently -k -n lib,example -c blue,magenta \"npm run build:lib:watch\" \"npm run dev:example\"",
+    "build": "npm run build:lib && cd example && npm run build",
+    "preview": "npm run build:lib && cd example && npm run preview"
+  },
+  "dependencies": {
+    "@vitejs/plugin-vue": "^5.2.0",
+    "highlight.js": "^11.11.0",
+    "lucide-vue-next": "^0.475.0",
+    "markdown-it": "^14.1.0",
+    "vite": "^6.2.0",
+    "vue": "^3.5.0",
+    "vue-router": "^4.5.0"
+  },
+  "devDependencies": {
+    "@types/markdown-it": "^14.1.0",
+    "rimraf": "^6.1.3",
+    "typescript": "~5.7.0",
+    "vite-plugin-dts": "^4.5.0",
+    "vue-tsc": "^2.2.0"
+  }
+}

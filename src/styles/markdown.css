@@ -1,0 +1,145 @@
+.markdown-body h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  padding-bottom: 0.3rem;
+  border-bottom: 1px solid var(--color-border);
+  color: var(--color-text);
+}
+
+.markdown-body h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-top: 2rem;
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.25rem;
+  border-bottom: 1px solid var(--color-border);
+  color: var(--color-text);
+}
+
+.markdown-body h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-top: 1.5rem;
+  margin-bottom: 0.5rem;
+  color: var(--color-text);
+}
+
+.markdown-body h4,
+.markdown-body h5,
+.markdown-body h6 {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-top: 1.25rem;
+  margin-bottom: 0.5rem;
+  color: var(--color-text);
+}
+
+.markdown-body p {
+  margin-bottom: 1rem;
+  color: var(--color-text-secondary);
+  line-height: 1.75;
+}
+
+.markdown-body ul,
+.markdown-body ol {
+  margin-bottom: 1rem;
+  padding-left: 2em;
+  color: var(--color-text-secondary);
+}
+
+.markdown-body li {
+  margin-bottom: 0.25rem;
+}
+
+.markdown-body li > ul,
+.markdown-body li > ol {
+  margin-bottom: 0;
+}
+
+.markdown-body code {
+  font-family: 'SF Mono', 'Fira Code', 'Fira Mono', Menlo, Consolas, monospace;
+  font-size: 0.875em;
+  padding: 0.2em 0.4em;
+  background: var(--color-code-bg);
+  border-radius: 4px;
+  color: var(--color-code-text);
+}
+
+.markdown-body pre {
+  margin-bottom: 1.25rem;
+  border-radius: 8px;
+  overflow-x: auto;
+  border: 1px solid var(--color-code-border);
+}
+
+.markdown-body pre code {
+  display: block;
+  padding: 16px 20px;
+  background: var(--color-code-block-bg);
+  font-size: 0.85rem;
+  line-height: 1.6;
+  border-radius: 0;
+}
+
+.markdown-body blockquote {
+  margin-bottom: 1rem;
+  padding: 12px 20px;
+  border-left: 4px solid var(--color-blockquote-border);
+  background: var(--color-blockquote-bg);
+  border-radius: 0 6px 6px 0;
+  color: var(--color-blockquote-text);
+}
+
+.markdown-body blockquote p:last-child {
+  margin-bottom: 0;
+}
+
+.markdown-body table {
+  width: 100%;
+  margin-bottom: 1rem;
+  border-collapse: collapse;
+  border: 1px solid var(--color-table-border);
+}
+
+.markdown-body th {
+  background: var(--color-table-header-bg);
+  padding: 10px 14px;
+  text-align: left;
+  font-weight: 600;
+  border: 1px solid var(--color-table-border);
+  color: var(--color-text);
+}
+
+.markdown-body td {
+  padding: 10px 14px;
+  border: 1px solid var(--color-table-border);
+  color: var(--color-text-secondary);
+}
+
+.markdown-body tr:hover td {
+  background: var(--color-table-row-hover);
+}
+
+.markdown-body hr {
+  margin: 2rem 0;
+  border: none;
+  border-top: 1px solid var(--color-border);
+}
+
+.markdown-body a {
+  color: var(--color-link);
+}
+
+.markdown-body a:hover {
+  color: var(--color-link-hover);
+}
+
+.markdown-body img {
+  max-width: 100%;
+  border-radius: 6px;
+}
+
+.markdown-body strong {
+  color: var(--color-text);
+}

@@ -1,0 +1,201 @@
+:root {
+  --site-top-nav-height: 48px;
+  --site-sidebar-width: 200px;
+}
+
+.site-layout {
+  min-height: 100vh;
+}
+
+/* 3+ level nav: primary row fixed under top */
+.site-layout--tiered-nav .site-sidebar {
+  top: var(--site-top-nav-height);
+  height: calc(100vh - var(--site-top-nav-height));
+}
+
+.site-layout--tiered-nav .site-content {
+  margin-top: var(--site-top-nav-height);
+}
+
+/* Tiered + current top-level has no children: full-width main, no aside */
+.site-layout--tiered-no-sidebar .site-content {
+  margin-left: 0;
+}
+
+.site-footer-standalone {
+  margin-left: 0;
+  padding: 20px 48px 32px;
+  text-align: center;
+  border-top: 1px solid var(--color-border);
+  background: var(--color-content-bg);
+  transition: background-color 0.2s ease;
+}
+
+.site-primary-nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 21;
+  display: flex;
+  align-items: stretch;
+  height: var(--site-top-nav-height);
+  padding: 0 12px 0 0;
+  box-sizing: border-box;
+  background: var(--color-sidebar-bg);
+  border-bottom: 1px solid var(--color-sidebar-border);
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.site-primary-nav-end {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.site-primary-nav-theme {
+  flex-shrink: 0;
+}
+
+.site-primary-nav-brand {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  flex: 0 0 var(--site-sidebar-width);
+  width: var(--site-sidebar-width);
+  min-width: 0;
+  max-width: var(--site-sidebar-width);
+  box-sizing: border-box;
+  padding: 0 12px;
+  text-decoration: none;
+  color: inherit;
+}
+
+.site-primary-nav-brand:hover {
+  text-decoration: none;
+  opacity: 0.9;
+}
+
+.site-primary-nav-logo {
+  display: block;
+  height: auto;
+  max-height: 32px;
+  width: auto;
+  max-width: 100%;
+  object-fit: contain;
+}
+
+.site-primary-nav-title {
+  min-width: 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--color-sidebar-title);
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.site-layout--tiered-nav .site-sidebar-nav {
+  padding-top: 12px;
+}
+
+.site-sidebar-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  width: 100%;
+}
+
+.site-sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: var(--site-sidebar-width);
+  height: 100vh;
+  background: var(--color-sidebar-bg);
+  border-right: 1px solid var(--color-sidebar-border);
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  z-index: 10;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.site-sidebar-header {
+  padding: 1rem 1rem 0.75rem;
+  display: flex;
+  justify-content: center;
+}
+
+.site-sidebar-brand {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.site-sidebar-logo {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  max-height: 40px;
+  width: auto;
+  object-fit: contain;
+}
+
+.site-sidebar-title {
+  min-width: 0;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--color-sidebar-title);
+  letter-spacing: -0.01em;
+  line-height: 1.25;
+  text-align: center;
+}
+
+.site-sidebar-nav {
+  flex: 1;
+  padding: 0 8px;
+}
+
+.site-sidebar-footer {
+  padding: 10px 12px 12px;
+  border-top: 1px solid var(--color-sidebar-border);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.site-footer-text {
+  margin: 0;
+  font-size: 0.75rem;
+  line-height: 1.45;
+  color: var(--color-text-secondary);
+  white-space: pre-wrap;
+  word-break: break-word;
+  text-align: center;
+}
+
+.site-content {
+  margin-left: var(--site-sidebar-width);
+  min-height: 100vh;
+  background: var(--color-content-bg);
+  transition: background-color 0.2s ease;
+}
+
+.site-content-inner {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 40px 48px;
+}
