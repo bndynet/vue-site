@@ -24,7 +24,45 @@ const cwd = process.cwd()
 const cwdParent = resolve(cwd, '..')
 /** Two levels up: monorepos (`apps/docs` importing `../../packages/...`). Omitted when that would be the FS root (too permissive for dev). */
 const cwdGrandparent = resolve(cwd, '../..')
-const command = process.argv[2] || 'dev'
+
+/**
+ * @param {string[]} argv
+ * @returns {{ command: string, cliBase?: string }}
+ */
+function parseCliArgv(argv = process.argv) {
+  const sub = argv[2]
+  const command =
+    sub && !sub.startsWith('-')
+      ? sub
+      : 'dev'
+
+  let cliBase
+  const flagStart = command === sub && sub ? 3 : 2
+  for (let i = flagStart; i < argv.length; i++) {
+    const a = argv[i]
+    if (a === '--base') {
+      const v = argv[i + 1]
+      if (!v || v.startsWith('-')) {
+        console.error(
+          '[vue-site] --base requires a value (e.g. --base=/app/ or --base /app/)',
+        )
+        process.exit(1)
+      }
+      cliBase = v
+      i++
+    } else if (a.startsWith('--base=')) {
+      const v = a.slice('--base='.length)
+      if (!v) {
+        console.error(
+          '[vue-site] --base= requires a value (e.g. --base=/app/)',
+        )
+        process.exit(1)
+      }
+      cliBase = v
+    }
+  }
+  return { command, cliBase }
+}
 
 function isLikelyFilesystemRoot(dir) {
   if (dir === '/' || dir === '//') return true
@@ -215,15 +253,20 @@ function vueSitePlugin() {
   ]
 }
 
-async function buildViteConfig() {
+async function buildViteConfig(options = {}) {
+  const { cliBase } = options
   const siteConfig = await loadSiteConfig()
+  const env = siteConfig.env || {}
   const {
     port,
     outDir,
     customElements = [],
-    watchPackages = [],
     vite: userVite = {},
-  } = siteConfig.env || {}
+  } = env
+  const watchPackages =
+    env.watchPackages !== undefined
+      ? env.watchPackages
+      : siteConfig.watchPackages ?? []
   const { vue: userVueOpts = {}, plugins: userPlugins, ...userViteRest } =
     userVite
 
@@ -335,13 +378,15 @@ async function buildViteConfig() {
       outDir: resolve(cwd, outDir || `${basename(cwd)}-dist`),
       emptyOutDir: true,
     },
+    ...(cliBase != null && { base: cliBase }),
   }
 
   return mergeConfig(userViteRest, baseConfig)
 }
 
 async function run() {
-  const viteConfig = await buildViteConfig()
+  const { command, cliBase } = parseCliArgv()
+  const viteConfig = await buildViteConfig({ cliBase })
 
   if (command === 'dev') {
     const server = await createServer(viteConfig)
@@ -390,7 +435,10 @@ import { repositoryUrl } from '${VIRTUAL_PACKAGE}'
     )
     server.printUrls()
   } else {
-    console.log('Usage: vue-site|vs <dev|build|preview>')
+    console.log(
+      'Usage: vue-site|vs <dev|build|preview> [--base=<path>]\n' +
+        '  --base   Public path for assets (overrides env.vite.base); e.g. --base=/app/',
+    )
     process.exit(1)
   }
 }

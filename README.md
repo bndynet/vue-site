@@ -50,6 +50,14 @@ npx vue-site build
 npx vue-site preview
 ```
 
+Subpath deploy: pass Vite’s public base on the CLI (overrides `env.vite.base` in `site.config`):
+
+```bash
+npx vue-site build --base=/app/
+# or
+npx vue-site build --base /app/
+```
+
 Add `"dev": "vue-site dev"` (or `vs dev`) in `package.json` scripts if you like.
 
 ## Config reference
