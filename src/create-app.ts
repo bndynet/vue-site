@@ -11,23 +11,7 @@ import './styles/layout.css'
 import './styles/markdown.css'
 import './styles/code-highlight.css'
 
-/** Resolve `bootstrap` path for Vite: root-relative URL starting with `/`. */
-function resolveBootstrapUrl(path: string): string {
-  const t = path.trim()
-  if (!t) throw new Error('[vue-site] bootstrap path is empty')
-  if (t.startsWith('/')) return t
-  return '/' + t.replace(/^\.\//, '')
-}
-
-async function importBootstrap(config: SiteConfig) {
-  if (config.bootstrap == null || String(config.bootstrap).trim() === '') return
-  const url = resolveBootstrapUrl(String(config.bootstrap))
-  await import(/* @vite-ignore */ url)
-}
-
 export async function createSiteApp(config: SiteConfig) {
-  await importBootstrap(config)
-
   const resolvedNav = resolveNavItems(config.nav)
   const router = createSiteRouter(resolvedNav)
 

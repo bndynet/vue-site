@@ -99,10 +99,16 @@ export interface SiteConfig {
   /** Development / build environment configuration */
   env?: SiteEnvConfig
   /**
+   * Same as `env.watchPackages` (CLI only). Used when `env.watchPackages` is omitted.
+   */
+  watchPackages?: SiteEnvConfig['watchPackages']
+  /**
    * Optional. Path to a module under the site root (Vite `root`), loaded once **before** the Vue app
    * is created. Omit or leave unset to skip. Use for global side effects (polyfills, telemetry,
    * `window` setup). Relative to root, e.g. `./bootstrap.ts` or `src/bootstrap.ts` (resolved as
    * `/bootstrap.ts`, `/src/bootstrap.ts`).
+   * The `vue-site` CLI injects a static import for this path so it is included in production builds;
+   * if you call `createSiteApp` from a custom entry, import that module yourself before mounting.
    */
   bootstrap?: string
   /**

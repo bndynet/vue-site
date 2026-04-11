@@ -158,16 +158,33 @@ function readPackageRepositoryUrl() {
   return tryReadRepositoryFromDir(cwd)
 }
 
-const entryCode = [
-  `import { createSiteApp } from '${pkgDir.replace(/\\/g, '/')}/dist/index.es.js'`,
-  `import '${pkgDir.replace(/\\/g, '/')}/dist/style.css'`,
-  `import siteConfig from '/${foundConfig}'`,
-  `import { repositoryUrl } from '${VIRTUAL_PACKAGE}'`,
-  `;(async () => {`,
-  `  const app = await createSiteApp({ ...siteConfig, packageRepository: repositoryUrl })`,
-  `  app.mount('#app')`,
-  `})()`,
-].join('\n')
+/** Root-relative path for Vite (`./foo` -> `/foo`). */
+function resolveBootstrapUrl(path) {
+  const t = String(path).trim()
+  if (!t) throw new Error('[vue-site] bootstrap path is empty')
+  if (t.startsWith('/')) return t
+  return '/' + t.replace(/^\.\//, '')
+}
+
+// Static import bundles bootstrap for production; dynamic import with vite-ignore is not emitted.
+function buildEntryCode(siteConfig) {
+  const bs = siteConfig?.bootstrap
+  const bootstrapImport =
+    bs != null && String(bs).trim() !== ''
+      ? `import '${resolveBootstrapUrl(bs)}'\n`
+      : ''
+  return [
+    bootstrapImport,
+    `import { createSiteApp } from '${pkgDir.replace(/\\/g, '/')}/dist/index.es.js'`,
+    `import '${pkgDir.replace(/\\/g, '/')}/dist/style.css'`,
+    `import siteConfig from '/${foundConfig}'`,
+    `import { repositoryUrl } from '${VIRTUAL_PACKAGE}'`,
+    `;(async () => {`,
+    `  const app = await createSiteApp({ ...siteConfig, packageRepository: repositoryUrl })`,
+    `  app.mount('#app')`,
+    `})()`,
+  ].join('\n')
+}
 
 const htmlTemplate = `<!DOCTYPE html>
 <html lang="en">
@@ -215,7 +232,7 @@ async function loadSiteConfig() {
   }
 }
 
-function vueSitePlugin() {
+function vueSitePlugin(entryCode) {
   return [
     {
       name: 'vue-site:virtual-entry',
@@ -254,8 +271,8 @@ function vueSitePlugin() {
 }
 
 async function buildViteConfig(options = {}) {
-  const { cliBase } = options
-  const siteConfig = await loadSiteConfig()
+  const { cliBase, siteConfig: siteConfigOption } = options
+  const siteConfig = siteConfigOption ?? (await loadSiteConfig())
   const env = siteConfig.env || {}
   const {
     port,
@@ -358,9 +375,11 @@ async function buildViteConfig(options = {}) {
     }
   }
 
+  const entryCode = buildEntryCode(siteConfig)
+
   const baseConfig = {
     root: cwd,
-    plugins: [vue(vueOpts), ...vueSitePlugin(), ...(userPlugins || [])],
+    plugins: [vue(vueOpts), ...vueSitePlugin(entryCode), ...(userPlugins || [])],
     resolve: {
       alias: {
         vue: resolve(vuePath, 'dist/vue.runtime.esm-bundler.js'),
@@ -386,7 +405,8 @@ async function buildViteConfig(options = {}) {
 
 async function run() {
   const { command, cliBase } = parseCliArgv()
-  const viteConfig = await buildViteConfig({ cliBase })
+  const siteConfig = await loadSiteConfig()
+  const viteConfig = await buildViteConfig({ cliBase, siteConfig })
 
   if (command === 'dev') {
     const server = await createServer(viteConfig)
@@ -398,6 +418,11 @@ async function run() {
     const hadHtml = fs.existsSync(tempHtml)
 
     if (!hadHtml) {
+      const bs = siteConfig?.bootstrap
+      const bootstrapImport =
+        bs != null && String(bs).trim() !== ''
+          ? `import '${resolveBootstrapUrl(bs)}'\n`
+          : ''
       const buildHtml = `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -408,7 +433,7 @@ async function run() {
 <body>
   <div id="app"></div>
   <script type="module">
-import { createSiteApp } from '${pkgDir.replace(/\\/g, '/')}/dist/index.es.js'
+${bootstrapImport}import { createSiteApp } from '${pkgDir.replace(/\\/g, '/')}/dist/index.es.js'
 import '${pkgDir.replace(/\\/g, '/')}/dist/style.css'
 import siteConfig from './${foundConfig}'
 import { repositoryUrl } from '${VIRTUAL_PACKAGE}'
