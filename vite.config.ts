@@ -19,7 +19,7 @@ export default defineConfig({
       fileName: () => 'index.es.js',
     },
     rollupOptions: {
-      external: ['vue', 'vue-router'],
+      external: ['vue', 'vue-router', 'element-plus'],
       output: {
         globals: {
           vue: 'Vue',

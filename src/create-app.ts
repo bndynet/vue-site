@@ -1,4 +1,5 @@
 import { createApp, ref } from 'vue'
+import ElementPlus from 'element-plus'
 import type { SiteConfig } from './types'
 import { resolveNavItems, createSiteRouter } from './router'
 import { initTheme, themeRefKey } from './composables/useTheme'
@@ -10,6 +11,7 @@ import './styles/base.css'
 import './styles/layout.css'
 import './styles/markdown.css'
 import './styles/code-highlight.css'
+import './styles/element-plus-theme.css'
 
 export async function createSiteApp(config: SiteConfig) {
   const resolvedNav = resolveNavItems(config.nav)
@@ -21,6 +23,14 @@ export async function createSiteApp(config: SiteConfig) {
       .map((t) => t.id) ?? []
   const themeIds = ['light', 'dark', ...extraThemeIds]
   const palettes = resolveThemePalettes(config.theme)
+
+  const darkThemeIds = new Set<string>(['dark'])
+  for (const t of config.theme?.extraThemes ?? []) {
+    if (t.basedOn === 'dark') {
+      darkThemeIds.add(t.id)
+    }
+  }
+
   const themeRef = ref<string>('light')
   initTheme(
     themeRef,
@@ -28,6 +38,7 @@ export async function createSiteApp(config: SiteConfig) {
     themeIds,
     palettes,
     config.theme?.colors,
+    darkThemeIds,
   )
 
   document.title = config.title
@@ -36,6 +47,7 @@ export async function createSiteApp(config: SiteConfig) {
 
   app.provide(themeRefKey, themeRef)
   app.provide(siteContextKey, { config, resolvedNav })
+  app.use(ElementPlus)
   app.use(router)
 
   if (config.configureApp) {

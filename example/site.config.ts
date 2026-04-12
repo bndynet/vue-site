@@ -121,6 +121,7 @@ export default defineConfig({
         },
       ],
     },
+    { label: 'Element Plus', icon: 'component', page: () => import('./pages/ElementPlusDemo.vue') },
     { label: 'About', icon: 'info', page: () => import('./pages/AboutView.vue') },
   ],
   // env: {

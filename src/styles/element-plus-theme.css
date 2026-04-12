@@ -1,0 +1,131 @@
+/**
+ * Map Element Plus CSS variables to vue-site's shared color tokens (--color-*).
+ *
+ * vue-site writes --color-* to :root as inline styles via JS (style.setProperty),
+ * which has the highest CSS priority.  Referencing them with var() here means EP
+ * components automatically follow every theme switch — including user-defined
+ * extraThemes — with zero duplication.
+ *
+ * Load order (guaranteed by bin/vue-site.mjs + create-app.ts):
+ *   1. element-plus/dist/index.css           → EP defaults  (:root)
+ *   2. element-plus/theme-chalk/dark/css-vars.css → EP dark  (html.dark)
+ *   3. dist/style.css  (this file)           → our overrides, wins by source-order
+ */
+
+/* ─── Shared token mapping ────────────────────────────────────────────────────
+ *
+ * A single :root block is sufficient for both light AND dark mode because
+ * --color-* inline vars are updated by JS on every theme switch. No separate
+ * html.dark block is needed for mapped vars — var() resolves at use-time.
+ *
+ * For EP scale variants (light / lighter / extra-light / dark / darker) that
+ * have no direct vue-site equivalent, color-mix() blends the base token with
+ * the page background (for lighter shades) or darkens it (for darker shades).
+ * This keeps scale colours relative, so they look correct in every theme.
+ * ─────────────────────────────────────────────────────────────────────────── */
+:root {
+  /* Backgrounds */
+  --el-bg-color-page:    var(--color-bg);
+  --el-bg-color:         var(--color-content-bg);
+  --el-bg-color-overlay: var(--color-content-bg);
+
+  /* Text */
+  --el-text-color-primary:     var(--color-text);
+  --el-text-color-regular:     var(--color-sidebar-text);
+  --el-text-color-secondary:   var(--color-text-secondary);
+  --el-text-color-placeholder: color-mix(in srgb, var(--color-text-secondary) 70%, var(--color-bg));
+  --el-text-color-disabled:    color-mix(in srgb, var(--color-text-secondary) 50%, var(--color-bg));
+
+  /* Borders — scale derived from --color-border */
+  --el-border-color:             var(--color-border);
+  --el-border-color-light:       color-mix(in srgb, var(--color-border) 70%, var(--color-bg));
+  --el-border-color-lighter:     color-mix(in srgb, var(--color-border) 50%, var(--color-bg));
+  --el-border-color-extra-light: color-mix(in srgb, var(--color-border) 30%, var(--color-bg));
+  --el-border-color-dark:        color-mix(in srgb, var(--color-border) 80%, var(--color-text));
+  --el-border-color-darker:      color-mix(in srgb, var(--color-border) 60%, var(--color-text));
+
+  /* Fill (table stripes, hover rows, disabled inputs, etc.) */
+  --el-fill-color:             var(--color-table-header-bg);
+  --el-fill-color-light:       color-mix(in srgb, var(--color-table-header-bg) 80%, var(--color-bg));
+  --el-fill-color-lighter:     color-mix(in srgb, var(--color-table-header-bg) 50%, var(--color-bg));
+  --el-fill-color-extra-light: color-mix(in srgb, var(--color-table-header-bg) 30%, var(--color-bg));
+  --el-fill-color-dark:        color-mix(in srgb, var(--color-table-header-bg) 120%, var(--color-border));
+  --el-fill-color-darker:      color-mix(in srgb, var(--color-table-header-bg) 80%, var(--color-border));
+  --el-fill-color-blank:       var(--color-bg);
+
+  /* Table */
+  --el-table-header-bg-color:        var(--color-table-header-bg);
+  --el-table-tr-bg-color:            var(--color-bg);
+  --el-table-expanded-cell-bg-color: color-mix(in srgb, var(--color-table-header-bg) 50%, var(--color-bg));
+  --el-table-row-hover-bg-color:     var(--color-table-row-hover);
+
+  /* Menu */
+  --el-menu-bg-color:       var(--color-sidebar-bg);
+  --el-menu-text-color:     var(--color-sidebar-text);
+  --el-menu-active-color:   var(--color-link);
+  --el-menu-hover-bg-color: var(--color-sidebar-item-hover);
+
+  /* Dropdown */
+  --el-dropdown-menuItem-hover-fill:  var(--color-sidebar-item-hover);
+  --el-dropdown-menuItem-hover-color: var(--color-text);
+}
+
+/* ─── Dark-only adjustments ───────────────────────────────────────────────────
+ *
+ * EP's own html.dark block (from dark/css-vars.css, loaded before this file)
+ * resets several vars back to hardcoded dark values.  Re-assert our var()
+ * references here so they win via source-order for any var EP overrides in dark.
+ *
+ * Shadows and masks are not available as vue-site tokens, so they stay here
+ * with adjusted values for the dark background.
+ * ─────────────────────────────────────────────────────────────────────────── */
+html.dark {
+  /* Re-assert the same var() references so they beat EP's html.dark block */
+  --el-bg-color-page:    var(--color-bg);
+  --el-bg-color:         var(--color-content-bg);
+  --el-bg-color-overlay: var(--color-sidebar-bg);
+
+  --el-text-color-primary:     var(--color-text);
+  --el-text-color-regular:     var(--color-sidebar-text);
+  --el-text-color-secondary:   var(--color-text-secondary);
+  --el-text-color-placeholder: color-mix(in srgb, var(--color-text-secondary) 70%, var(--color-bg));
+  --el-text-color-disabled:    color-mix(in srgb, var(--color-text-secondary) 50%, var(--color-bg));
+
+  --el-border-color:             var(--color-border);
+  --el-border-color-light:       color-mix(in srgb, var(--color-border) 70%, var(--color-bg));
+  --el-border-color-lighter:     color-mix(in srgb, var(--color-border) 50%, var(--color-bg));
+  --el-border-color-extra-light: color-mix(in srgb, var(--color-border) 30%, var(--color-bg));
+  --el-border-color-dark:        color-mix(in srgb, var(--color-border) 80%, var(--color-text));
+  --el-border-color-darker:      color-mix(in srgb, var(--color-border) 60%, var(--color-text));
+
+  --el-fill-color:             var(--color-table-header-bg);
+  --el-fill-color-light:       color-mix(in srgb, var(--color-table-header-bg) 80%, var(--color-bg));
+  --el-fill-color-lighter:     color-mix(in srgb, var(--color-table-header-bg) 50%, var(--color-bg));
+  --el-fill-color-extra-light: color-mix(in srgb, var(--color-table-header-bg) 30%, var(--color-bg));
+  --el-fill-color-dark:        color-mix(in srgb, var(--color-table-header-bg) 120%, var(--color-border));
+  --el-fill-color-darker:      color-mix(in srgb, var(--color-table-header-bg) 80%, var(--color-border));
+  --el-fill-color-blank:       var(--color-bg);
+
+  --el-table-header-bg-color:        var(--color-table-header-bg);
+  --el-table-tr-bg-color:            var(--color-bg);
+  --el-table-expanded-cell-bg-color: color-mix(in srgb, var(--color-table-header-bg) 50%, var(--color-bg));
+  --el-table-row-hover-bg-color:     var(--color-table-row-hover);
+
+  --el-menu-bg-color:       var(--color-sidebar-bg);
+  --el-menu-text-color:     var(--color-sidebar-text);
+  --el-menu-active-color:   var(--color-link);
+  --el-menu-hover-bg-color: var(--color-sidebar-item-hover);
+
+  --el-dropdown-menuItem-hover-fill:  var(--color-sidebar-item-hover);
+  --el-dropdown-menuItem-hover-color: var(--color-text);
+
+  /* Shadows — no vue-site token equivalent, keep dark-specific values */
+  --el-box-shadow:       0 12px 32px 4px rgba(0, 0, 0, 0.5), 0 8px 20px rgba(0, 0, 0, 0.6);
+  --el-box-shadow-light: 0 0 12px rgba(0, 0, 0, 0.6);
+  --el-box-shadow-lighter: 0 0 6px rgba(0, 0, 0, 0.5);
+  --el-box-shadow-dark:  0 16px 48px 16px rgba(0, 0, 0, 0.7), 0 12px 32px rgba(0, 0, 0, 0.6);
+
+  /* Masks */
+  --el-mask-color:             rgba(0, 0, 0, 0.8);
+  --el-mask-color-extra-light: rgba(0, 0, 0, 0.3);
+}

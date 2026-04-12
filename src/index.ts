@@ -2,6 +2,11 @@ export { createSiteApp } from './create-app'
 export { useTheme, themeRefKey } from './composables/useTheme'
 export { useSiteConfig } from './composables/useSiteConfig'
 export { builtinThemePalettes } from './theme/presets'
+export {
+  ElMessage,
+  ElMessageBox,
+  ElNotification,
+} from 'element-plus'
 export type {
   SiteConfig,
   SiteEnvConfig,

@@ -175,6 +175,8 @@ function buildEntryCode(siteConfig) {
       : ''
   return [
     bootstrapImport,
+    `import 'element-plus/dist/index.css'`,
+    `import 'element-plus/theme-chalk/dark/css-vars.css'`,
     `import { createSiteApp } from '${pkgDir.replace(/\\/g, '/')}/dist/index.es.js'`,
     `import '${pkgDir.replace(/\\/g, '/')}/dist/style.css'`,
     `import siteConfig from '/${foundConfig}'`,
@@ -433,7 +435,9 @@ async function run() {
 <body>
   <div id="app"></div>
   <script type="module">
-${bootstrapImport}import { createSiteApp } from '${pkgDir.replace(/\\/g, '/')}/dist/index.es.js'
+${bootstrapImport}import 'element-plus/dist/index.css'
+import 'element-plus/theme-chalk/dark/css-vars.css'
+import { createSiteApp } from '${pkgDir.replace(/\\/g, '/')}/dist/index.es.js'
 import '${pkgDir.replace(/\\/g, '/')}/dist/style.css'
 import siteConfig from './${foundConfig}'
 import { repositoryUrl } from '${VIRTUAL_PACKAGE}'
