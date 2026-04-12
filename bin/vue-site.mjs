@@ -388,6 +388,23 @@ async function buildViteConfig(options = {}) {
         'vue-router': resolve(vueRouterPath, 'dist/vue-router.mjs'),
       },
     },
+    optimizeDeps: {
+      // dayjs ships a UMD browser build (dayjs.min.js) which has no ESM default
+      // export. Listing it here forces Vite to pre-bundle it into a proper ESM
+      // module before the browser requests it — preventing the
+      // "does not provide an export named 'default'" SyntaxError from Element Plus.
+      include: [
+        'dayjs',
+        'dayjs/plugin/localeData',
+        'dayjs/plugin/advancedFormat',
+        'dayjs/plugin/customParseFormat',
+        'dayjs/plugin/weekOfYear',
+        'dayjs/plugin/weekYear',
+        'dayjs/plugin/dayOfYear',
+        'dayjs/plugin/isSameOrAfter',
+        'dayjs/plugin/isSameOrBefore',
+      ],
+    },
     server: {
       open: true,
       ...(port != null && { port }),
