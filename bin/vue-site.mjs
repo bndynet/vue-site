@@ -389,21 +389,13 @@ async function buildViteConfig(options = {}) {
       },
     },
     optimizeDeps: {
-      // dayjs ships a UMD browser build (dayjs.min.js) which has no ESM default
-      // export. Listing it here forces Vite to pre-bundle it into a proper ESM
-      // module before the browser requests it — preventing the
-      // "does not provide an export named 'default'" SyntaxError from Element Plus.
-      include: [
-        'dayjs',
-        'dayjs/plugin/localeData',
-        'dayjs/plugin/advancedFormat',
-        'dayjs/plugin/customParseFormat',
-        'dayjs/plugin/weekOfYear',
-        'dayjs/plugin/weekYear',
-        'dayjs/plugin/dayOfYear',
-        'dayjs/plugin/isSameOrAfter',
-        'dayjs/plugin/isSameOrBefore',
-      ],
+      // Pre-bundle element-plus so Vite crawls its dependency graph and
+      // discovers dayjs (a CJS/UMD package with no ESM default export).
+      // Without this, dayjs.min.js is served raw to the browser and
+      // Element Plus throws "does not provide an export named 'default'".
+      // The virtual entry only imports element-plus CSS, so Vite's static
+      // analysis never sees the JS side — this include bridges that gap.
+      include: ['element-plus'],
     },
     server: {
       open: true,
