@@ -301,6 +301,11 @@ async function buildViteConfig(options = {}) {
     }
   }
 
+  // Absolute source root directories for packages using entryPath, used by the
+  // scss-raw plugin below to prevent Vite's module cache from returning an
+  // already-transformed JS module to Sass on a second resolution of the same file.
+  const watchedSourceRoots = []
+
   if (watchPackages.length) {
     const excludeNames = []
     const watchPatterns = []
@@ -324,6 +329,9 @@ async function buildViteConfig(options = {}) {
         const dirForGlob = entryDir.replace(/\\/g, '/')
         watchPatterns.push(`!${dirForGlob}/**`)
         fsAllowPaths.push(entryDir)
+        // Track the package root (parent of entryDir) so SCSS imports that use
+        // paths like '../styles/foo.scss' are also covered.
+        watchedSourceRoots.push(dirname(entryDir))
       }
     }
 
@@ -379,14 +387,55 @@ async function buildViteConfig(options = {}) {
 
   const entryCode = buildEntryCode(siteConfig)
 
+  // When watchPackages uses entryPath, SCSS files imported inside the watched
+  // package source (e.g. Lit web components with `import styles from './foo.scss'`
+  // used alongside `unsafeCSS()`) need to be exported as a CSS string, not
+  // injected as a side-effect.  Vite only does this for `?inline` imports.
+  // This pre-plugin intercepts .scss/.sass imports whose importer lives inside a
+  // watched source root and transparently adds `?inline`, so Vite compiles the
+  // SCSS through Sass and returns `export default "...css..."`.
+  const watchedScssPlugin =
+    watchedSourceRoots.length > 0
+      ? [
+          {
+            name: 'vue-site:watched-scss-inline',
+            enforce: 'pre',
+            async resolveId(source, importer) {
+              if (!importer) return
+              const cleanImporter = importer.split('?')[0]
+              const cleanSource = source.split('?')[0]
+              if (
+                (cleanSource.endsWith('.scss') || cleanSource.endsWith('.sass')) &&
+                !source.includes('?') &&
+                watchedSourceRoots.some((root) => cleanImporter.startsWith(root))
+              ) {
+                const resolved = await this.resolve(source, importer, { skipSelf: true })
+                if (resolved && !resolved.external) {
+                  return { id: resolved.id + '?inline' }
+                }
+              }
+            },
+          },
+        ]
+      : []
+
   const baseConfig = {
     root: cwd,
-    plugins: [vue(vueOpts), ...vueSitePlugin(entryCode), ...(userPlugins || [])],
+    plugins: [vue(vueOpts), ...watchedScssPlugin, ...vueSitePlugin(entryCode), ...(userPlugins || [])],
     resolve: {
       alias: {
         vue: resolve(vuePath, 'dist/vue.runtime.esm-bundler.js'),
         'vue-router': resolve(vueRouterPath, 'dist/vue-router.mjs'),
       },
+    },
+    optimizeDeps: {
+      // Pre-bundle element-plus so Vite crawls its dependency graph and
+      // discovers dayjs (a CJS/UMD package with no ESM default export).
+      // Without this, dayjs.min.js is served raw to the browser and
+      // Element Plus throws "does not provide an export named 'default'".
+      // The virtual entry only imports element-plus CSS, so Vite's static
+      // analysis never sees the JS side — this include bridges that gap.
+      include: ['element-plus'],
     },
     server: {
       open: true,

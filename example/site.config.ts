@@ -119,6 +119,28 @@ export default defineConfig({
             },
           ],
         },
+        {
+          label: 'API',
+          icon: 'brackets',
+          children: [
+            {
+              label: 'Overview',
+              icon: 'file-text',
+            },
+            {
+              label: 'Errors',
+              icon: 'circle-alert',
+            },
+          ],
+        },
+        {
+          label: 'Cookbook',
+          icon: 'chef-hat',
+        },
+        {
+          label: 'FAQ',
+          icon: 'circle-help',
+        },
       ],
     },
     { label: 'Element Plus', icon: 'component', page: () => import('./pages/ElementPlusDemo.vue') },
