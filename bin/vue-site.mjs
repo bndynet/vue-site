@@ -166,29 +166,60 @@ function resolveBootstrapUrl(path) {
   return '/' + t.replace(/^\.\//, '')
 }
 
-// Static import bundles bootstrap for production; dynamic import with vite-ignore is not emitted.
-function buildEntryCode(siteConfig) {
+/**
+ * Bootstrap script shared by dev (virtual entry) and build (inlined in html).
+ * `siteConfigSpecifier` differs because dev serves from Vite root (`/foo`)
+ * while the build temp html lives next to the config (`./foo`).
+ *
+ * Static import bundles `bootstrap` for production; dynamic import with
+ * vite-ignore is not emitted.
+ */
+function buildBootstrapScript({ siteConfig, siteConfigSpecifier }) {
   const bs = siteConfig?.bootstrap
   const bootstrapImport =
     bs != null && String(bs).trim() !== ''
       ? `import '${resolveBootstrapUrl(bs)}'\n`
       : ''
+  const pkgDirUrl = pkgDir.replace(/\\/g, '/')
   return [
     bootstrapImport,
     `import 'element-plus/dist/index.css'`,
     `import 'element-plus/theme-chalk/dark/css-vars.css'`,
-    `import { createSiteApp } from '${pkgDir.replace(/\\/g, '/')}/dist/index.es.js'`,
-    `import '${pkgDir.replace(/\\/g, '/')}/dist/style.css'`,
-    `import siteConfig from '/${foundConfig}'`,
+    `import { createSiteApp } from '${pkgDirUrl}/dist/index.es.js'`,
+    `import '${pkgDirUrl}/dist/style.css'`,
+    `import siteConfig from '${siteConfigSpecifier}'`,
     `import { repositoryUrl } from '${VIRTUAL_PACKAGE}'`,
     `;(async () => {`,
-    `  const app = await createSiteApp({ ...siteConfig, packageRepository: repositoryUrl })`,
+    `  const searchParams = new URLSearchParams(window.location.search)`,
+    `  const hasThemeQuery = searchParams.has('theme')`,
+    `  const queryTheme = searchParams.get('theme') || ''`,
+    `  const resolvedTheme = String(queryTheme).toLowerCase().includes('dark') ? 'dark' : 'light'`,
+    `  if (hasThemeQuery) {`,
+    `    try {`,
+    `      localStorage.setItem('vue-site-theme', resolvedTheme)`,
+    `    } catch {`,
+    `      // localStorage may be unavailable`,
+    `    }`,
+    `  }`,
+    `  const app = await createSiteApp({`,
+    `    ...siteConfig,`,
+    `    ...(hasThemeQuery ? { theme: { ...(siteConfig.theme || {}), default: resolvedTheme } } : {}),`,
+    `    packageRepository: repositoryUrl,`,
+    `  })`,
     `  app.mount('#app')`,
     `})()`,
   ].join('\n')
 }
 
-const htmlTemplate = `<!DOCTYPE html>
+function buildEntryCode(siteConfig) {
+  return buildBootstrapScript({
+    siteConfig,
+    siteConfigSpecifier: `/${foundConfig}`,
+  })
+}
+
+function buildHtmlShell(scriptTag) {
+  return `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -197,9 +228,14 @@ const htmlTemplate = `<!DOCTYPE html>
 </head>
 <body>
   <div id="app"></div>
-  <script type="module" src="/@id/__x00__${VIRTUAL_ENTRY}"></script>
+  ${scriptTag}
 </body>
 </html>`
+}
+
+const htmlTemplate = buildHtmlShell(
+  `<script type="module" src="/@id/__x00__${VIRTUAL_ENTRY}"></script>`,
+)
 
 async function loadSiteConfig() {
   const configPath = resolve(cwd, foundConfig)
@@ -469,34 +505,13 @@ async function run() {
     const hadHtml = fs.existsSync(tempHtml)
 
     if (!hadHtml) {
-      const bs = siteConfig?.bootstrap
-      const bootstrapImport =
-        bs != null && String(bs).trim() !== ''
-          ? `import '${resolveBootstrapUrl(bs)}'\n`
-          : ''
-      const buildHtml = `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title></title>
-</head>
-<body>
-  <div id="app"></div>
-  <script type="module">
-${bootstrapImport}import 'element-plus/dist/index.css'
-import 'element-plus/theme-chalk/dark/css-vars.css'
-import { createSiteApp } from '${pkgDir.replace(/\\/g, '/')}/dist/index.es.js'
-import '${pkgDir.replace(/\\/g, '/')}/dist/style.css'
-import siteConfig from './${foundConfig}'
-import { repositoryUrl } from '${VIRTUAL_PACKAGE}'
-;(async () => {
-  const app = await createSiteApp({ ...siteConfig, packageRepository: repositoryUrl })
-  app.mount('#app')
-})()
-  </script>
-</body>
-</html>`
+      const bootstrapScript = buildBootstrapScript({
+        siteConfig,
+        siteConfigSpecifier: `./${foundConfig}`,
+      })
+      const buildHtml = buildHtmlShell(
+        `<script type="module">\n${bootstrapScript}\n  </script>`,
+      )
       fs.writeFileSync(tempHtml, buildHtml)
     }
 
