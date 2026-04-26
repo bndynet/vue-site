@@ -1,6 +1,6 @@
 {
   "name": "@bndynet/vue-site",
-  "version": "0.1.11",
+  "version": "0.1.12",
   "type": "module",
   "description": "A configurable Vue 3 site framework with sidebar navigation, markdown rendering, and theme switching.",
   "repository": {
@@ -37,7 +37,7 @@
     "dev:example": "npm --prefix example run dev",
     "dev": "npm run build:lib && concurrently -k -n lib,example -c blue,magenta \"npm run build:lib:watch\" \"npm run dev:example\"",
     "build": "npm run build:lib",
-    "preview": "npm run build:lib && cd example && npm run preview"
+    "preview": "npm run build:lib && cd example && npm run build && npm run preview"
   },
   "dependencies": {
     "@vitejs/plugin-vue": "^5.2.0",

@@ -12,7 +12,7 @@ export default defineConfig({
     )
   },
   logo: 'https://static.bndy.net/images/logo.png',
-  // footer: 'Copyright © 2026 BNDY.NET',
+  footer: 'Copyright © 2026 BNDY.NET',
   links: [
     {
       icon: 'package',

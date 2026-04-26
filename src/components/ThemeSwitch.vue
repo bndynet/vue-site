@@ -165,8 +165,8 @@ function pick(id: string) {
   background: var(--color-theme-switch-hover);
   border-color: color-mix(in srgb, var(--color-theme-switch-text) 16%, transparent);
   box-shadow:
-    0 2px 4px rgba(15, 23, 42, 0.07),
-    0 6px 14px rgba(15, 23, 42, 0.08);
+    0 1px 2px 0 rgba(0, 0, 0, 0.1),
+    0 6px 14px rgba(0, 0, 0, 0.08);
 }
 
 .theme-switch-trigger:focus-visible {
@@ -199,8 +199,8 @@ function pick(id: string) {
   background: var(--color-sidebar-bg);
   border: 1px solid var(--color-sidebar-border);
   box-shadow:
-    0 4px 12px rgba(15, 23, 42, 0.12),
-    0 12px 28px rgba(15, 23, 42, 0.1);
+    0 4px 12px rgba(0, 0, 0, 0.12),
+    0 12px 28px rgba(0, 0, 0, 0.1);
 }
 
 .theme-switch-option {
@@ -248,8 +248,8 @@ function pick(id: string) {
   gap: 2px;
   border-radius: 10px;
   box-shadow:
-    0 -4px 12px rgba(15, 23, 42, 0.1),
-    0 -8px 24px rgba(15, 23, 42, 0.08);
+    0 -4px 12px rgba(0, 0, 0, 0.1),
+    0 -8px 24px rgba(0, 0, 0, 0.08);
 }
 
 .theme-switch--compact .theme-switch-option {

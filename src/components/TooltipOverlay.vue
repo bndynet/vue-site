@@ -114,13 +114,13 @@ defineExpose({ measure })
   font-size: 0.75rem;
   line-height: 1.35;
   font-weight: 500;
-  color: var(--color-sidebar-text, #1e293b);
-  background: var(--color-sidebar-bg, #f8fafc);
-  border: 1px solid var(--color-sidebar-border, #e2e8f0);
+  color: var(--color-sidebar-text, #606770);
+  background: var(--color-sidebar-bg, #f5f6f7);
+  border: 1px solid var(--color-sidebar-border, #ebedf0);
   border-radius: 8px;
   box-shadow:
-    0 4px 12px rgba(15, 23, 42, 0.12),
-    0 2px 4px rgba(15, 23, 42, 0.06);
+    0 4px 12px rgba(0, 0, 0, 0.12),
+    0 2px 4px rgba(0, 0, 0, 0.06);
   pointer-events: none;
 }
 </style>

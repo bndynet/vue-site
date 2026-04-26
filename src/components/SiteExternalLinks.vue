@@ -97,8 +97,8 @@ const items = computed(() => {
   background: var(--color-theme-switch-hover);
   border-color: color-mix(in srgb, var(--color-theme-switch-text) 16%, transparent);
   box-shadow:
-    0 2px 4px rgba(15, 23, 42, 0.07),
-    0 6px 14px rgba(15, 23, 42, 0.08);
+    0 1px 2px 0 rgba(0, 0, 0, 0.1),
+    0 6px 14px rgba(0, 0, 0, 0.08);
   text-decoration: none;
 }
 
