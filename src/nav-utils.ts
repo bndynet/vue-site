@@ -29,6 +29,11 @@ export function findActiveTopLevelItem(
   return items[0]
 }
 
+/** True for absolute/external links (http(s), protocol-relative, mailto, tel). */
+export function isExternalLink(url: string): boolean {
+  return /^[a-z][a-z0-9+.-]*:/i.test(url) || url.startsWith('//')
+}
+
 /** First routable path in a subtree (for group targets). */
 export function getFirstLeafPath(item: ResolvedNavItem): string | null {
   if (item.page) return item.resolvedPath

@@ -1,9 +1,39 @@
 import { createRouter, createWebHashHistory, type RouteRecordRaw } from 'vue-router'
-import type { NavItem, ResolvedNavItem } from './types'
+import type { NavItem, ResolvedNavItem, StandalonePage } from './types'
 import PageView from './components/PageView.vue'
 
 function toPath(label: string): string {
   return '/' + label.toLowerCase().replace(/\s+/g, '-')
+}
+
+async function isVisible(item: { visible?: () => boolean | Promise<boolean> }): Promise<boolean> {
+  if (!item.visible) return true
+  return (await Promise.resolve(item.visible())) !== false
+}
+
+/**
+ * Recursively drop nav items whose `visible()` predicate resolves to `false`. Sibling
+ * predicates are evaluated in parallel. A hidden parent removes its subtree; a group left
+ * with no children and no own `page`/`link` is pruned. Awaited once at startup.
+ */
+export async function filterNavItems(items: NavItem[]): Promise<NavItem[]> {
+  const visibilities = await Promise.all(items.map(isVisible))
+
+  const result: NavItem[] = []
+  for (let i = 0; i < items.length; i++) {
+    if (!visibilities[i]) continue
+    const item = items[i]
+
+    if (item.children?.length) {
+      const children = await filterNavItems(item.children)
+      if (!children.length && !item.page && !item.link) continue
+      result.push({ ...item, children })
+    } else {
+      result.push(item)
+    }
+  }
+
+  return result
 }
 
 export function resolveNavItems(items: NavItem[], parentIndex?: number): ResolvedNavItem[] {
@@ -29,7 +59,9 @@ function collectRoutes(resolvedNav: ResolvedNavItem[], prefix = ''): RouteRecord
   const routes: RouteRecordRaw[] = []
 
   for (const item of resolvedNav) {
-    if (item.isGroup && item.resolvedChildren) {
+    if (item.link) {
+      continue
+    } else if (item.isGroup && item.resolvedChildren) {
       routes.push(...collectRoutes(item.resolvedChildren, prefix))
     } else {
       routes.push({
@@ -44,15 +76,43 @@ function collectRoutes(resolvedNav: ResolvedNavItem[], prefix = ''): RouteRecord
   return routes
 }
 
-export function createSiteRouter(resolvedNav: ResolvedNavItem[]) {
+export async function createSiteRouter(
+  resolvedNav: ResolvedNavItem[],
+  pages?: StandalonePage[],
+) {
   const routes = collectRoutes(resolvedNav)
 
-  if (resolvedNav.length > 0 && resolvedNav[0].resolvedPath !== '/') {
+  for (const page of pages ?? []) {
+    if (!(await isVisible(page))) continue
+    const navItem: ResolvedNavItem = {
+      ...page,
+      label: page.path,
+      resolvedPath: page.path,
+      isHome: false,
+      isGroup: false,
+    }
     routes.push({
-      path: '/',
-      redirect: resolvedNav[0].resolvedPath,
+      path: page.path,
+      component: PageView,
+      meta: { navItem, standalone: true },
     })
   }
+
+  const homePath =
+    resolvedNav.length > 0 ? resolvedNav[0].resolvedPath : '/'
+
+  if (homePath !== '/') {
+    routes.push({
+      path: '/',
+      redirect: homePath,
+    })
+  }
+
+  // Catch-all: hidden (unregistered) or unknown paths redirect to home instead of rendering blank.
+  routes.push({
+    path: '/:pathMatch(.*)*',
+    redirect: homePath,
+  })
 
   return createRouter({
     history: createWebHashHistory(),

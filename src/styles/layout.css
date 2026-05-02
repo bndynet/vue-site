@@ -22,6 +22,18 @@
   margin-left: 0;
 }
 
+/* Standalone (blank) page: no shell, content fills the viewport */
+.site-layout--blank .site-content {
+  margin-left: 0;
+  margin-top: 0;
+}
+
+.site-layout--blank .site-content-inner {
+  max-width: none;
+  margin: 0;
+  padding: 0;
+}
+
 .site-footer-standalone {
   margin-left: 0;
   padding: 1rem;

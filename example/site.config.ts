@@ -145,6 +145,21 @@ export default defineConfig({
     },
     { label: 'Element Plus', icon: 'component', page: () => import('./pages/ElementPlusDemo.vue') },
     { label: 'About', icon: 'info', page: () => import('./pages/AboutView.vue') },
+    // A nav entry that links to the standalone `/landing` page (no own route registered).
+    { label: 'Landing', icon: 'rocket', link: '/landing' },
+    // `visible` is awaited once at startup. Return false to hide the item from the nav and
+    // skip its route (so it is not reachable by direct URL). Wire it to your own auth state;
+    // here it reads a flag (try `localStorage.setItem('isAdmin', '1')` then reload).
+    {
+      label: 'Admin',
+      icon: 'shield',
+      visible: () => localStorage.getItem('isAdmin') === '1',
+      page: () => import('./pages/AboutView.vue'),
+    },
+  ],
+  // Standalone, full-screen pages (no top bar / sidebar / footer). Open at `#/landing`.
+  pages: [
+    { path: '/landing', page: () => import('./pages/Landing.vue') },
   ],
   // env: {
   //   customElements: ['chat-', 'i-'],

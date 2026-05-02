@@ -2,6 +2,7 @@
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
 import type { ResolvedNavItem } from '../types'
+import { isExternalLink } from '../nav-utils'
 import DynamicIcon from './DynamicIcon.vue'
 
 const props = withDefaults(defineProps<{
@@ -13,12 +14,26 @@ const props = withDefaults(defineProps<{
 
 const route = useRoute()
 
-const isActive = computed(() => route.path === props.item.resolvedPath)
+const isExternal = computed(() => !!props.item.link && isExternalLink(props.item.link))
+const target = computed(() => props.item.link ?? props.item.resolvedPath)
+const isActive = computed(() => !isExternal.value && route.path === target.value)
 </script>
 
 <template>
+  <a
+    v-if="isExternal"
+    :href="item.link"
+    class="nav-item"
+    :class="{ 'nav-item--indent': indent }"
+    target="_blank"
+    rel="noopener noreferrer"
+  >
+    <DynamicIcon v-if="item.icon" :name="item.icon" :size="18" />
+    <span class="nav-item-label">{{ item.label }}</span>
+  </a>
   <router-link
-    :to="item.resolvedPath"
+    v-else
+    :to="target"
     class="nav-item"
     :class="{ 'nav-item--active': isActive, 'nav-item--indent': indent }"
   >

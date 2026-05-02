@@ -1,7 +1,7 @@
 import { createApp, ref } from 'vue'
 import ElementPlus from 'element-plus'
 import type { SiteConfig } from './types'
-import { resolveNavItems, createSiteRouter } from './router'
+import { resolveNavItems, createSiteRouter, filterNavItems } from './router'
 import { initTheme, themeRefKey } from './composables/useTheme'
 import { siteContextKey } from './composables/useSiteConfig'
 import { resolveThemePalettes } from './theme/resolve-palettes'
@@ -14,8 +14,9 @@ import './styles/code-highlight.css'
 import './styles/element-plus-theme.css'
 
 export async function createSiteApp(config: SiteConfig) {
-  const resolvedNav = resolveNavItems(config.nav)
-  const router = createSiteRouter(resolvedNav)
+  const visibleNav = await filterNavItems(config.nav)
+  const resolvedNav = resolveNavItems(visibleNav)
+  const router = await createSiteRouter(resolvedNav, config.pages)
 
   const extraThemeIds =
     config.theme?.extraThemes

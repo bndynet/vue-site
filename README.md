@@ -5,6 +5,7 @@ Configurable Vue 3 site framework: one package, `site.config.ts`, and Markdown p
 ## Features
 
 - Config-driven nav (Lucide icon names)
+- Permission-gated nav via a `visible` predicate (sync or async; hides item and skips its route)
 - Markdown (`?raw`) or Vue pages
 - highlight.js, light/dark theme + localStorage
 - Project `README.md` as Home
@@ -87,6 +88,8 @@ Add `"dev": "vue-site dev"` (or `vs dev`) in `package.json` scripts if you like.
 | `page` | `() => import('./page.md?raw')` or `() => import('./Page.vue')` |
 | `path` | Route path (derived from `label` if omitted) |
 | `children` | Nested group |
+| `link` | Render as a hyperlink (internal route path or external URL) instead of a page route |
+| `visible` | `() => boolean \| Promise<boolean>`, awaited once at startup. Return `false` to hide the item from the nav and skip its route (not reachable by direct URL). A hidden parent hides its subtree; a group with no remaining children is pruned. Not reactive to later changes. |
 
 ### `ThemeConfig`
 

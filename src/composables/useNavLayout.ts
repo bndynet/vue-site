@@ -9,8 +9,11 @@ export function useNavLayout() {
   const { resolvedNav } = useSiteConfig()
   const route = useRoute()
 
+  /** Standalone (full-screen) page: no top bar, sidebar, or footer. */
+  const standalone = computed(() => route.meta.standalone === true)
+
   const tieredNav = computed(
-    () => maxNavDepth(resolvedNav) >= TIERED_DEPTH_THRESHOLD,
+    () => !standalone.value && maxNavDepth(resolvedNav) >= TIERED_DEPTH_THRESHOLD,
   )
 
   const sidebarNav = computed(() => {
@@ -21,8 +24,8 @@ export function useNavLayout() {
 
   /** Tiered mode: hide sidebar when the active top-level item has no sub-nav. */
   const showSidebar = computed(
-    () => !tieredNav.value || sidebarNav.value.length > 0,
+    () => !standalone.value && (!tieredNav.value || sidebarNav.value.length > 0),
   )
 
-  return { tieredNav, sidebarNav, showSidebar }
+  return { tieredNav, sidebarNav, showSidebar, standalone }
 }

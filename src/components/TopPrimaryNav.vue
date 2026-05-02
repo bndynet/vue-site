@@ -2,33 +2,49 @@
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { useSiteConfig } from '../composables/useSiteConfig'
-import { getFirstLeafPath, subtreeContainsPath } from '../nav-utils'
+import { getFirstLeafPath, subtreeContainsPath, isExternalLink } from '../nav-utils'
 import DynamicIcon from './DynamicIcon.vue'
 
 const { resolvedNav } = useSiteConfig()
 const route = useRoute()
 
 const links = computed(() =>
-  resolvedNav.map((item) => ({
-    item,
-    to: item.isGroup ? getFirstLeafPath(item) ?? '/' : item.resolvedPath,
-    active: subtreeContainsPath(item, route.path),
-  })),
+  resolvedNav.map((item) => {
+    const external = !!item.link && isExternalLink(item.link)
+    const to = item.link ?? (item.isGroup ? getFirstLeafPath(item) ?? '/' : item.resolvedPath)
+    const active = external
+      ? false
+      : item.link
+        ? route.path === item.link
+        : subtreeContainsPath(item, route.path)
+    return { item, to, external, active }
+  }),
 )
 </script>
 
 <template>
   <nav class="site-primary-nav-links" aria-label="Primary">
-    <router-link
-      v-for="{ item, to, active } in links"
-      :key="item.resolvedPath + item.label"
-      :to="to"
-      class="site-primary-nav-link"
-      :class="{ 'site-primary-nav-link--active': active }"
-    >
-      <DynamicIcon v-if="item.icon" :name="item.icon" :size="17" />
-      <span class="site-primary-nav-link-label">{{ item.label }}</span>
-    </router-link>
+    <template v-for="{ item, to, external, active } in links" :key="item.resolvedPath + item.label">
+      <a
+        v-if="external"
+        :href="item.link"
+        class="site-primary-nav-link"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        <DynamicIcon v-if="item.icon" :name="item.icon" :size="17" />
+        <span class="site-primary-nav-link-label">{{ item.label }}</span>
+      </a>
+      <router-link
+        v-else
+        :to="to"
+        class="site-primary-nav-link"
+        :class="{ 'site-primary-nav-link--active': active }"
+      >
+        <DynamicIcon v-if="item.icon" :name="item.icon" :size="17" />
+        <span class="site-primary-nav-link-label">{{ item.label }}</span>
+      </router-link>
+    </template>
   </nav>
 </template>
 

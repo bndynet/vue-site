@@ -7,7 +7,7 @@ import ThemeSwitch from './ThemeSwitch.vue'
 import TopPrimaryNav from './TopPrimaryNav.vue'
 
 const { config } = useSiteConfig()
-const { tieredNav, showSidebar } = useNavLayout()
+const { tieredNav, showSidebar, standalone } = useNavLayout()
 </script>
 
 <template>
@@ -16,6 +16,7 @@ const { tieredNav, showSidebar } = useNavLayout()
     :class="{
       'site-layout--tiered-nav': tieredNav,
       'site-layout--tiered-no-sidebar': tieredNav && !showSidebar,
+      'site-layout--blank': standalone,
     }"
   >
     <header v-if="tieredNav" class="site-primary-nav">

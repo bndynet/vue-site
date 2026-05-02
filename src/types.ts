@@ -7,6 +7,39 @@ export interface NavItem {
   page?: (() => Promise<{ default: string }>) | (() => Promise<{ default: Component }>)
   children?: NavItem[]
   path?: string
+  /**
+   * Render this item as a plain hyperlink instead of a page route. Use an internal route path
+   * (e.g. `/landing` to point at a `pages` entry) or an external URL (e.g. `https://...`, opened
+   * in a new tab). When set, no `PageView` route is registered for this item and `page`/`children`
+   * are ignored for routing.
+   */
+  link?: string
+  /**
+   * Optional visibility predicate, awaited once at app startup. Return `false` (or a
+   * promise resolving to `false`) to hide this item from navigation. Hidden items also
+   * get no route registered, so their pages are not reachable by direct URL. When an item
+   * has `children`, a hidden parent hides its whole subtree; a group whose children all
+   * become hidden is pruned. Evaluated only at startup, so it does not react to later
+   * permission changes (e.g. login/logout) without recreating the app.
+   */
+  visible?: () => boolean | Promise<boolean>
+}
+
+/**
+ * A standalone, full-screen page registered outside the `nav` tree.
+ * Standalone pages do not appear in any navigation (no top bar, sidebar, or footer)
+ * and render only their content. Use for landing pages, login, embeds, etc.
+ */
+export interface StandalonePage {
+  /** Route path (used as-is, no label-based derivation), e.g. `/landing`. */
+  path: string
+  page: (() => Promise<{ default: string }>) | (() => Promise<{ default: Component }>)
+  /**
+   * Optional visibility predicate, awaited once at app startup. Return `false` (or a
+   * promise resolving to `false`) to skip registering this page's route entirely.
+   * Evaluated only at startup, so it does not react to later permission changes.
+   */
+  visible?: () => boolean | Promise<boolean>
 }
 
 /** CSS custom properties for one theme (`--color-bg`, etc.). */
@@ -86,6 +119,12 @@ export interface SiteConfig {
   title: string
   logo?: string
   nav: NavItem[]
+  /**
+   * Standalone, full-screen pages registered outside the `nav` tree. They do not appear in
+   * navigation and render with no top bar, sidebar, or footer (content only). The active theme
+   * still applies via root CSS variables.
+   */
+  pages?: StandalonePage[]
   theme?: ThemeConfig
   footer?: string
   readme?: string

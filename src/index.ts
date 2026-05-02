@@ -13,6 +13,7 @@ export type {
   SiteViteConfig,
   SiteExternalLink,
   NavItem,
+  StandalonePage,
   ThemeConfig,
   ThemeOption,
   ThemePaletteVars,
