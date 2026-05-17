@@ -2,6 +2,7 @@ import { createApp, ref } from 'vue'
 import ElementPlus from 'element-plus'
 import type { SiteConfig } from './types'
 import { resolveNavItems, createSiteRouter, filterNavItems } from './router'
+import { applyAuthGuard, pruneNavByAuth } from './auth'
 import { initTheme, themeRefKey } from './composables/useTheme'
 import { siteContextKey } from './composables/useSiteConfig'
 import { resolveThemePalettes } from './theme/resolve-palettes'
@@ -17,6 +18,14 @@ export async function createSiteApp(config: SiteConfig) {
   const visibleNav = await filterNavItems(config.nav)
   const resolvedNav = resolveNavItems(visibleNav)
   const router = await createSiteRouter(resolvedNav, config.pages)
+
+  if (config.auth) {
+    applyAuthGuard(router, config.auth)
+  }
+
+  // Routes are registered from the full `resolvedNav` so guarded pages stay reachable (the guard
+  // redirects unauthorized direct access). The menu, however, renders from an auth-filtered list.
+  const menuNav = config.auth ? await pruneNavByAuth(resolvedNav, config.auth) : resolvedNav
 
   const extraThemeIds =
     config.theme?.extraThemes
@@ -47,7 +56,7 @@ export async function createSiteApp(config: SiteConfig) {
   const app = createApp(AppLayout)
 
   app.provide(themeRefKey, themeRef)
-  app.provide(siteContextKey, { config, resolvedNav })
+  app.provide(siteContextKey, { config, resolvedNav: menuNav })
   app.use(ElementPlus)
   app.use(router)
 

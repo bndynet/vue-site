@@ -20,6 +20,20 @@ export default defineConfig({
       title: 'npm package',
     },
   ],
+  // Central authorization policy. Pages opt in by adding an `auth` rule (see `nav` below).
+  // This demo stores the current role in localStorage (set by the `/login` page). `authorize`
+  // runs at navigation time (every navigation) and once at startup to filter the nav menu.
+  auth: {
+    loginPath: '/login',
+    authorize: ({ rule }) => {
+      const role = localStorage.getItem('role') // '' | 'user' | 'admin'
+      if (!role) return '/login' // not logged in -> go to the login page
+      if (rule === true) return true // `auth: true` -> any logged-in user
+      if (typeof rule === 'string') return role === rule
+      if (Array.isArray(rule)) return rule.includes(role)
+      return true
+    },
+  },
   theme: {
     default: 'light',
     extraThemes: [
@@ -147,19 +161,34 @@ export default defineConfig({
     { label: 'About', icon: 'info', page: () => import('./pages/AboutView.vue') },
     // A nav entry that links to the standalone `/landing` page (no own route registered).
     { label: 'Landing', icon: 'rocket', link: '/landing' },
-    // `visible` is awaited once at startup. Return false to hide the item from the nav and
-    // skip its route (so it is not reachable by direct URL). Wire it to your own auth state;
-    // here it reads a flag (try `localStorage.setItem('isAdmin', '1')` then reload).
+    // `auth: true` requires any logged-in user (the `authorize` policy above sends guests to
+    // `/login`). Unlike `visible`, the route stays registered and the guard runs on every
+    // navigation, so visiting `#/dashboard` directly while logged out redirects to the login page.
+    {
+      label: 'Auth Page',
+      icon: 'gauge',
+      auth: true,
+      page: () => import('./pages/AuthPageView.vue'),
+    },
+    // `auth: ['admin']` requires the `admin` role. The item is also hidden from the menu at
+    // startup when the current user is not authorized (try logging in via `#/login`).
     {
       label: 'Admin',
       icon: 'shield',
-      visible: () => localStorage.getItem('isAdmin') === '1',
-      page: () => import('./pages/AboutView.vue'),
+      auth: ['admin'],
+      page: () => import('./pages/AdminView.vue'),
     },
+    {
+      label: 'Login',
+      icon: 'log-in',
+      page: () => import('./pages/Login.vue'),
+    }
   ],
   // Standalone, full-screen pages (no top bar / sidebar / footer). Open at `#/landing`.
   pages: [
     { path: '/landing', page: () => import('./pages/Landing.vue') },
+    // Login page for the `auth` demo above. Left without an `auth` rule so it is always reachable.
+    { path: '/login', page: () => import('./pages/Login.vue') },
   ],
   // env: {
   //   customElements: ['chat-', 'i-'],

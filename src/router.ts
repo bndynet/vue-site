@@ -68,7 +68,7 @@ function collectRoutes(resolvedNav: ResolvedNavItem[], prefix = ''): RouteRecord
         path: prefix + item.resolvedPath,
         name: (prefix ? prefix + ':' : '') + item.label,
         component: PageView,
-        meta: { navItem: item },
+        meta: { navItem: item, auth: item.auth },
       })
     }
   }
@@ -94,7 +94,7 @@ export async function createSiteRouter(
     routes.push({
       path: page.path,
       component: PageView,
-      meta: { navItem, standalone: true },
+      meta: { navItem, standalone: true, auth: page.auth },
     })
   }
 

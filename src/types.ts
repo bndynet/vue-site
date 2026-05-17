@@ -1,5 +1,51 @@
 import type { App, Component } from 'vue'
 import type { UserConfig as ViteUserConfig } from 'vite'
+import type { RouteLocationNormalized } from 'vue-router'
+
+/**
+ * Per-page authorization requirement. Attached to a `NavItem` / `StandalonePage` via `auth`
+ * and stored on the route's `meta`. It is opaque metadata interpreted by
+ * `SiteConfig.auth.authorize` — use `true` for "any authenticated user", a role name or list of
+ * roles, or a custom predicate. The framework never inspects the rule itself; it forwards it to
+ * `authorize`.
+ */
+export type AuthRule =
+  | boolean
+  | string
+  | string[]
+  | ((ctx: AuthContext) => boolean | Promise<boolean>)
+
+/**
+ * Context passed to `SiteConfig.auth.authorize`. `to` / `from` are present when the guard runs
+ * during navigation; they are absent during the one-time startup pass that filters the nav menu.
+ */
+export interface AuthContext {
+  /** The `auth` rule declared on the matched nav / standalone item. */
+  rule: AuthRule
+  /** The resolved nav item being evaluated, when available. */
+  item?: ResolvedNavItem
+  /** Target route (navigation-time only). */
+  to?: RouteLocationNormalized
+  /** Previous route (navigation-time only). */
+  from?: RouteLocationNormalized
+}
+
+/** Central authorization policy. Configure once in `site.config.ts`; pages opt in with `auth`. */
+export interface AuthConfig {
+  /**
+   * Decide whether the current user may access a route carrying `rule`. Return `true` to allow,
+   * `false` to deny, or a path string to redirect (e.g. your login page). Runs at navigation time
+   * on every guarded route, and once at startup (with only `rule` / `item`) to filter the nav menu
+   * — there, any result other than `true` hides the item.
+   */
+  authorize: (ctx: AuthContext) => boolean | string | Promise<boolean | string>
+  /**
+   * Where to send users when `authorize` returns `false`. The denied target is appended as a
+   * `redirect` query param (e.g. `/login?redirect=/admin`). If omitted, denied navigations are
+   * simply cancelled.
+   */
+  loginPath?: string
+}
 
 export interface NavItem {
   label: string
@@ -23,6 +69,14 @@ export interface NavItem {
    * permission changes (e.g. login/logout) without recreating the app.
    */
   visible?: () => boolean | Promise<boolean>
+  /**
+   * Per-page authorization rule, interpreted by `SiteConfig.auth.authorize`. Unlike `visible`
+   * (a build/startup-time existence switch), `auth` keeps the route registered and is enforced by
+   * a navigation guard on every navigation, so it reacts to login/logout and can redirect to a
+   * login page. It is also evaluated once at startup to hide unauthorized items from the menu.
+   * Requires `SiteConfig.auth` to be set; otherwise it is ignored.
+   */
+  auth?: AuthRule
 }
 
 /**
@@ -40,6 +94,11 @@ export interface StandalonePage {
    * Evaluated only at startup, so it does not react to later permission changes.
    */
   visible?: () => boolean | Promise<boolean>
+  /**
+   * Per-page authorization rule, interpreted by `SiteConfig.auth.authorize` and enforced by a
+   * navigation guard. See `NavItem.auth`. Requires `SiteConfig.auth` to be set.
+   */
+  auth?: AuthRule
 }
 
 /** CSS custom properties for one theme (`--color-bg`, etc.). */
@@ -125,6 +184,12 @@ export interface SiteConfig {
    * still applies via root CSS variables.
    */
   pages?: StandalonePage[]
+  /**
+   * Central authorization policy. When set, any `NavItem` / `StandalonePage` carrying an `auth`
+   * rule is enforced by a navigation guard (redirecting to `auth.loginPath` on denial) and hidden
+   * from the nav menu at startup when not authorized. Omit to disable authorization entirely.
+   */
+  auth?: AuthConfig
   theme?: ThemeConfig
   footer?: string
   readme?: string

@@ -6,6 +6,7 @@ Configurable Vue 3 site framework: one package, `site.config.ts`, and Markdown p
 
 - Config-driven nav (Lucide icon names)
 - Permission-gated nav via a `visible` predicate (sync or async; hides item and skips its route)
+- Per-page authorization via `auth` + a central `authorize` policy (navigation guard + login redirect)
 - Markdown (`?raw`) or Vue pages
 - highlight.js, light/dark theme + localStorage
 - Project `README.md` as Home
@@ -74,6 +75,8 @@ Add `"dev": "vue-site dev"` (or `vs dev`) in `package.json` scripts if you like.
 | `footer` | Footer text |
 | `readme` | Raw Home content if no `README.md` |
 | `links` | Header links: Lucide `icon` + `link`, optional `title` |
+| `pages` | `StandalonePage[]` — full-screen routes outside the `nav` tree (no top bar/sidebar/footer) |
+| `auth` | Central authorization policy (`AuthConfig`) — see [Per-page authorization](#per-page-authorization-auth) |
 | `packageRepository` | Usually set by CLI from `package.json`; omit when using `createSiteApp` alone |
 | `env` | Dev/build options — see below |
 | `bootstrap` | Optional path from site root (e.g. `./bootstrap.ts`) — module loaded once before the Vue app |
@@ -90,6 +93,7 @@ Add `"dev": "vue-site dev"` (or `vs dev`) in `package.json` scripts if you like.
 | `children` | Nested group |
 | `link` | Render as a hyperlink (internal route path or external URL) instead of a page route |
 | `visible` | `() => boolean \| Promise<boolean>`, awaited once at startup. Return `false` to hide the item from the nav and skip its route (not reachable by direct URL). A hidden parent hides its subtree; a group with no remaining children is pruned. Not reactive to later changes. |
+| `auth` | Authorization rule (`AuthRule`) interpreted by `auth.authorize`. Keeps the route registered and enforces it via a navigation guard (so direct URLs redirect to login). Requires `SiteConfig.auth`. See [Per-page authorization](#per-page-authorization-auth). |
 
 ### `ThemeConfig`
 
@@ -99,6 +103,66 @@ Add `"dev": "vue-site dev"` (or `vs dev`) in `package.json` scripts if you like.
 | `colors` | — | Global CSS variable overrides |
 | `palettes` | — | Partial overrides for built-in light/dark only |
 | `extraThemes` | — | Extra themes: `id`, `label`, `icon`, optional `basedOn`, `palette`; import `builtinThemePalettes` for full defaults |
+
+## Per-page authorization (`auth`)
+
+Gate individual pages on the current user. Add an `auth` rule to any `NavItem` or `StandalonePage`, and a single `auth.authorize` policy in `SiteConfig` to decide access.
+
+```typescript
+import { defineConfig } from '@bndynet/vue-site'
+
+export default defineConfig({
+  title: 'My Site',
+  auth: {
+    loginPath: '/login',
+    authorize: ({ rule }) => {
+      const user = getCurrentUser() // your own auth state
+      if (!user) return '/login' // not signed in -> redirect (string)
+      if (rule === true) return true // `auth: true` -> any signed-in user
+      if (typeof rule === 'string') return user.roles.includes(rule)
+      if (Array.isArray(rule)) return rule.some((r) => user.roles.includes(r))
+      return true
+    },
+  },
+  nav: [
+    { label: 'Home', icon: 'home', page: () => import('../README.md?raw') },
+    { label: 'Dashboard', icon: 'gauge', auth: true, page: () => import('./pages/Dash.vue') },
+    { label: 'Admin', icon: 'shield', auth: ['admin'], page: () => import('./pages/Admin.vue') },
+  ],
+  pages: [
+    { path: '/login', page: () => import('./pages/Login.vue') }, // no `auth` -> always reachable
+  ],
+})
+```
+
+### How it works
+
+- `authorize` runs **on every navigation** (a Vue Router `beforeEach` guard). It receives `{ rule, item, to, from }` and returns `true` (allow), `false` (deny), or a path `string` (redirect, e.g. to a login page).
+- On `false`, the user is sent to `auth.loginPath` with the requested path as a `redirect` query (`/login?redirect=/admin`); if `loginPath` is unset, the navigation is cancelled.
+- `authorize` also runs **once at startup** (with only `rule` / `item`) to hide unauthorized items from the nav menu. Like `visible`, this menu filtering is not reactive — it reflects the state at app creation, so update it by recreating the app (e.g. a full reload after login).
+- Guarded routes stay **registered**, so visiting a protected URL directly triggers the guard (and your login redirect) rather than silently 404-ing.
+- The login page itself must **not** carry an `auth` rule (and `loginPath` is always allowed by the guard) to avoid redirect loops.
+
+### `AuthConfig`
+
+| Property | Description |
+|----------|-------------|
+| `authorize` | `(ctx: AuthContext) => boolean \| string \| Promise<boolean \| string>`. `true` allows, `false` denies, a `string` redirects. |
+| `loginPath` | Where to send denied users (with `?redirect=`). Optional; without it, denials cancel navigation. |
+
+`AuthRule` is `boolean \| string \| string[] \| ((ctx: AuthContext) => boolean \| Promise<boolean>)`. The framework never inspects the rule; it forwards it to `authorize`, so its meaning is entirely up to you.
+
+### `visible` vs `auth`
+
+| | `visible` | `auth` |
+|--|-----------|--------|
+| Decides | Whether the item/route **exists** | Whether the **current user** may enter |
+| When | Build/startup (once) | Navigation (every time) + startup for menu filtering |
+| Route registered | No (unreachable by URL) | Yes (guarded; can redirect to login) |
+| Reacts to login/logout | No | Guard yes; menu filtering no |
+| Best for | Env / feature-flag / static trimming | Login state, roles, login redirects |
+
+Use `visible` for static existence trimming and `auth` for user-based access. They can be combined on the same item.
 
 ## `env` (`SiteEnvConfig`)
 
@@ -152,7 +216,7 @@ app.mount('#app')
 
 Use a top-level `await` in your entry (or an async IIFE): `createSiteApp` is async and **awaits** `configureApp` when it returns a `Promise`. If you set optional `bootstrap` in config, that module loads before the app is created; if you omit `bootstrap`, that step is skipped.
 
-Exports: `createSiteApp`, `defineConfig`, `useTheme`, `useSiteConfig`, `themeRefKey`. Types: `SiteConfig`, `SiteEnvConfig`, `SiteViteConfig`, `SiteExternalLink`, `NavItem`, `ThemeConfig`, `ThemeOption`, `ThemePaletteVars`, `ResolvedNavItem`.
+Exports: `createSiteApp`, `defineConfig`, `useTheme`, `useSiteConfig`, `themeRefKey`. Types: `SiteConfig`, `SiteEnvConfig`, `SiteViteConfig`, `SiteExternalLink`, `NavItem`, `StandalonePage`, `AuthRule`, `AuthContext`, `AuthConfig`, `ThemeConfig`, `ThemeOption`, `ThemePaletteVars`, `ResolvedNavItem`.
 
 ### Theme in Vue pages (`useTheme`)
 
