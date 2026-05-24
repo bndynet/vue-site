@@ -85,6 +85,7 @@ export async function createSiteRouter(
   resolvedNav: ResolvedNavItem[],
   pages?: StandalonePage[],
   history?: RouterHistory,
+  defaultPath?: string,
 ) {
   const routes = collectRoutes(resolvedNav)
 
@@ -104,8 +105,23 @@ export async function createSiteRouter(
     })
   }
 
-  const homePath =
-    resolvedNav.length > 0 ? resolvedNav[0].resolvedPath : '/'
+  const fallbackHome = resolvedNav.length > 0 ? resolvedNav[0].resolvedPath : '/'
+
+  // Prefer the explicit `defaultPath`, but only when it matches a registered, non-redirect
+  // route. An unknown target would bounce through the catch-all back to itself, so fall back
+  // to the first nav item and warn instead of risking a redirect loop / blank page.
+  let homePath = fallbackHome
+  if (defaultPath) {
+    const matches = routes.some((route) => route.path === defaultPath)
+    if (matches) {
+      homePath = defaultPath
+    } else if (import.meta.env?.DEV) {
+      console.warn(
+        `[vue-site] defaultPath "${defaultPath}" does not match any registered route; ` +
+          `falling back to "${fallbackHome}".`,
+      )
+    }
+  }
 
   if (homePath !== '/') {
     routes.push({

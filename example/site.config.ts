@@ -5,6 +5,10 @@ export default defineConfig({
   title: 'My Site',
   // Optional: remove this line to skip loading `bootstrap.ts`.
   bootstrap: './bootstrap.ts',
+  // Page the site opens at (root `/` and unknown paths redirect here). Must match a registered
+  // route (a `nav` item's resolved path or a `pages` entry's `path`). Defaults to the first
+  // top-level `nav` item — here that is `Home` (`/`).
+  // defaultPath: '/about',
   configureApp(app: App) {
     console.log(
       '[vue-site example] configureApp: ran after router install (before mount)',

@@ -25,7 +25,12 @@ export async function createSiteApp(config: SiteConfig) {
     config.router?.mode === 'web'
       ? createWebHistory(config.router.base ?? config.baseUrl ?? '/')
       : createWebHashHistory()
-  const router = await createSiteRouter(resolvedNav, config.pages, history)
+  const router = await createSiteRouter(
+    resolvedNav,
+    config.pages,
+    history,
+    config.defaultPath,
+  )
 
   if (config.auth) {
     applyAuthGuard(router, config.auth)

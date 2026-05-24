@@ -198,6 +198,12 @@ export interface SiteConfig {
   logo?: string
   nav: NavItem[]
   /**
+   * Path the site opens at: the root `/` and any unknown path redirect here. Must match a
+   * registered route — a `nav` item's resolved path or a `pages` entry's `path`.
+   * @default the first top-level `nav` item's resolved path
+   */
+  defaultPath?: string
+  /**
    * Standalone, full-screen pages registered outside the `nav` tree. They do not appear in
    * navigation and render with no top bar, sidebar, or footer (content only). The active theme
    * still applies via root CSS variables.

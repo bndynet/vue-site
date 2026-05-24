@@ -71,6 +71,7 @@ Add `"dev": "vue-site dev"` (or `vs dev`) in `package.json` scripts if you like.
 |----------|-------------|
 | `title` | Site title (sidebar + tab) |
 | `nav` | `NavItem[]` |
+| `defaultPath` | Path the site opens at; `/` and unknown paths redirect here. Must match a registered route (a `nav` item's resolved path or a `pages` entry's `path`). Defaults to the first top-level `nav` item |
 | `logo` | Logo URL or imported image |
 | `theme` | See `ThemeConfig` below |
 | `footer` | Footer text |

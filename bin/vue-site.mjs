@@ -260,10 +260,11 @@ async function loadSiteConfig() {
     const mod = await import(pathToFileURL(tmpFile).href)
     return mod.default || {}
   } catch (e) {
-    console.warn(
-      `[vue-site] Could not pre-load site config from ${foundConfig}: ${e.message}`,
+    throw new Error(
+      `[vue-site] Could not pre-load site config from ${foundConfig}: ${e.message}\n` +
+        `  This usually means your config imports modules Node can't resolve directly ` +
+        `(path aliases like @/..., .vue/.css/asset imports, or framework APIs other than defineConfig).`,
     )
-    return {}
   } finally {
     try {
       fs.unlinkSync(tmpFile)
