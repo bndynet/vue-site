@@ -6,7 +6,7 @@ import { resolveNavItems, createSiteRouter, filterNavItems } from './router'
 import { applyAuthGuard, pruneNavByAuth } from './auth'
 import { initTheme, themeRefKey } from './composables/useTheme'
 import { siteContextKey } from './composables/useSiteConfig'
-import { resolveThemePalettes } from './theme/resolve-palettes'
+import { getExtraThemes, resolveThemePalettes } from './theme/resolve-palettes'
 import AppLayout from './components/AppLayout.vue'
 
 import './styles/base.css'
@@ -40,29 +40,35 @@ export async function createSiteApp(config: SiteConfig) {
   // redirects unauthorized direct access). The menu, however, renders from an auth-filtered list.
   const menuNav = config.auth ? await pruneNavByAuth(resolvedNav, config.auth) : resolvedNav
 
-  const extraThemeIds =
-    config.theme?.extraThemes
-      ?.filter((t) => t.id !== 'light' && t.id !== 'dark')
-      .map((t) => t.id) ?? []
-  const themeIds = ['light', 'dark', ...extraThemeIds]
-  const palettes = resolveThemePalettes(config.theme)
-
-  const darkThemeIds = new Set<string>(['dark'])
-  for (const t of config.theme?.extraThemes ?? []) {
-    if (t.basedOn === 'dark') {
-      darkThemeIds.add(t.id)
-    }
-  }
+  // `theme: false` disables theming: a fixed `light` palette is applied (so the CSS-variable
+  // driven layout still renders), the switcher is hidden (see AppLayout), and since `light` is
+  // the only allowed id nothing is persisted to or read from localStorage.
+  const themeConfig = config.theme === false ? undefined : config.theme
 
   const themeRef = ref<string>('light')
-  initTheme(
-    themeRef,
-    config.theme?.default ?? 'light',
-    themeIds,
-    palettes,
-    config.theme?.colors,
-    darkThemeIds,
-  )
+  if (config.theme === false) {
+    initTheme(themeRef, 'light', ['light'], resolveThemePalettes(undefined))
+  } else {
+    const extras = getExtraThemes(themeConfig)
+    const themeIds = ['light', 'dark', ...extras.map((t) => t.id)]
+    const palettes = resolveThemePalettes(themeConfig)
+
+    const darkThemeIds = new Set<string>(['dark'])
+    for (const t of extras) {
+      if (t.basedOn === 'dark') {
+        darkThemeIds.add(t.id)
+      }
+    }
+
+    initTheme(
+      themeRef,
+      themeConfig?.default ?? 'light',
+      themeIds,
+      palettes,
+      themeConfig?.colors,
+      darkThemeIds,
+    )
+  }
 
   document.title = config.title
 

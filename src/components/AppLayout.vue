@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import { useSiteConfig } from '../composables/useSiteConfig'
 import { useNavLayout } from '../composables/useNavLayout'
 import SideNav from './SideNav.vue'
@@ -8,6 +9,8 @@ import TopPrimaryNav from './TopPrimaryNav.vue'
 
 const { config } = useSiteConfig()
 const { tieredNav, showSidebar, standalone } = useNavLayout()
+
+const themeEnabled = computed(() => config.theme !== false)
 </script>
 
 <template>
@@ -33,7 +36,7 @@ const { tieredNav, showSidebar, standalone } = useNavLayout()
       <TopPrimaryNav />
       <div class="site-primary-nav-end">
         <SiteExternalLinks />
-        <ThemeSwitch class="site-primary-nav-theme" />
+        <ThemeSwitch v-if="themeEnabled" class="site-primary-nav-theme" />
       </div>
     </header>
     <aside v-if="showSidebar" class="site-sidebar">
@@ -56,7 +59,7 @@ const { tieredNav, showSidebar, standalone } = useNavLayout()
       >
         <div v-if="!tieredNav" class="site-sidebar-toolbar">
           <SiteExternalLinks compact />
-          <ThemeSwitch compact />
+          <ThemeSwitch v-if="themeEnabled" compact />
         </div>
         <p v-if="config.footer" class="site-footer-text">{{ config.footer }}</p>
       </div>

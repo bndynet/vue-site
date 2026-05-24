@@ -2,6 +2,7 @@
 import { computed, onBeforeUnmount, ref, useId } from 'vue'
 import { useTheme } from '../composables/useTheme'
 import { useSiteConfig } from '../composables/useSiteConfig'
+import { getExtraThemes } from '../theme/resolve-palettes'
 import DynamicIcon from './DynamicIcon.vue'
 import TooltipOverlay from './TooltipOverlay.vue'
 import UiTooltip from './UiTooltip.vue'
@@ -48,17 +49,20 @@ const optionTipPlacement = computed<'top' | 'bottom'>(() =>
   props.compact ? 'top' : 'bottom',
 )
 
+const themeConfig = computed(() =>
+  config.theme === false ? undefined : config.theme,
+)
+
 const themeChoices = computed(() => {
   const base = [
     { id: 'light', label: 'Light', icon: 'sun' as const },
     { id: 'dark', label: 'Dark', icon: 'moon' as const },
   ]
-  const extra =
-    config.theme?.extraThemes?.map((t) => ({
-      id: t.id,
-      label: t.label,
-      icon: (t.icon ?? 'palette') as string,
-    })) ?? []
+  const extra = getExtraThemes(themeConfig.value).map((t) => ({
+    id: t.id,
+    label: t.label,
+    icon: (t.icon ?? 'palette') as string,
+  }))
   return [...base, ...extra]
 })
 

@@ -1,5 +1,5 @@
-import type { ThemeConfig } from '../types'
-import { builtinThemePalettes } from './presets'
+import type { ThemeConfig, ThemeOption } from '../types'
+import { builtinExtraThemes, builtinThemePalettes } from './presets'
 
 function mergePalette(
   base: Record<string, string>,
@@ -7,6 +7,22 @@ function mergePalette(
 ): Record<string, string> {
   if (!override) return { ...base }
   return { ...base, ...override }
+}
+
+/**
+ * Full list of extra themes: the always-on built-ins (`sepia`, `ocean`) merged with
+ * `theme.extraThemes`. Consumer config wins when reusing a built-in `id`, and the reserved
+ * ids `light` / `dark` are excluded.
+ */
+export function getExtraThemes(theme?: ThemeConfig): ThemeOption[] {
+  const byId = new Map<string, ThemeOption>()
+  for (const t of builtinExtraThemes) {
+    byId.set(t.id, t)
+  }
+  for (const t of theme?.extraThemes ?? []) {
+    byId.set(t.id, t)
+  }
+  return [...byId.values()].filter((t) => t.id !== 'light' && t.id !== 'dark')
 }
 
 /**
@@ -27,9 +43,7 @@ export function resolveThemePalettes(
 
   const out: Record<string, Record<string, string>> = { light, dark }
 
-  const extras =
-    theme?.extraThemes?.filter((t) => t.id !== 'light' && t.id !== 'dark') ??
-    []
+  const extras = getExtraThemes(theme)
 
   for (const t of extras) {
     const base = t.basedOn === 'dark' ? dark : light

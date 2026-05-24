@@ -73,7 +73,7 @@ Add `"dev": "vue-site dev"` (or `vs dev`) in `package.json` scripts if you like.
 | `nav` | `NavItem[]` |
 | `defaultPath` | Path the site opens at; `/` and unknown paths redirect here. Must match a registered route (a `nav` item's resolved path or a `pages` entry's `path`). Defaults to the first top-level `nav` item |
 | `logo` | Logo URL or imported image |
-| `theme` | See `ThemeConfig` below |
+| `theme` | See `ThemeConfig` below; set to `false` to disable theming (hides the switcher, forces a fixed `light` palette, no localStorage persistence) |
 | `footer` | Footer text |
 | `readme` | Raw Home content if no `README.md` |
 | `links` | Header links: Lucide `icon` + `link`, optional `title` |
@@ -100,12 +100,14 @@ Add `"dev": "vue-site dev"` (or `vs dev`) in `package.json` scripts if you like.
 
 ### `ThemeConfig`
 
+Built-in themes are `light`, `dark`, plus the always-on extras `sepia` and `ocean` (shown in the switcher for every site). Set `theme: false` on `SiteConfig` to disable theming entirely.
+
 | Property | Default | Description |
 |----------|---------|-------------|
-| `default` | `light` | `light`, `dark`, or an `extraThemes[].id` |
+| `default` | `light` | `light`, `dark`, a built-in extra id (`sepia`, `ocean`), or an `extraThemes[].id` |
 | `colors` | — | Global CSS variable overrides |
 | `palettes` | — | Partial overrides for built-in light/dark only |
-| `extraThemes` | — | Extra themes: `id`, `label`, `icon`, optional `basedOn`, `palette`; import `builtinThemePalettes` for full defaults |
+| `extraThemes` | — | Extra themes: `id`, `label`, `icon`, optional `basedOn`, `palette`; reuse a built-in id (`sepia`/`ocean`) to override it. Import `builtinThemePalettes` for full defaults |
 
 ## Per-page authorization (`auth`)
 

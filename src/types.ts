@@ -123,7 +123,8 @@ export interface ThemeOption {
 
 export interface ThemeConfig {
   /**
-   * Default theme id. Must be `light`, `dark`, or an `id` from `extraThemes`.
+   * Default theme id. Must be `light`, `dark`, a built-in extra theme id (`sepia`, `ocean`),
+   * or an `id` from `extraThemes`.
    * @default 'light'
    */
   default?: string
@@ -217,7 +218,13 @@ export interface SiteConfig {
   auth?: AuthConfig
   /** Router history configuration (hash vs HTML5). See `RouterConfig`. */
   router?: RouterConfig
-  theme?: ThemeConfig
+  /**
+   * Theme configuration. Built-in themes are `light`, `dark`, plus the always-on extras
+   * `sepia` and `ocean`; add more via `extraThemes`. Set to `false` to disable theming
+   * entirely — the theme switcher is hidden, a fixed `light` palette is applied, and no
+   * theme is persisted to or read from localStorage.
+   */
+  theme?: ThemeConfig | false
   footer?: string
   readme?: string
   /** External links shown as icons next to the theme control */
