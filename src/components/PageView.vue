@@ -8,7 +8,7 @@ import MarkdownView from './MarkdownView.vue'
 
 const route = useRoute()
 const { config } = useSiteConfig()
-const { localize, locale } = useLocalize()
+const { localize, locale, t } = useLocalize()
 const markdownContent = ref('')
 const vueComponent = shallowRef<Component | null>(null)
 const loading = ref(true)
@@ -21,7 +21,7 @@ async function loadContent() {
   const navItem = route.meta.navItem as ResolvedNavItem | undefined
 
   if (!navItem) {
-    markdownContent.value = '# Page not found'
+    markdownContent.value = `# ${t('page.notFound')}`
     loading.value = false
     return
   }
@@ -40,7 +40,7 @@ async function loadContent() {
       markdownContent.value = `# ${localize(navItem.label)}`
     }
   } catch {
-    markdownContent.value = `# Error loading page\n\nFailed to load content for "${localize(navItem.label)}".`
+    markdownContent.value = `# ${t('page.loadErrorTitle')}\n\n${t('page.loadErrorBody', { label: localize(navItem.label) })}`
   }
 
   loading.value = false

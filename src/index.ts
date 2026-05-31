@@ -4,6 +4,7 @@ export { useLocale, localeRefKey } from './composables/useLocale'
 export { useLocalize } from './composables/useLocalize'
 export { resolveLocalized, localizedPage } from './i18n-utils'
 export type { LocalizedPageOptions } from './i18n-utils'
+export { builtinMessages } from './i18n-messages'
 export { useSiteConfig } from './composables/useSiteConfig'
 export { builtinThemePalettes } from './theme/presets'
 export {

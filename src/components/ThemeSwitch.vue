@@ -2,6 +2,7 @@
 import { computed, onBeforeUnmount, ref, useId } from 'vue'
 import { useTheme } from '../composables/useTheme'
 import { useSiteConfig } from '../composables/useSiteConfig'
+import { useLocalize } from '../composables/useLocalize'
 import { getExtraThemes } from '../theme/resolve-palettes'
 import DynamicIcon from './DynamicIcon.vue'
 import TooltipOverlay from './TooltipOverlay.vue'
@@ -9,6 +10,7 @@ import UiTooltip from './UiTooltip.vue'
 
 const { theme, setTheme } = useTheme()
 const { config } = useSiteConfig()
+const { t } = useLocalize()
 
 const props = withDefaults(
   defineProps<{
@@ -55,8 +57,8 @@ const themeConfig = computed(() =>
 
 const themeChoices = computed(() => {
   const base = [
-    { id: 'light', label: 'Light', icon: 'sun' as const },
-    { id: 'dark', label: 'Dark', icon: 'moon' as const },
+    { id: 'light', label: t('theme.light'), icon: 'sun' as const },
+    { id: 'dark', label: t('theme.dark'), icon: 'moon' as const },
   ]
   const extra = getExtraThemes(themeConfig.value).map((t) => ({
     id: t.id,
@@ -87,7 +89,7 @@ function pick(id: string) {
     <summary
       ref="summaryRef"
       class="theme-switch-trigger"
-      aria-label="Theme"
+      :aria-label="t('theme.label')"
       :aria-describedby="summaryTipOpen ? summaryTipId : undefined"
       @mouseenter="onSummaryEnter"
       @mouseleave="onSummaryLeave"
@@ -96,7 +98,7 @@ function pick(id: string) {
         <DynamicIcon :name="currentIcon" :size="iconSize" />
       </span>
     </summary>
-    <div class="theme-switch-menu" role="group" aria-label="Theme options">
+    <div class="theme-switch-menu" role="group" :aria-label="t('theme.options')">
       <UiTooltip
         v-for="opt in themeChoices"
         :key="opt.id"
@@ -120,7 +122,7 @@ function pick(id: string) {
     <TooltipOverlay
       :id="summaryTipId"
       :open="summaryTipOpen"
-      text="Theme"
+      :text="t('theme.label')"
       :anchor="summaryRef"
       :placement="summaryTipPlacement"
     />

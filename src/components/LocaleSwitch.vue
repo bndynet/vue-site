@@ -2,12 +2,14 @@
 import { computed, onBeforeUnmount, ref, useId } from 'vue'
 import { useLocale } from '../composables/useLocale'
 import { useSiteConfig } from '../composables/useSiteConfig'
+import { useLocalize } from '../composables/useLocalize'
 import type { LocaleOption } from '../types'
 import DynamicIcon from './DynamicIcon.vue'
 import TooltipOverlay from './TooltipOverlay.vue'
 
 const { locale, setLocale } = useLocale()
 const { config } = useSiteConfig()
+const { t } = useLocalize()
 
 const props = withDefaults(
   defineProps<{
@@ -70,7 +72,7 @@ function pick(code: string) {
     <summary
       ref="summaryRef"
       class="locale-switch-trigger"
-      aria-label="Language"
+      :aria-label="t('locale.label')"
       :aria-describedby="summaryTipOpen ? summaryTipId : undefined"
       @mouseenter="onSummaryEnter"
       @mouseleave="onSummaryLeave"
@@ -79,7 +81,7 @@ function pick(code: string) {
         <DynamicIcon :name="triggerIcon" :size="iconSize" />
       </span>
     </summary>
-    <div class="locale-switch-menu" role="group" aria-label="Language options">
+    <div class="locale-switch-menu" role="group" :aria-label="t('locale.options')">
       <button
         v-for="opt in choices"
         :key="opt.code"
@@ -97,7 +99,7 @@ function pick(code: string) {
     <TooltipOverlay
       :id="summaryTipId"
       :open="summaryTipOpen"
-      text="Language"
+      :text="t('locale.label')"
       :anchor="summaryRef"
       :placement="summaryTipPlacement"
     />
