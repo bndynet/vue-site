@@ -1,5 +1,6 @@
 export { createSiteApp } from './create-app'
 export { useTheme, themeRefKey } from './composables/useTheme'
+export { useLocale, localeRefKey } from './composables/useLocale'
 export { useSiteConfig } from './composables/useSiteConfig'
 export { builtinThemePalettes } from './theme/presets'
 export {
@@ -22,6 +23,10 @@ export type {
   ThemeOption,
   ThemePaletteVars,
   ResolvedNavItem,
+  LocaleCode,
+  LocalizedString,
+  LocaleOption,
+  I18nConfig,
 } from './types'
 
 import type { SiteConfig } from './types'

@@ -101,6 +101,54 @@ export interface StandalonePage {
   auth?: AuthRule
 }
 
+/** A BCP-47 language tag (e.g. `'en'`, `'zh'`, `'zh-CN'`). */
+export type LocaleCode = string
+
+/**
+ * A string that may be localized. Use a plain `string` for single-language sites, or a map of
+ * `LocaleCode -> string` for per-language values. When the active locale has no matching entry,
+ * the framework falls back to the configured default locale, then to the first available entry.
+ * A bare `string` is always returned as-is, so existing single-language configs keep working.
+ */
+export type LocalizedString = string | Record<LocaleCode, string>
+
+/** One selectable language in the locale switcher. */
+export interface LocaleOption {
+  /** BCP-47 language tag used as the locale id and persisted to localStorage. */
+  code: LocaleCode
+  /** Human-readable name shown in the locale switcher (e.g. `English`, `简体中文`). */
+  label: string
+  /** Optional Lucide icon name for this language (default: a generic `languages` icon). */
+  icon?: string
+}
+
+/** Internationalization configuration. Omit to disable multi-language support entirely. */
+export interface I18nConfig {
+  /** Supported languages, in display order. The first entry is the implicit fallback. */
+  locales: LocaleOption[]
+  /**
+   * Initial locale used when nothing valid is persisted and browser detection finds no match.
+   * Must be one of `locales[].code`. Defaults to `locales[0].code`.
+   */
+  defaultLocale?: LocaleCode
+  /**
+   * Detect the initial locale from `navigator.language(s)` on first visit (before falling back to
+   * `defaultLocale`). A previously stored choice always wins over detection.
+   * @default true
+   */
+  detectBrowser?: boolean
+  /**
+   * localStorage key for persisting the chosen locale.
+   * @default 'vue-site-locale'
+   */
+  storageKey?: string
+  /**
+   * Override or extend the framework's built-in UI strings, keyed by locale then message id.
+   * Merged on top of the framework defaults for that locale.
+   */
+  messages?: Record<LocaleCode, Record<string, string>>
+}
+
 /** CSS custom properties for one theme (`--color-bg`, etc.). */
 export type ThemePaletteVars = Record<string, string>
 
@@ -225,6 +273,12 @@ export interface SiteConfig {
    * theme is persisted to or read from localStorage.
    */
   theme?: ThemeConfig | false
+  /**
+   * Internationalization configuration. When set, the framework enables a locale switcher,
+   * resolves `LocalizedString` config fields against the active locale, and exposes the current
+   * locale via `useLocale()`. Omit to keep the site single-language.
+   */
+  i18n?: I18nConfig
   footer?: string
   readme?: string
   /** External links shown as icons next to the theme control */

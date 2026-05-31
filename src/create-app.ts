@@ -5,6 +5,7 @@ import type { SiteConfig } from './types'
 import { resolveNavItems, createSiteRouter, filterNavItems } from './router'
 import { applyAuthGuard, pruneNavByAuth } from './auth'
 import { initTheme, themeRefKey } from './composables/useTheme'
+import { initLocale, localeRefKey } from './composables/useLocale'
 import { siteContextKey } from './composables/useSiteConfig'
 import { getExtraThemes, resolveThemePalettes } from './theme/resolve-palettes'
 import AppLayout from './components/AppLayout.vue'
@@ -70,11 +71,27 @@ export async function createSiteApp(config: SiteConfig) {
     )
   }
 
+  // Locale: when `i18n` is configured, resolve the initial locale (stored > detected > default).
+  // The ref is always provided so `useLocale()` and `LocalizedString` resolution work uniformly;
+  // without `i18n` it stays empty and resolution falls back to the first available entry.
+  const localeRef = ref<string>('')
+  if (config.i18n) {
+    const codes = config.i18n.locales.map((l) => l.code)
+    initLocale(
+      localeRef,
+      config.i18n.defaultLocale ?? codes[0] ?? '',
+      codes,
+      config.i18n.detectBrowser ?? true,
+      config.i18n.storageKey,
+    )
+  }
+
   document.title = config.title
 
   const app = createApp(AppLayout)
 
   app.provide(themeRefKey, themeRef)
+  app.provide(localeRefKey, localeRef)
   app.provide(siteContextKey, { config, resolvedNav: menuNav })
   app.use(ElementPlus)
   app.use(router)
