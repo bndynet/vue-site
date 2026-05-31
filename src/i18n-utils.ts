@@ -1,12 +1,114 @@
 import type { Component } from 'vue'
-import type { LocaleCode, LocalizedString } from './types'
+import type { LocaleCode, LocalizedString, MessageRef, MessageTree } from './types'
+
+/** Merged, flattened message dictionaries keyed by locale then dotted message id. */
+export type MessageCatalog = Record<LocaleCode, Record<string, string>>
+
+/**
+ * Flatten a (possibly nested) message tree to dotted ids: `{ site: { title: 'x' } }` → `site.title`.
+ * Flat dictionaries pass through unchanged, so both layouts can be mixed.
+ */
+export function flattenMessages(
+  tree: MessageTree | undefined,
+  prefix = '',
+): Record<string, string> {
+  const out: Record<string, string> = {}
+  if (!tree) return out
+  for (const key of Object.keys(tree)) {
+    const value = tree[key]
+    const path = prefix ? `${prefix}.${key}` : key
+    if (value != null && typeof value === 'object') {
+      Object.assign(out, flattenMessages(value, path))
+    } else if (value != null) {
+      out[path] = String(value)
+    }
+  }
+  return out
+}
+
+/** Type guard for a {@link MessageRef} (a `{ $t }` key reference). */
+export function isMessageRef(value: unknown): value is MessageRef {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    typeof (value as MessageRef).$t === 'string'
+  )
+}
+
+/** Build a `MessageRef` referencing a central message id; use in `LocalizedString` config fields. */
+export function tk(id: string, params?: Record<string, string | number>): MessageRef {
+  return params ? { $t: id, params } : { $t: id }
+}
+
+/** Replace `{name}` placeholders from `params`. */
+function interpolate(
+  template: string,
+  params?: Record<string, string | number>,
+): string {
+  if (!params) return template
+  return template.replace(/\{(\w+)\}/g, (match, key) =>
+    key in params ? String(params[key]) : match,
+  )
+}
+
+/**
+ * Merge `override` message trees on top of `base`, per locale, flattening nested groups to dotted
+ * ids. Returns a flat {@link MessageCatalog} ready for {@link resolveMessage}.
+ */
+export function mergeCatalog(
+  base: Record<LocaleCode, MessageTree>,
+  override?: Record<LocaleCode, MessageTree>,
+): MessageCatalog {
+  const out: MessageCatalog = {}
+  const locales = new Set([
+    ...Object.keys(base),
+    ...Object.keys(override ?? {}),
+  ])
+  for (const loc of locales) {
+    out[loc] = {
+      ...flattenMessages(base[loc]),
+      ...flattenMessages(override?.[loc]),
+    }
+  }
+  return out
+}
+
+/**
+ * Resolve a message id from a merged `catalog` for the active locale, with fallback
+ * (exact → primary-subtag → `defaultLocale` → `en` → the id itself) and `{name}` interpolation.
+ */
+export function resolveMessage(
+  catalog: MessageCatalog,
+  id: string,
+  locale: string,
+  defaultLocale?: LocaleCode,
+  params?: Record<string, string | number>,
+): string {
+  let msg = locale ? catalog[locale]?.[id] : undefined
+
+  if (msg == null && locale) {
+    const primary = locale.split('-')[0]
+    msg = catalog[primary]?.[id]
+    if (msg == null) {
+      const key = Object.keys(catalog).find((k) => k.split('-')[0] === primary)
+      if (key) msg = catalog[key]?.[id]
+    }
+  }
+
+  if (msg == null && defaultLocale) msg = catalog[defaultLocale]?.[id]
+  if (msg == null) msg = catalog['en']?.[id]
+  if (msg == null) msg = id
+
+  return interpolate(msg, params)
+}
 
 /**
  * Resolve a `LocalizedString` to a plain string for the active `locale`.
  *
  * A bare `string` is returned unchanged. For a locale map, resolution order is:
  * exact locale → primary-subtag match (e.g. `en-US` → `en`) → `defaultLocale` → first entry → `''`.
- * This keeps single-language configs (plain strings) working without any locale context.
+ * A {@link MessageRef} is returned as its raw id here (use {@link resolveField} with a catalog to
+ * resolve it). This keeps single-language configs (plain strings) working without locale context.
  */
 export function resolveLocalized(
   value: LocalizedString | undefined,
@@ -15,6 +117,7 @@ export function resolveLocalized(
 ): string {
   if (value == null) return ''
   if (typeof value === 'string') return value
+  if (isMessageRef(value)) return value.$t
 
   if (locale && value[locale] != null) return value[locale]
 
@@ -29,6 +132,25 @@ export function resolveLocalized(
 
   const keys = Object.keys(value)
   return keys.length ? value[keys[0]] : ''
+}
+
+/**
+ * Resolve any `LocalizedString` — including a {@link MessageRef} — against the active locale.
+ * Plain strings and locale maps go through {@link resolveLocalized}; key references are resolved
+ * from the merged message `catalog` via {@link resolveMessage}.
+ */
+export function resolveField(
+  value: LocalizedString | undefined,
+  locale: string,
+  defaultLocale?: LocaleCode,
+  catalog?: MessageCatalog,
+): string {
+  if (isMessageRef(value)) {
+    return catalog
+      ? resolveMessage(catalog, value.$t, locale, defaultLocale, value.params)
+      : value.$t
+  }
+  return resolveLocalized(value, locale, defaultLocale)
 }
 
 /** Pick the best matching key for `locale`: exact → primary-subtag → defaultLocale → first key. */

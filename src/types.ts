@@ -121,12 +121,36 @@ export type PageLoader =
   | ((locale: LocaleCode) => Promise<{ default: Component }>)
 
 /**
- * A string that may be localized. Use a plain `string` for single-language sites, or a map of
- * `LocaleCode -> string` for per-language values. When the active locale has no matching entry,
+ * A reference to a message id defined centrally in `SiteConfig.i18n.messages` (layered over the
+ * framework's built-in strings). Build one with {@link tk} and use it anywhere a `LocalizedString`
+ * is accepted (e.g. `title`, `nav[].label`, `footer`) to keep all translations in one message file
+ * instead of inlining per-locale text. Resolution uses the active locale with the same fallback as
+ * `t()` (exact → primary-subtag → defaultLocale → `en` → the id itself).
+ */
+export interface MessageRef {
+  /** Message id, e.g. `'nav.home'`. */
+  $t: string
+  /** Optional `{name}` interpolation params. */
+  params?: Record<string, string | number>
+}
+
+/**
+ * A string that may be localized. Use a plain `string` for single-language sites, a map of
+ * `LocaleCode -> string` for inline per-language values, or a {@link MessageRef} (via {@link tk})
+ * to reference a key from a central message file. When the active locale has no matching entry,
  * the framework falls back to the configured default locale, then to the first available entry.
  * A bare `string` is always returned as-is, so existing single-language configs keep working.
  */
-export type LocalizedString = string | Record<LocaleCode, string>
+export type LocalizedString = string | Record<LocaleCode, string> | MessageRef
+
+/**
+ * A dictionary of messages for one locale. Values are either the message string or a nested group,
+ * so both flat (`{ 'site.title': '…' }`) and nested (`{ site: { title: '…' } }`) layouts are
+ * accepted. Nested groups are flattened to dotted ids (`site.title`) when resolved.
+ */
+export interface MessageTree {
+  [key: string]: string | MessageTree
+}
 
 /** One selectable language in the locale switcher. */
 export interface LocaleOption {
@@ -160,9 +184,12 @@ export interface I18nConfig {
   storageKey?: string
   /**
    * Override or extend the framework's built-in UI strings, keyed by locale then message id.
-   * Merged on top of the framework defaults for that locale.
+   * Merged on top of the framework defaults (and any auto-loaded `locales/<code>.json` files) for
+   * that locale. Each locale's messages may be **flat** (`{ 'site.title': '…' }`) or **nested**
+   * (`{ site: { title: '…' } }`) — nested trees are flattened to dotted ids, so `tk('site.title')`
+   * and `t('site.title')` work either way.
    */
-  messages?: Record<LocaleCode, Record<string, string>>
+  messages?: Record<LocaleCode, MessageTree>
 }
 
 /** CSS custom properties for one theme (`--color-bg`, etc.). */

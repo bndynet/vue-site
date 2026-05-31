@@ -7,7 +7,8 @@ import { applyAuthGuard, pruneNavByAuth } from './auth'
 import { initTheme, themeRefKey } from './composables/useTheme'
 import { initLocale, localeRefKey } from './composables/useLocale'
 import { siteContextKey } from './composables/useSiteConfig'
-import { resolveLocalized } from './i18n-utils'
+import { mergeCatalog, resolveField } from './i18n-utils'
+import { builtinMessages } from './i18n-messages'
 import { getExtraThemes, resolveThemePalettes } from './theme/resolve-palettes'
 import AppLayout from './components/AppLayout.vue'
 
@@ -23,8 +24,12 @@ export async function createSiteApp(config: SiteConfig) {
     ? config.i18n.defaultLocale ?? config.i18n.locales[0]?.code
     : undefined
 
+  // Merged message catalog (built-in strings + user `i18n.messages`) so `tk()` key references in
+  // config fields (title/label/footer) resolve to stable canonical paths and the initial title.
+  const catalog = mergeCatalog(builtinMessages, config.i18n?.messages)
+
   const visibleNav = await filterNavItems(config.nav)
-  const resolvedNav = resolveNavItems(visibleNav, defaultLocale)
+  const resolvedNav = resolveNavItems(visibleNav, defaultLocale, catalog)
 
   // History mode: 'hash' (default) is base-agnostic; 'web' (HTML5) needs the public base, which the
   // CLI injects as `config.baseUrl` (= import.meta.env.BASE_URL) unless `router.base` overrides it.
@@ -38,6 +43,7 @@ export async function createSiteApp(config: SiteConfig) {
     history,
     config.defaultPath,
     defaultLocale,
+    catalog,
   )
 
   if (config.auth) {
@@ -94,7 +100,7 @@ export async function createSiteApp(config: SiteConfig) {
   }
 
   // Initial document title for the resolved locale; AppLayout keeps it in sync on locale change.
-  document.title = resolveLocalized(config.title, localeRef.value, defaultLocale)
+  document.title = resolveField(config.title, localeRef.value, defaultLocale, catalog)
 
   const app = createApp(AppLayout)
 

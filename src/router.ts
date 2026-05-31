@@ -5,7 +5,7 @@ import {
   type RouteRecordRaw,
 } from 'vue-router'
 import type { LocaleCode, NavItem, ResolvedNavItem, StandalonePage } from './types'
-import { resolveLocalized } from './i18n-utils'
+import { resolveField, type MessageCatalog } from './i18n-utils'
 import PageView from './components/PageView.vue'
 
 function toPath(label: string): string {
@@ -50,15 +50,16 @@ export async function filterNavItems(items: NavItem[]): Promise<NavItem[]> {
 export function resolveNavItems(
   items: NavItem[],
   defaultLocale?: LocaleCode,
+  catalog?: MessageCatalog,
   parentIndex?: number,
 ): ResolvedNavItem[] {
   return items.map((item, index) => {
     const isHome = parentIndex === undefined && index === 0
     const isGroup = !item.page && !!item.children?.length
-    const canonicalLabel = resolveLocalized(item.label, defaultLocale ?? '', defaultLocale)
+    const canonicalLabel = resolveField(item.label, defaultLocale ?? '', defaultLocale, catalog)
     const resolvedPath = item.path ?? (isHome ? '/' : toPath(canonicalLabel))
     const resolvedChildren = item.children
-      ? resolveNavItems(item.children, defaultLocale, index)
+      ? resolveNavItems(item.children, defaultLocale, catalog, index)
       : undefined
 
     return {
@@ -74,6 +75,7 @@ export function resolveNavItems(
 function collectRoutes(
   resolvedNav: ResolvedNavItem[],
   defaultLocale?: LocaleCode,
+  catalog?: MessageCatalog,
   prefix = '',
 ): RouteRecordRaw[] {
   const routes: RouteRecordRaw[] = []
@@ -82,9 +84,9 @@ function collectRoutes(
     if (item.link) {
       continue
     } else if (item.isGroup && item.resolvedChildren) {
-      routes.push(...collectRoutes(item.resolvedChildren, defaultLocale, prefix))
+      routes.push(...collectRoutes(item.resolvedChildren, defaultLocale, catalog, prefix))
     } else {
-      const canonicalLabel = resolveLocalized(item.label, defaultLocale ?? '', defaultLocale)
+      const canonicalLabel = resolveField(item.label, defaultLocale ?? '', defaultLocale, catalog)
       routes.push({
         path: prefix + item.resolvedPath,
         name: (prefix ? prefix + ':' : '') + canonicalLabel,
@@ -103,8 +105,9 @@ export async function createSiteRouter(
   history?: RouterHistory,
   defaultPath?: string,
   defaultLocale?: LocaleCode,
+  catalog?: MessageCatalog,
 ) {
-  const routes = collectRoutes(resolvedNav, defaultLocale)
+  const routes = collectRoutes(resolvedNav, defaultLocale, catalog)
 
   for (const page of pages ?? []) {
     if (!(await isVisible(page))) continue

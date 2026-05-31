@@ -1,0 +1,27 @@
+{
+  "site": {
+    "title": "My Site",
+    "footer": "Copyright © 2026 BNDY.NET"
+  },
+  "nav": {
+    "home": "Home",
+    "docs": "Docs",
+    "guide": "Guide",
+    "gettingStarted": "Getting Started",
+    "configuration": "Configuration",
+    "overview": "Overview",
+    "errors": "Errors",
+    "cookbook": "Cookbook",
+    "faq": "FAQ",
+    "about": "About",
+    "landing": "Landing",
+    "authPage": "Auth Page",
+    "admin": "Admin",
+    "login": "Login"
+  },
+  "about": {
+    "heading": "About",
+    "currentTheme": "Current theme:",
+    "greeting": "Hello, {name}!"
+  }
+}

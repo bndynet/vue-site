@@ -1,10 +1,12 @@
 import type { App } from 'vue'
-import { defineConfig, localizedPage } from '@bndynet/vue-site'
+import { defineConfig, localizedPage, tk } from '@bndynet/vue-site'
 
 export default defineConfig({
-  // Multi-language support. Adds a locale switcher to the header and resolves any
-  // `LocalizedString` field (title, nav labels, footer, ...) against the active locale.
-  // The initial locale is: stored choice > browser language > `defaultLocale`.
+  // Multi-language support. Translations are auto-loaded from `locales/<code>.json` (here
+  // `locales/en.json` + `locales/zh.json`) — no `messages` field or glue code needed. Reference
+  // any key with `tk('id')` in this config or `t('id')` in pages.
+  // `i18n.locales` is optional too: omit it and the language list is derived from the file names
+  // (with friendly built-in labels). It's declared here only to customize labels/icons/order.
   i18n: {
     locales: [
       { code: 'en', label: 'English' },
@@ -12,8 +14,9 @@ export default defineConfig({
     ],
     defaultLocale: 'en',
   },
-  // A `LocalizedString`: per-locale text. A plain string still works for single-language sites.
-  title: { en: 'My Site', zh: '我的站点' },
+  // `tk('site.title')` references a key from the auto-loaded catalog instead of inlining text.
+  // (You can still pass a plain string or an inline `{ en, zh }` map if you prefer.)
+  title: tk('site.title'),
   // Optional: remove this line to skip loading `bootstrap.ts`.
   bootstrap: './bootstrap.ts',
   // Page the site opens at (root `/` and unknown paths redirect here). Must match a registered
@@ -31,7 +34,7 @@ export default defineConfig({
   // the host to serve index.html for unknown paths (SPA fallback).
   // router: { mode: 'web' },
   logo: 'https://static.bndy.net/images/logo.png',
-  footer: { en: 'Copyright © 2026 BNDY.NET', zh: '版权所有 © 2026 BNDY.NET' },
+  footer: tk('site.footer'),
   links: [
     {
       icon: 'package',
@@ -60,17 +63,19 @@ export default defineConfig({
     default: 'light',
   },
   nav: [
-    { label: { en: 'Home', zh: '首页' }, icon: 'home', page: () => import('../README.md?raw') },
+    // Labels reference the central catalog via `tk('id')`. Brand names like `API` / `Element Plus`
+    // stay plain strings since they read the same in every language.
+    { label: tk('nav.home'), icon: 'home', page: () => import('../README.md?raw') },
     {
-      label: { en: 'Docs', zh: '文档' },
+      label: tk('nav.docs'),
       icon: 'book-open',
       children: [
         {
-          label: { en: 'Guide', zh: '指南' },
+          label: tk('nav.guide'),
           icon: 'book',
           children: [
             {
-              label: { en: 'Getting Started', zh: '快速开始' },
+              label: tk('nav.gettingStarted'),
               icon: 'rocket',
               // Per-locale page content; falls back to the default locale when a language is missing.
               page: localizedPage({
@@ -79,7 +84,7 @@ export default defineConfig({
               }),
             },
             {
-              label: { en: 'Configuration', zh: '配置' },
+              label: tk('nav.configuration'),
               icon: 'settings',
               page: localizedPage({
                 en: () => import('./pages/Configuration.md?raw'),
@@ -93,34 +98,34 @@ export default defineConfig({
           icon: 'brackets',
           children: [
             {
-              label: { en: 'Overview', zh: '概览' },
+              label: tk('nav.overview'),
               icon: 'file-text',
             },
             {
-              label: { en: 'Errors', zh: '错误' },
+              label: tk('nav.errors'),
               icon: 'circle-alert',
             },
           ],
         },
         {
-          label: { en: 'Cookbook', zh: '实践手册' },
+          label: tk('nav.cookbook'),
           icon: 'chef-hat',
         },
         {
-          label: { en: 'FAQ', zh: '常见问题' },
+          label: tk('nav.faq'),
           icon: 'circle-help',
         },
       ],
     },
     { label: 'Element Plus', icon: 'component', page: () => import('./pages/ElementPlusDemo.vue') },
-    { label: { en: 'About', zh: '关于' }, icon: 'info', page: () => import('./pages/AboutView.vue') },
+    { label: tk('nav.about'), icon: 'info', page: () => import('./pages/AboutView.vue') },
     // A nav entry that links to the standalone `/landing` page (no own route registered).
-    { label: { en: 'Landing', zh: '着陆页' }, icon: 'rocket', link: '/landing' },
+    { label: tk('nav.landing'), icon: 'rocket', link: '/landing' },
     // `auth: true` requires any logged-in user (the `authorize` policy above sends guests to
     // `/login`). Unlike `visible`, the route stays registered and the guard runs on every
     // navigation, so visiting `#/dashboard` directly while logged out redirects to the login page.
     {
-      label: { en: 'Auth Page', zh: '鉴权页' },
+      label: tk('nav.authPage'),
       icon: 'gauge',
       auth: true,
       page: () => import('./pages/AuthPageView.vue'),
@@ -128,13 +133,13 @@ export default defineConfig({
     // `auth: ['admin']` requires the `admin` role. The item is also hidden from the menu at
     // startup when the current user is not authorized (try logging in via `#/login`).
     {
-      label: { en: 'Admin', zh: '管理' },
+      label: tk('nav.admin'),
       icon: 'shield',
       auth: ['admin'],
       page: () => import('./pages/AdminView.vue'),
     },
     {
-      label: { en: 'Login', zh: '登录' },
+      label: tk('nav.login'),
       icon: 'log-in',
       page: () => import('./pages/Login.vue'),
     }

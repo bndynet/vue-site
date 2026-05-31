@@ -5,7 +5,7 @@ import vue from '@vitejs/plugin-vue'
 import { resolve, dirname, basename } from 'path'
 import { fileURLToPath, pathToFileURL } from 'url'
 import { createRequire } from 'module'
-import { transform } from 'esbuild'
+import { build as esbuild } from 'esbuild'
 import fs from 'fs'
 
 const __filename = fileURLToPath(import.meta.url)
@@ -166,6 +166,29 @@ function resolveBootstrapUrl(path) {
   return '/' + t.replace(/^\.\//, '')
 }
 
+// Friendly display names for auto-discovered locale files (`/locales/<code>.json`). Used only when
+// the config doesn't declare `i18n.locales`; unknown codes fall back to the code itself.
+const LOCALE_LABELS = {
+  en: 'English',
+  zh: '简体中文',
+  'zh-CN': '简体中文',
+  'zh-TW': '繁體中文',
+  ja: '日本語',
+  ko: '한국어',
+  fr: 'Français',
+  de: 'Deutsch',
+  es: 'Español',
+  pt: 'Português',
+  ru: 'Русский',
+  it: 'Italiano',
+  nl: 'Nederlands',
+  pl: 'Polski',
+  tr: 'Türkçe',
+  vi: 'Tiếng Việt',
+  th: 'ไทย',
+  ar: 'العربية',
+}
+
 /**
  * Bootstrap script shared by dev (virtual entry) and build (inlined in html).
  * `siteConfigSpecifier` differs because dev serves from Vite root (`/foo`)
@@ -173,6 +196,11 @@ function resolveBootstrapUrl(path) {
  *
  * Static import bundles `bootstrap` for production; dynamic import with
  * vite-ignore is not emitted.
+ *
+ * Convention: translations are auto-loaded from `/locales/<code>.json` (relative to the Vite root,
+ * i.e. the config's directory). The user writes zero glue code — no `index.ts`, no `messages` field.
+ * An explicit `i18n.messages` still works and overrides auto-loaded keys; an explicit `i18n.locales`
+ * still controls the label/icon/order, otherwise the locale list is derived from the file names.
  */
 function buildBootstrapScript({ siteConfig, siteConfigSpecifier }) {
   const bs = siteConfig?.bootstrap
@@ -189,6 +217,43 @@ function buildBootstrapScript({ siteConfig, siteConfigSpecifier }) {
     `import '${pkgDirUrl}/dist/style.css'`,
     `import siteConfig from '${siteConfigSpecifier}'`,
     `import { repositoryUrl } from '${VIRTUAL_PACKAGE}'`,
+    ``,
+    `// Auto-discover translations: /locales/<code>.json -> { [code]: { ...messages } }.`,
+    `const __localeFiles = import.meta.glob('/locales/*.json', { eager: true, import: 'default' })`,
+    `const __LOCALE_LABELS = ${JSON.stringify(LOCALE_LABELS)}`,
+    `const __autoMessages = {}`,
+    `for (const __p in __localeFiles) {`,
+    `  const __code = __p.slice(__p.lastIndexOf('/') + 1).replace(/\\.json$/, '')`,
+    `  __autoMessages[__code] = __localeFiles[__p]`,
+    `}`,
+    `const __autoCodes = Object.keys(__autoMessages).sort()`,
+    `function __deepMerge(base, override) {`,
+    `  const out = { ...base }`,
+    `  for (const k in (override || {})) {`,
+    `    const a = out[k], b = override[k]`,
+    `    out[k] = a && b && typeof a === 'object' && typeof b === 'object' && !Array.isArray(a) && !Array.isArray(b)`,
+    `      ? __deepMerge(a, b) : b`,
+    `  }`,
+    `  return out`,
+    `}`,
+    `function __mergeMessages(base, override) {`,
+    `  const out = {}`,
+    `  const keys = new Set([...Object.keys(base), ...Object.keys(override || {})])`,
+    `  for (const k of keys) out[k] = __deepMerge(base[k] || {}, (override || {})[k] || {})`,
+    `  return out`,
+    `}`,
+    `// Merge auto-loaded files into i18n. Explicit config wins: messages override per key, and an`,
+    `// explicit locales list controls label/icon/order (else it's derived from the file names).`,
+    `function __resolveI18n(cfg) {`,
+    `  const hasAuto = __autoCodes.length > 0`,
+    `  if (!cfg && !hasAuto) return cfg`,
+    `  const base = cfg || {}`,
+    `  let locales = base.locales`,
+    `  if ((!locales || !locales.length) && hasAuto) {`,
+    `    locales = __autoCodes.map((c) => ({ code: c, label: __LOCALE_LABELS[c] || c }))`,
+    `  }`,
+    `  return { ...base, locales, messages: __mergeMessages(__autoMessages, base.messages) }`,
+    `}`,
     `;(async () => {`,
     `  const searchParams = new URLSearchParams(window.location.search)`,
     `  const hasThemeQuery = searchParams.has('theme')`,
@@ -203,6 +268,7 @@ function buildBootstrapScript({ siteConfig, siteConfigSpecifier }) {
     `  }`,
     `  const app = await createSiteApp({`,
     `    ...siteConfig,`,
+    `    i18n: __resolveI18n(siteConfig.i18n),`,
     `    ...(hasThemeQuery ? { theme: { ...(siteConfig.theme || {}), default: resolvedTheme } } : {}),`,
     `    packageRepository: repositoryUrl,`,
     `    baseUrl: import.meta.env.BASE_URL,`,
@@ -238,21 +304,34 @@ const htmlTemplate = buildHtmlShell(
   `<script type="module" src="/@id/__x00__${VIRTUAL_ENTRY}"></script>`,
 )
 
+// esbuild plugin stubbing asset / SFC / `?raw` imports (static or dynamic) to an empty default
+// export, so bundling the config for pre-load doesn't choke on resources Node can't load. Page
+// loaders are never invoked during pre-load (only build-time settings are read).
+function preloadAssetStubPlugin() {
+  const NS = 'vue-site-asset'
+  const ASSET =
+    /\?raw(?:&\S*)?$|\.(?:vue|css|scss|sass|less|styl|md|markdown|png|jpe?g|gif|svg|webp|avif|ico)(?:\?\S*)?$/
+  return {
+    name: 'vue-site:preload-asset-stub',
+    setup(b) {
+      b.onResolve({ filter: ASSET }, (args) => ({ path: args.path, namespace: NS }))
+      b.onLoad({ filter: /.*/, namespace: NS }, () => ({
+        contents: 'export default ""',
+        loader: 'js',
+      }))
+    },
+  }
+}
+
 async function loadSiteConfig() {
   const configPath = resolve(cwd, foundConfig)
   const raw = fs.readFileSync(configPath, 'utf-8')
 
-  const isTs = /\.m?ts$/.test(foundConfig)
-  const { code } = await transform(raw, {
-    loader: isTs ? 'ts' : 'js',
-    format: 'esm',
-  })
-
-  // Stub the framework's value imports so the config evaluates in plain Node (only build-time
-  // settings are read here; page loaders etc. are never invoked). `defineConfig` is identity;
-  // every other named import (e.g. `localizedPage`) becomes a callable no-op that returns a no-op,
-  // covering helpers that produce functions.
-  const stubbed = code.replace(
+  // Stub the framework's value imports so the config evaluates without the real (browser-only)
+  // package. `defineConfig` is identity (the config object passes through); every other named
+  // import (e.g. `tk`, `localizedPage`) becomes a callable no-op that returns a no-op, covering
+  // helpers used as values. Relative imports (e.g. `./locales`) are left intact and bundled below.
+  const stubbed = raw.replace(
     /import\s*\{([^}]*)\}\s*from\s*['"][^'"]*vue-site['"]\s*;?/g,
     (_match, names) => {
       const ids = names
@@ -274,21 +353,46 @@ async function loadSiteConfig() {
     },
   )
 
-  const tmpFile = resolve(cwd, `.site-config.${Date.now()}.tmp.mjs`)
-  fs.writeFileSync(tmpFile, stubbed)
+  const isTs = /\.m?ts$/.test(foundConfig)
+  // Write the stubbed entry next to the original so its relative imports (`./locales`) resolve.
+  const entryFile = resolve(
+    dirname(configPath),
+    `.${basename(configPath)}.${Date.now()}.preload.${isTs ? 'ts' : 'js'}`,
+  )
+  const tmpDir = resolve(cwd, `.vue-site-preload-${Date.now()}`)
+  fs.writeFileSync(entryFile, stubbed)
 
   try {
-    const mod = await import(pathToFileURL(tmpFile).href)
+    // Bundle so local modules the config imports (e.g. `./locales.ts`) are inlined and TS is
+    // handled; asset imports are stubbed; remaining bare deps stay external for Node to resolve.
+    await esbuild({
+      entryPoints: { 'site-config': entryFile },
+      outdir: tmpDir,
+      bundle: true,
+      format: 'esm',
+      platform: 'node',
+      splitting: true,
+      logLevel: 'silent',
+      packages: 'external',
+      outExtension: { '.js': '.mjs' },
+      plugins: [preloadAssetStubPlugin()],
+    })
+
+    const entry = resolve(tmpDir, 'site-config.mjs')
+    const mod = await import(pathToFileURL(entry).href)
     return mod.default || {}
   } catch (e) {
     throw new Error(
       `[vue-site] Could not pre-load site config from ${foundConfig}: ${e.message}\n` +
         `  This usually means your config imports modules Node can't resolve directly ` +
-        `(path aliases like @/..., .vue/.css/asset imports, or framework APIs other than defineConfig).`,
+        `(path aliases like @/..., or framework APIs other than defineConfig).`,
     )
   } finally {
     try {
-      fs.unlinkSync(tmpFile)
+      fs.unlinkSync(entryFile)
+    } catch {}
+    try {
+      fs.rmSync(tmpDir, { recursive: true, force: true })
     } catch {}
   }
 }

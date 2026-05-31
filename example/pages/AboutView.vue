@@ -3,8 +3,11 @@ import { ref, computed, watch } from 'vue'
 import { useTheme, useLocalize } from '@bndynet/vue-site'
 
 const { theme } = useTheme()
-// Simplest i18n in a Vue page: call `localize({ en, zh })` on inline text — no message files.
-const { localize } = useLocalize()
+// Two ways to localize in a Vue page:
+//  - `t('id')`     resolves a key from the central catalog (example/locales.ts). Best for shared,
+//                  centrally managed text.
+//  - `localize({ en, zh })` resolves inline per-locale text. Handy for one-off strings.
+const { localize, t } = useLocalize()
 
 /** Set when the user switches theme (not on initial load). */
 const lastThemeChange = ref<string | null>(null)
@@ -48,11 +51,12 @@ const charCount = computed(() => form.value.message.length)
 
 <template>
   <div class="about">
-    <h1>{{ localize({ en: 'About', zh: '关于' }) }}</h1>
+    <!-- `t('id')` pulls these from the central catalog (example/locales.ts). -->
+    <h1>{{ t('about.heading') }}</h1>
     <p class="subtitle">{{ localize({ en: 'This page is a Vue component with reactive state, tabs, and a form.', zh: '本页是一个 Vue 组件，包含响应式状态、标签页和表单。' }) }}</p>
 
     <p class="theme-line" aria-live="polite">
-      <span class="theme-line-label">{{ localize({ en: 'Current theme:', zh: '当前主题：' }) }}</span>
+      <span class="theme-line-label">{{ t('about.currentTheme') }}</span>
       <code class="theme-line-value">{{ theme }}</code>
       <span v-if="lastThemeChange" class="theme-line-change">
         ({{ localize({ en: 'last switch:', zh: '上次切换：' }) }} <code>{{ lastThemeChange }}</code>)

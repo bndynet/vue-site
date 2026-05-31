@@ -1,0 +1,27 @@
+{
+  "site": {
+    "title": "我的站点",
+    "footer": "版权所有 © 2026 BNDY.NET"
+  },
+  "nav": {
+    "home": "首页",
+    "docs": "文档",
+    "guide": "指南",
+    "gettingStarted": "快速开始",
+    "configuration": "配置",
+    "overview": "概览",
+    "errors": "错误",
+    "cookbook": "实践手册",
+    "faq": "常见问题",
+    "about": "关于",
+    "landing": "着陆页",
+    "authPage": "鉴权页",
+    "admin": "管理",
+    "login": "登录"
+  },
+  "about": {
+    "heading": "关于",
+    "currentTheme": "当前主题：",
+    "greeting": "你好，{name}！"
+  }
+}

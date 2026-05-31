@@ -149,8 +149,10 @@ export default defineConfig({
 
 - **Initial locale**: stored choice (localStorage) > browser language (`navigator.language`, when
   `detectBrowser` is on) > `defaultLocale` > first entry.
-- **`LocalizedString`** is `string | Record<LocaleCode, string>`. A plain string is returned as-is,
-  so existing single-language configs keep working unchanged.
+- **`LocalizedString`** is `string | Record<LocaleCode, string> | MessageRef`. A plain string is
+  returned as-is (single-language configs keep working), a locale map holds inline per-language
+  text, and a `MessageRef` (built with `tk('id')`) references a key from a central message file —
+  see [Centralized message files](#centralized-message-files-tk--t).
 - **Stable URLs**: route paths derive from the **default-locale** label (or an explicit `path`), so
   switching language never changes URLs.
 - **Reactive**: switching language updates labels, the title, the footer, and page content live
@@ -162,29 +164,101 @@ export default defineConfig({
 
 | Property | Default | Description |
 |----------|---------|-------------|
-| `locales` | — | `{ code, label, icon? }[]` — supported languages, in display order. First entry is the fallback |
+| `locales` | discovered `locales/*.json` | `{ code, label, icon? }[]` — supported languages, in display order. Optional: derived from the auto-loaded file names (with built-in labels) when omitted. First entry is the fallback |
 | `defaultLocale` | `locales[0].code` | Initial locale when nothing is stored and detection finds no match |
 | `detectBrowser` | `true` | Detect the initial locale from `navigator.language(s)` on first visit |
 | `storageKey` | `vue-site-locale` | localStorage key for the chosen locale |
-| `messages` | — | `Record<LocaleCode, Record<string, string>>` — override/extend built-in UI strings, merged over defaults |
+| `messages` | auto-loaded from `locales/<code>.json` | `Record<LocaleCode, Record<string, string>>` — extra/override translations, merged over the auto-loaded files and built-in UI strings |
+
+### Message files & keys (`tk` / `t`)
+
+Instead of inlining `{ en, zh }` everywhere, keep all translations in plain JSON — **one file per
+language** — and reference them by key. This is zero-config: the CLI auto-discovers
+`locales/<code>.json` next to your `site.config.ts`. You don't write any glue code (no `index.ts`,
+no `messages` field) and you don't even have to list the languages.
+
+```jsonc
+// locales/en.json — nested groups (recommended), flattened to dotted ids
+{
+  "site": { "title": "My Site" },
+  "nav": { "home": "Home", "guide": "Guide" }
+}
+```
+
+```jsonc
+// locales/zh.json
+{
+  "site": { "title": "我的站点" },
+  "nav": { "home": "首页", "guide": "指南" }
+}
+```
+
+> Files may be **nested** (above) or **flat** (`{ "site.title": "My Site" }`) — nested groups are
+> flattened to dotted ids, so `tk('site.title')` / `t('site.title')` work either way.
+
+```typescript
+// site.config.ts — reference keys with tk() in config and t() in pages
+import { defineConfig, localizedPage, tk } from '@bndynet/vue-site'
+
+export default defineConfig({
+  // `i18n` can be omitted entirely: the language list is derived from the file names
+  // (en, zh, ...) with friendly built-in labels. Declare it only to customize label/icon/order.
+  i18n: {
+    locales: [
+      { code: 'en', label: 'English' },
+      { code: 'zh', label: '简体中文', icon: 'languages' },
+    ],
+    defaultLocale: 'en',
+  },
+  title: tk('site.title'),
+  nav: [
+    { label: tk('nav.home'), icon: 'home', page: () => import('../README.md?raw') },
+    {
+      label: tk('nav.guide'),
+      icon: 'book',
+      page: localizedPage({
+        en: () => import('./pages/guide.en.md?raw'),
+        zh: () => import('./pages/guide.zh.md?raw'),
+      }),
+    },
+  ],
+})
+```
+
+Key resolution falls back through the active locale's primary subtag → `defaultLocale` → `en` → the
+id itself, and `{name}` placeholders are interpolated. `tk()` and inline `{ en, zh }` maps can be
+mixed freely — use `tk()` for shared/centrally managed text and an inline map for one-off strings.
+
+**Auto-discovery details & overrides**
+
+- The convention is `locales/<code>.json` (e.g. `locales/en.json`, `locales/zh.json`), resolved
+  relative to the config directory. `code` is the file name (a `LocaleCode` like `en` or `zh-TW`).
+- An explicit `i18n.messages` is still supported and **overrides** auto-loaded keys (per id); an
+  explicit `i18n.locales` controls the label/icon/order. Both are optional.
+- Auto-discovery is a **CLI** feature. If you embed the library yourself (calling `createSiteApp`
+  without the `vue-site` CLI), pass `i18n.messages` directly — e.g. build it from JSON with explicit
+  imports (avoid `import.meta.glob` inside `site.config.ts`, which the CLI pre-loads in Node).
 
 ### Localizing in your own pages
 
-`useLocalize()` returns `localize(value)` (resolve a `LocalizedString`), `t(id, params?)` (resolve a
-UI message id with `{name}` interpolation), and the reactive `locale` ref. `useLocale()` returns
-`{ locale, setLocale, locales }` for building a custom switcher. Both work inside any component
+`useLocalize()` returns `t(id, params?)` (resolve a message id from the central catalog with
+`{name}` interpolation), `localize(value)` (resolve any `LocalizedString` — a `tk()` ref, an inline
+map, or a plain string), and the reactive `locale` ref. `useLocale()` returns
+`{ locale, setLocale, locales }` for building a custom switcher. All work inside any component
 rendered by `createSiteApp`.
 
 ```vue
 <script setup lang="ts">
 import { useLocalize } from '@bndynet/vue-site'
 
-const { localize, locale } = useLocalize()
-const greeting = { en: 'Hello', zh: '你好' }
+const { t, localize, locale } = useLocalize()
 </script>
 
 <template>
-  <p>{{ localize(greeting) }} — {{ locale }}</p>
+  <!-- key from the central message file -->
+  <h1>{{ t('nav.home') }}</h1>
+  <!-- or inline, for one-off text -->
+  <p>{{ localize({ en: 'Hello', zh: '你好' }) }} — {{ locale }}</p>
 </template>
 ```
 
@@ -324,7 +398,7 @@ app.mount('#app')
 
 Use a top-level `await` in your entry (or an async IIFE): `createSiteApp` is async and **awaits** `configureApp` when it returns a `Promise`. If you set optional `bootstrap` in config, that module loads before the app is created; if you omit `bootstrap`, that step is skipped.
 
-Exports: `createSiteApp`, `defineConfig`, `useTheme`, `useSiteConfig`, `useLocale`, `useLocalize`, `resolveLocalized`, `localizedPage`, `builtinMessages`, `themeRefKey`, `localeRefKey`. Types: `SiteConfig`, `SiteEnvConfig`, `SiteViteConfig`, `SiteExternalLink`, `NavItem`, `StandalonePage`, `AuthRule`, `AuthContext`, `AuthConfig`, `RouterConfig`, `ThemeConfig`, `ThemeOption`, `ThemePaletteVars`, `ResolvedNavItem`, `I18nConfig`, `LocaleOption`, `LocaleCode`, `LocalizedString`, `PageLoader`, `LocalizedPageOptions`.
+Exports: `createSiteApp`, `defineConfig`, `useTheme`, `useSiteConfig`, `useLocale`, `useLocalize`, `tk`, `resolveLocalized`, `resolveField`, `resolveMessage`, `mergeCatalog`, `flattenMessages`, `isMessageRef`, `localizedPage`, `builtinMessages`, `themeRefKey`, `localeRefKey`. Types: `SiteConfig`, `SiteEnvConfig`, `SiteViteConfig`, `SiteExternalLink`, `NavItem`, `StandalonePage`, `AuthRule`, `AuthContext`, `AuthConfig`, `RouterConfig`, `ThemeConfig`, `ThemeOption`, `ThemePaletteVars`, `ResolvedNavItem`, `I18nConfig`, `LocaleOption`, `LocaleCode`, `LocalizedString`, `MessageRef`, `MessageTree`, `MessageCatalog`, `PageLoader`, `LocalizedPageOptions`.
 
 ### Theme in Vue pages (`useTheme`)
 

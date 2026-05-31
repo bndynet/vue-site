@@ -2,8 +2,8 @@ export { createSiteApp } from './create-app'
 export { useTheme, themeRefKey } from './composables/useTheme'
 export { useLocale, localeRefKey } from './composables/useLocale'
 export { useLocalize } from './composables/useLocalize'
-export { resolveLocalized, localizedPage } from './i18n-utils'
-export type { LocalizedPageOptions } from './i18n-utils'
+export { resolveLocalized, resolveField, resolveMessage, mergeCatalog, flattenMessages, tk, isMessageRef, localizedPage } from './i18n-utils'
+export type { LocalizedPageOptions, MessageCatalog } from './i18n-utils'
 export { builtinMessages } from './i18n-messages'
 export { useSiteConfig } from './composables/useSiteConfig'
 export { builtinThemePalettes } from './theme/presets'
@@ -29,6 +29,8 @@ export type {
   ResolvedNavItem,
   LocaleCode,
   LocalizedString,
+  MessageRef,
+  MessageTree,
   LocaleOption,
   I18nConfig,
   PageLoader,
