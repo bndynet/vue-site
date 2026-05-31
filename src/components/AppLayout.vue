@@ -6,6 +6,7 @@ import { useLocalize } from '../composables/useLocalize'
 import SideNav from './SideNav.vue'
 import SiteExternalLinks from './SiteExternalLinks.vue'
 import ThemeSwitch from './ThemeSwitch.vue'
+import LocaleSwitch from './LocaleSwitch.vue'
 import TopPrimaryNav from './TopPrimaryNav.vue'
 
 const { config } = useSiteConfig()
@@ -13,6 +14,7 @@ const { tieredNav, showSidebar, standalone } = useNavLayout()
 const { localize } = useLocalize()
 
 const themeEnabled = computed(() => config.theme !== false)
+const localeEnabled = computed(() => (config.i18n?.locales?.length ?? 0) > 1)
 const siteTitle = computed(() => localize(config.title))
 const siteFooter = computed(() => localize(config.footer))
 
@@ -44,6 +46,7 @@ watchEffect(() => {
       <TopPrimaryNav />
       <div class="site-primary-nav-end">
         <SiteExternalLinks />
+        <LocaleSwitch v-if="localeEnabled" />
         <ThemeSwitch v-if="themeEnabled" class="site-primary-nav-theme" />
       </div>
     </header>
@@ -67,6 +70,7 @@ watchEffect(() => {
       >
         <div v-if="!tieredNav" class="site-sidebar-toolbar">
           <SiteExternalLinks compact />
+          <LocaleSwitch v-if="localeEnabled" compact />
           <ThemeSwitch v-if="themeEnabled" compact />
         </div>
         <p v-if="siteFooter" class="site-footer-text">{{ siteFooter }}</p>
