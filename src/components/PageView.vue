@@ -8,7 +8,7 @@ import MarkdownView from './MarkdownView.vue'
 
 const route = useRoute()
 const { config } = useSiteConfig()
-const { localize } = useLocalize()
+const { localize, locale } = useLocalize()
 const markdownContent = ref('')
 const vueComponent = shallowRef<Component | null>(null)
 const loading = ref(true)
@@ -28,7 +28,7 @@ async function loadContent() {
 
   try {
     if (navItem.page) {
-      const mod = await navItem.page()
+      const mod = await navItem.page(locale.value)
       if (typeof mod.default === 'string') {
         markdownContent.value = mod.default
       } else {
@@ -47,7 +47,7 @@ async function loadContent() {
 }
 
 onMounted(loadContent)
-watch(() => route.path, loadContent)
+watch([() => route.path, locale], loadContent)
 </script>
 
 <template>

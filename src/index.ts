@@ -2,7 +2,8 @@ export { createSiteApp } from './create-app'
 export { useTheme, themeRefKey } from './composables/useTheme'
 export { useLocale, localeRefKey } from './composables/useLocale'
 export { useLocalize } from './composables/useLocalize'
-export { resolveLocalized } from './i18n-utils'
+export { resolveLocalized, localizedPage } from './i18n-utils'
+export type { LocalizedPageOptions } from './i18n-utils'
 export { useSiteConfig } from './composables/useSiteConfig'
 export { builtinThemePalettes } from './theme/presets'
 export {
@@ -29,6 +30,7 @@ export type {
   LocalizedString,
   LocaleOption,
   I18nConfig,
+  PageLoader,
 } from './types'
 
 import type { SiteConfig } from './types'

@@ -56,7 +56,7 @@ export interface NavItem {
    */
   label: LocalizedString
   icon?: string
-  page?: (() => Promise<{ default: string }>) | (() => Promise<{ default: Component }>)
+  page?: PageLoader
   children?: NavItem[]
   path?: string
   /**
@@ -93,7 +93,7 @@ export interface NavItem {
 export interface StandalonePage {
   /** Route path (used as-is, no label-based derivation), e.g. `/landing`. */
   path: string
-  page: (() => Promise<{ default: string }>) | (() => Promise<{ default: Component }>)
+  page: PageLoader
   /**
    * Optional visibility predicate, awaited once at app startup. Return `false` (or a
    * promise resolving to `false`) to skip registering this page's route entirely.
@@ -109,6 +109,16 @@ export interface StandalonePage {
 
 /** A BCP-47 language tag (e.g. `'en'`, `'zh'`, `'zh-CN'`). */
 export type LocaleCode = string
+
+/**
+ * Loader for a page's content. Returns either a Markdown string (imported with `?raw`) or a Vue
+ * component (its `default` export). The active `locale` is passed in, so a loader can return
+ * per-language content (e.g. via {@link localizedPage}); single-language loaders may ignore it,
+ * which keeps the plain `() => import(...)` form working.
+ */
+export type PageLoader =
+  | ((locale: LocaleCode) => Promise<{ default: string }>)
+  | ((locale: LocaleCode) => Promise<{ default: Component }>)
 
 /**
  * A string that may be localized. Use a plain `string` for single-language sites, or a map of
