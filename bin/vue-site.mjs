@@ -248,9 +248,30 @@ async function loadSiteConfig() {
     format: 'esm',
   })
 
+  // Stub the framework's value imports so the config evaluates in plain Node (only build-time
+  // settings are read here; page loaders etc. are never invoked). `defineConfig` is identity;
+  // every other named import (e.g. `localizedPage`) becomes a callable no-op that returns a no-op,
+  // covering helpers that produce functions.
   const stubbed = code.replace(
-    /import\s*\{[^}]*defineConfig[^}]*\}\s*from\s*['"][^'"]*['"]\s*;?/g,
-    'const defineConfig = (c) => c;',
+    /import\s*\{([^}]*)\}\s*from\s*['"][^'"]*vue-site['"]\s*;?/g,
+    (_match, names) => {
+      const ids = names
+        .split(',')
+        .map((part) => part.trim())
+        .filter(Boolean)
+        .map((part) => {
+          const segments = part.split(/\s+as\s+/)
+          return (segments[1] ?? segments[0]).trim()
+        })
+        .filter(Boolean)
+      return ids
+        .map((id) =>
+          id === 'defineConfig'
+            ? 'const defineConfig = (c) => c;'
+            : `const ${id} = (..._args) => (() => {});`,
+        )
+        .join('\n')
+    },
   )
 
   const tmpFile = resolve(cwd, `.site-config.${Date.now()}.tmp.mjs`)

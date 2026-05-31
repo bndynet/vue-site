@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
-import { useTheme } from '@bndynet/vue-site'
+import { useTheme, useLocalize } from '@bndynet/vue-site'
 
 const { theme } = useTheme()
+// Simplest i18n in a Vue page: call `localize({ en, zh })` on inline text — no message files.
+const { localize } = useLocalize()
 
 /** Set when the user switches theme (not on initial load). */
 const lastThemeChange = ref<string | null>(null)
@@ -13,8 +15,14 @@ watch(theme, (next, prev) => {
   }
 })
 
-const tabs = ['Overview', 'Team', 'Contact']
-const activeTab = ref('Overview')
+// Tab ids stay stable (used for state); labels are localized only for display.
+const tabs = ['Overview', 'Team', 'Contact'] as const
+const tabLabels: Record<(typeof tabs)[number], { en: string; zh: string }> = {
+  Overview: { en: 'Overview', zh: '概览' },
+  Team: { en: 'Team', zh: '团队' },
+  Contact: { en: 'Contact', zh: '联系' },
+}
+const activeTab = ref<(typeof tabs)[number]>('Overview')
 
 const teamMembers = ref([
   { name: 'Alice Chen', role: 'Lead Developer', avatar: '👩‍💻' },
@@ -40,14 +48,14 @@ const charCount = computed(() => form.value.message.length)
 
 <template>
   <div class="about">
-    <h1>About</h1>
-    <p class="subtitle">This page is a Vue component with reactive state, tabs, and a form.</p>
+    <h1>{{ localize({ en: 'About', zh: '关于' }) }}</h1>
+    <p class="subtitle">{{ localize({ en: 'This page is a Vue component with reactive state, tabs, and a form.', zh: '本页是一个 Vue 组件，包含响应式状态、标签页和表单。' }) }}</p>
 
     <p class="theme-line" aria-live="polite">
-      <span class="theme-line-label">Current theme:</span>
+      <span class="theme-line-label">{{ localize({ en: 'Current theme:', zh: '当前主题：' }) }}</span>
       <code class="theme-line-value">{{ theme }}</code>
       <span v-if="lastThemeChange" class="theme-line-change">
-        (last switch: <code>{{ lastThemeChange }}</code>)
+        ({{ localize({ en: 'last switch:', zh: '上次切换：' }) }} <code>{{ lastThemeChange }}</code>)
       </span>
     </p>
 
@@ -58,31 +66,31 @@ const charCount = computed(() => form.value.message.length)
         :class="['tab', { active: activeTab === tab }]"
         @click="activeTab = tab"
       >
-        {{ tab }}
+        {{ localize(tabLabels[tab]) }}
       </button>
     </div>
 
     <div v-if="activeTab === 'Overview'" class="panel">
-      <h2>Overview</h2>
-      <p>This demonstrates that <code>.vue</code> component pages work with full Vue 3 reactivity, scoped styles, computed properties, and lifecycle hooks.</p>
+      <h2>{{ localize(tabLabels.Overview) }}</h2>
+      <p>{{ localize({ en: 'This demonstrates that .vue component pages work with full Vue 3 reactivity, scoped styles, computed properties, and lifecycle hooks.', zh: '这表明 .vue 组件页面可以使用完整的 Vue 3 响应式、scoped 样式、计算属性和生命周期钩子。' }) }}</p>
       <div class="stats">
         <div class="stat-card">
           <span class="stat-value">3</span>
-          <span class="stat-label">Tabs</span>
+          <span class="stat-label">{{ localize({ en: 'Tabs', zh: '标签页' }) }}</span>
         </div>
         <div class="stat-card">
           <span class="stat-value">{{ teamMembers.length }}</span>
-          <span class="stat-label">Team Members</span>
+          <span class="stat-label">{{ localize({ en: 'Team Members', zh: '团队成员' }) }}</span>
         </div>
         <div class="stat-card">
           <span class="stat-value">{{ charCount }}</span>
-          <span class="stat-label">Message Chars</span>
+          <span class="stat-label">{{ localize({ en: 'Message Chars', zh: '留言字数' }) }}</span>
         </div>
       </div>
     </div>
 
     <div v-if="activeTab === 'Team'" class="panel">
-      <h2>Team</h2>
+      <h2>{{ localize(tabLabels.Team) }}</h2>
       <div class="team-grid">
         <div v-for="member in teamMembers" :key="member.name" class="member-card">
           <span class="member-avatar">{{ member.avatar }}</span>
@@ -93,18 +101,18 @@ const charCount = computed(() => form.value.message.length)
     </div>
 
     <div v-if="activeTab === 'Contact'" class="panel">
-      <h2>Contact</h2>
+      <h2>{{ localize(tabLabels.Contact) }}</h2>
       <form class="contact-form" @submit.prevent="handleSubmit">
         <label>
-          Name
-          <input v-model="form.name" type="text" placeholder="Your name" />
+          {{ localize({ en: 'Name', zh: '姓名' }) }}
+          <input v-model="form.name" type="text" :placeholder="localize({ en: 'Your name', zh: '你的姓名' })" />
         </label>
         <label>
-          Message
-          <textarea v-model="form.message" placeholder="Write something..." rows="4" />
+          {{ localize({ en: 'Message', zh: '留言' }) }}
+          <textarea v-model="form.message" :placeholder="localize({ en: 'Write something...', zh: '写点什么……' })" rows="4" />
         </label>
         <button type="submit" class="submit-btn" :disabled="!form.name || !form.message">
-          {{ submitted ? 'Sent!' : 'Send Message' }}
+          {{ submitted ? localize({ en: 'Sent!', zh: '已发送！' }) : localize({ en: 'Send Message', zh: '发送留言' }) }}
         </button>
       </form>
     </div>

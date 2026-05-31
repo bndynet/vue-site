@@ -1,8 +1,19 @@
 import type { App } from 'vue'
-import { defineConfig } from '@bndynet/vue-site'
+import { defineConfig, localizedPage } from '@bndynet/vue-site'
 
 export default defineConfig({
-  title: 'My Site',
+  // Multi-language support. Adds a locale switcher to the header and resolves any
+  // `LocalizedString` field (title, nav labels, footer, ...) against the active locale.
+  // The initial locale is: stored choice > browser language > `defaultLocale`.
+  i18n: {
+    locales: [
+      { code: 'en', label: 'English' },
+      { code: 'zh', label: '简体中文', icon: 'languages' },
+    ],
+    defaultLocale: 'en',
+  },
+  // A `LocalizedString`: per-locale text. A plain string still works for single-language sites.
+  title: { en: 'My Site', zh: '我的站点' },
   // Optional: remove this line to skip loading `bootstrap.ts`.
   bootstrap: './bootstrap.ts',
   // Page the site opens at (root `/` and unknown paths redirect here). Must match a registered
@@ -20,7 +31,7 @@ export default defineConfig({
   // the host to serve index.html for unknown paths (SPA fallback).
   // router: { mode: 'web' },
   logo: 'https://static.bndy.net/images/logo.png',
-  footer: 'Copyright © 2026 BNDY.NET',
+  footer: { en: 'Copyright © 2026 BNDY.NET', zh: '版权所有 © 2026 BNDY.NET' },
   links: [
     {
       icon: 'package',
@@ -49,24 +60,31 @@ export default defineConfig({
     default: 'light',
   },
   nav: [
-    { label: 'Home', icon: 'home', page: () => import('../README.md?raw') },
+    { label: { en: 'Home', zh: '首页' }, icon: 'home', page: () => import('../README.md?raw') },
     {
-      label: 'Docs',
+      label: { en: 'Docs', zh: '文档' },
       icon: 'book-open',
       children: [
         {
-          label: 'Guide',
+          label: { en: 'Guide', zh: '指南' },
           icon: 'book',
           children: [
             {
-              label: 'Getting Started',
+              label: { en: 'Getting Started', zh: '快速开始' },
               icon: 'rocket',
-              page: () => import('./pages/GettingStarted.md?raw'),
+              // Per-locale page content; falls back to the default locale when a language is missing.
+              page: localizedPage({
+                en: () => import('./pages/GettingStarted.md?raw'),
+                zh: () => import('./pages/GettingStarted.zh.md?raw'),
+              }),
             },
             {
-              label: 'Configuration',
+              label: { en: 'Configuration', zh: '配置' },
               icon: 'settings',
-              page: () => import('./pages/Configuration.md?raw'),
+              page: localizedPage({
+                en: () => import('./pages/Configuration.md?raw'),
+                zh: () => import('./pages/Configuration.zh.md?raw'),
+              }),
             },
           ],
         },
@@ -75,34 +93,34 @@ export default defineConfig({
           icon: 'brackets',
           children: [
             {
-              label: 'Overview',
+              label: { en: 'Overview', zh: '概览' },
               icon: 'file-text',
             },
             {
-              label: 'Errors',
+              label: { en: 'Errors', zh: '错误' },
               icon: 'circle-alert',
             },
           ],
         },
         {
-          label: 'Cookbook',
+          label: { en: 'Cookbook', zh: '实践手册' },
           icon: 'chef-hat',
         },
         {
-          label: 'FAQ',
+          label: { en: 'FAQ', zh: '常见问题' },
           icon: 'circle-help',
         },
       ],
     },
     { label: 'Element Plus', icon: 'component', page: () => import('./pages/ElementPlusDemo.vue') },
-    { label: 'About', icon: 'info', page: () => import('./pages/AboutView.vue') },
+    { label: { en: 'About', zh: '关于' }, icon: 'info', page: () => import('./pages/AboutView.vue') },
     // A nav entry that links to the standalone `/landing` page (no own route registered).
-    { label: 'Landing', icon: 'rocket', link: '/landing' },
+    { label: { en: 'Landing', zh: '着陆页' }, icon: 'rocket', link: '/landing' },
     // `auth: true` requires any logged-in user (the `authorize` policy above sends guests to
     // `/login`). Unlike `visible`, the route stays registered and the guard runs on every
     // navigation, so visiting `#/dashboard` directly while logged out redirects to the login page.
     {
-      label: 'Auth Page',
+      label: { en: 'Auth Page', zh: '鉴权页' },
       icon: 'gauge',
       auth: true,
       page: () => import('./pages/AuthPageView.vue'),
@@ -110,13 +128,13 @@ export default defineConfig({
     // `auth: ['admin']` requires the `admin` role. The item is also hidden from the menu at
     // startup when the current user is not authorized (try logging in via `#/login`).
     {
-      label: 'Admin',
+      label: { en: 'Admin', zh: '管理' },
       icon: 'shield',
       auth: ['admin'],
       page: () => import('./pages/AdminView.vue'),
     },
     {
-      label: 'Login',
+      label: { en: 'Login', zh: '登录' },
       icon: 'log-in',
       page: () => import('./pages/Login.vue'),
     }

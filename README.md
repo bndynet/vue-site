@@ -10,6 +10,7 @@ Configurable Vue 3 site framework: one package, `site.config.ts`, and Markdown p
 - Hash or HTML5 (`web`) router history, configurable in `site.config.ts`
 - Markdown (`?raw`) or Vue pages
 - highlight.js, light/dark theme + localStorage
+- Built-in multi-language support (locale switcher, `LocalizedString` config, per-locale pages) — see [Internationalization](#internationalization-i18n)
 - Project `README.md` as Home
 - Full TypeScript types
 
@@ -69,14 +70,15 @@ Add `"dev": "vue-site dev"` (or `vs dev`) in `package.json` scripts if you like.
 
 | Property | Description |
 |----------|-------------|
-| `title` | Site title (sidebar + tab) |
+| `title` | Site title (sidebar + tab). `LocalizedString` |
 | `nav` | `NavItem[]` |
 | `defaultPath` | Path the site opens at; `/` and unknown paths redirect here. Must match a registered route (a `nav` item's resolved path or a `pages` entry's `path`). Defaults to the first top-level `nav` item |
 | `logo` | Logo URL or imported image |
 | `theme` | See `ThemeConfig` below; set to `false` to disable theming (hides the switcher, forces a fixed `light` palette, no localStorage persistence) |
-| `footer` | Footer text |
+| `i18n` | Multi-language config (`I18nConfig`) — see [Internationalization](#internationalization-i18n) |
+| `footer` | Footer text. `LocalizedString` |
 | `readme` | Raw Home content if no `README.md` |
-| `links` | Header links: Lucide `icon` + `link`, optional `title` |
+| `links` | Header links: Lucide `icon` + `link`, optional `title` (`LocalizedString`) |
 | `pages` | `StandalonePage[]` — full-screen routes outside the `nav` tree (no top bar/sidebar/footer) |
 | `auth` | Central authorization policy (`AuthConfig`) — see [Per-page authorization](#per-page-authorization-auth) |
 | `router` | History mode (`RouterConfig`) — `hash` (default) or HTML5 `web`; see [Router history](#router-history-router) |
@@ -89,10 +91,10 @@ Add `"dev": "vue-site dev"` (or `vs dev`) in `package.json` scripts if you like.
 
 | Property | Description |
 |----------|-------------|
-| `label` | Sidebar text |
+| `label` | Sidebar text. `LocalizedString` |
 | `icon` | [Lucide](https://lucide.dev/icons) name |
-| `page` | `() => import('./page.md?raw')` or `() => import('./Page.vue')` |
-| `path` | Route path (derived from `label` if omitted) |
+| `page` | `() => import('./page.md?raw')` or `() => import('./Page.vue')`. Receives the active locale; use `localizedPage({...})` for per-language content |
+| `path` | Route path (derived from `label`'s default-locale value if omitted; stays stable across languages) |
 | `children` | Nested group |
 | `link` | Render as a hyperlink (internal route path or external URL) instead of a page route |
 | `visible` | `() => boolean \| Promise<boolean>`, awaited once at startup. Return `false` to hide the item from the nav and skip its route (not reachable by direct URL). A hidden parent hides its subtree; a group with no remaining children is pruned. Not reactive to later changes. |
@@ -108,6 +110,83 @@ Built-in themes are `light`, `dark`, plus the always-on extras `sepia` and `ocea
 | `colors` | — | Global CSS variable overrides |
 | `palettes` | — | Partial overrides for built-in light/dark only |
 | `extraThemes` | — | Extra themes: `id`, `label`, `icon`, optional `basedOn`, `palette`; reuse a built-in id (`sepia`/`ocean`) to override it. Import `builtinThemePalettes` for full defaults |
+
+## Internationalization (`i18n`)
+
+Set `i18n` to enable multi-language support. The framework adds a locale switcher to the header,
+resolves every `LocalizedString` field (`title`, `nav[].label`, `footer`, `links[].title`) against
+the active locale, and exposes the current locale via `useLocale()` / `useLocalize()`.
+
+```typescript
+import { defineConfig, localizedPage } from '@bndynet/vue-site'
+
+export default defineConfig({
+  i18n: {
+    locales: [
+      { code: 'en', label: 'English' },
+      { code: 'zh', label: '简体中文', icon: 'languages' },
+    ],
+    defaultLocale: 'en',
+  },
+  title: { en: 'My Site', zh: '我的站点' }, // a LocalizedString
+  footer: { en: '© 2026', zh: '© 2026 版权所有' },
+  nav: [
+    { label: { en: 'Home', zh: '首页' }, icon: 'home', page: () => import('../README.md?raw') },
+    {
+      label: { en: 'Guide', zh: '指南' },
+      icon: 'book',
+      // Per-locale page content with fallback (exact > primary-subtag > defaultLocale > first).
+      page: localizedPage({
+        en: () => import('./pages/guide.en.md?raw'),
+        zh: () => import('./pages/guide.zh.md?raw'),
+      }),
+    },
+  ],
+})
+```
+
+### How it works
+
+- **Initial locale**: stored choice (localStorage) > browser language (`navigator.language`, when
+  `detectBrowser` is on) > `defaultLocale` > first entry.
+- **`LocalizedString`** is `string | Record<LocaleCode, string>`. A plain string is returned as-is,
+  so existing single-language configs keep working unchanged.
+- **Stable URLs**: route paths derive from the **default-locale** label (or an explicit `path`), so
+  switching language never changes URLs.
+- **Reactive**: switching language updates labels, the title, the footer, and page content live
+  (page content reloads via `localizedPage`). The switcher only appears when `locales.length > 1`.
+- **UI strings**: the framework ships built-in strings (currently `en`, `zh`) for the theme/locale
+  switchers and page errors; override or extend them per locale via `i18n.messages`.
+
+### `I18nConfig`
+
+| Property | Default | Description |
+|----------|---------|-------------|
+| `locales` | — | `{ code, label, icon? }[]` — supported languages, in display order. First entry is the fallback |
+| `defaultLocale` | `locales[0].code` | Initial locale when nothing is stored and detection finds no match |
+| `detectBrowser` | `true` | Detect the initial locale from `navigator.language(s)` on first visit |
+| `storageKey` | `vue-site-locale` | localStorage key for the chosen locale |
+| `messages` | — | `Record<LocaleCode, Record<string, string>>` — override/extend built-in UI strings, merged over defaults |
+
+### Localizing in your own pages
+
+`useLocalize()` returns `localize(value)` (resolve a `LocalizedString`), `t(id, params?)` (resolve a
+UI message id with `{name}` interpolation), and the reactive `locale` ref. `useLocale()` returns
+`{ locale, setLocale, locales }` for building a custom switcher. Both work inside any component
+rendered by `createSiteApp`.
+
+```vue
+<script setup lang="ts">
+import { useLocalize } from '@bndynet/vue-site'
+
+const { localize, locale } = useLocalize()
+const greeting = { en: 'Hello', zh: '你好' }
+</script>
+
+<template>
+  <p>{{ localize(greeting) }} — {{ locale }}</p>
+</template>
+```
 
 ## Per-page authorization (`auth`)
 
@@ -245,7 +324,7 @@ app.mount('#app')
 
 Use a top-level `await` in your entry (or an async IIFE): `createSiteApp` is async and **awaits** `configureApp` when it returns a `Promise`. If you set optional `bootstrap` in config, that module loads before the app is created; if you omit `bootstrap`, that step is skipped.
 
-Exports: `createSiteApp`, `defineConfig`, `useTheme`, `useSiteConfig`, `themeRefKey`. Types: `SiteConfig`, `SiteEnvConfig`, `SiteViteConfig`, `SiteExternalLink`, `NavItem`, `StandalonePage`, `AuthRule`, `AuthContext`, `AuthConfig`, `RouterConfig`, `ThemeConfig`, `ThemeOption`, `ThemePaletteVars`, `ResolvedNavItem`.
+Exports: `createSiteApp`, `defineConfig`, `useTheme`, `useSiteConfig`, `useLocale`, `useLocalize`, `resolveLocalized`, `localizedPage`, `builtinMessages`, `themeRefKey`, `localeRefKey`. Types: `SiteConfig`, `SiteEnvConfig`, `SiteViteConfig`, `SiteExternalLink`, `NavItem`, `StandalonePage`, `AuthRule`, `AuthContext`, `AuthConfig`, `RouterConfig`, `ThemeConfig`, `ThemeOption`, `ThemePaletteVars`, `ResolvedNavItem`, `I18nConfig`, `LocaleOption`, `LocaleCode`, `LocalizedString`, `PageLoader`, `LocalizedPageOptions`.
 
 ### Theme in Vue pages (`useTheme`)
 

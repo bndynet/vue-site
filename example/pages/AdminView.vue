@@ -1,15 +1,17 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useRouter } from 'vue-router'
+import { useLocalize } from '@bndynet/vue-site'
 
 const router = useRouter()
+const { localize } = useLocalize()
 
 const role = computed(() => localStorage.getItem('role') ?? '')
 
 const stats = [
-  { label: 'Active users', value: '1,284' },
-  { label: 'Open tickets', value: '37' },
-  { label: 'Uptime', value: '99.98%' },
+  { label: { en: 'Active users', zh: '活跃用户' }, value: '1,284' },
+  { label: { en: 'Open tickets', zh: '待处理工单' }, value: '37' },
+  { label: { en: 'Uptime', zh: '在线时长' }, value: '99.98%' },
 ]
 
 async function signOut() {
@@ -24,30 +26,29 @@ async function signOut() {
   <div class="admin">
     <header class="admin-header">
       <div>
-        <h1>Admin</h1>
+        <h1>{{ localize({ en: 'Admin', zh: '管理' }) }}</h1>
         <p class="subtitle">
-          This page is protected by <code>auth: ['admin']</code>. You can only see it because your
-          current role is <code>{{ role || '(none)' }}</code
+          {{ localize({ en: "This page is protected by auth: ['admin']. You can only see it because your current role is", zh: "本页由 auth: ['admin'] 保护。你能看到它，是因为你当前的角色是" }) }}
+          <code>{{ role || localize({ en: '(none)', zh: '（无）' }) }}</code
           >.
         </p>
       </div>
-      <span class="admin-badge">{{ role || 'guest' }}</span>
+      <span class="admin-badge">{{ role || localize({ en: 'guest', zh: '访客' }) }}</span>
     </header>
 
     <section class="stats">
-      <div v-for="stat in stats" :key="stat.label" class="stat-card">
+      <div v-for="stat in stats" :key="stat.label.en" class="stat-card">
         <span class="stat-value">{{ stat.value }}</span>
-        <span class="stat-label">{{ stat.label }}</span>
+        <span class="stat-label">{{ localize(stat.label) }}</span>
       </div>
     </section>
 
     <section class="panel">
-      <h2>Admin-only controls</h2>
+      <h2>{{ localize({ en: 'Admin-only controls', zh: '仅管理员可用的操作' }) }}</h2>
       <p>
-        Visiting <code>#/admin</code> directly while signed out (or as a non-admin) is intercepted by
-        the navigation guard and redirected to the login page.
+        {{ localize({ en: 'Visiting #/admin directly while signed out (or as a non-admin) is intercepted by the navigation guard and redirected to the login page.', zh: '未登录（或非管理员）时直接访问 #/admin 会被导航守卫拦截并重定向到登录页。' }) }}
       </p>
-      <button type="button" class="sign-out-btn" @click="signOut">Sign out</button>
+      <button type="button" class="sign-out-btn" @click="signOut">{{ localize({ en: 'Sign out', zh: '退出登录' }) }}</button>
     </section>
   </div>
 </template>

@@ -1,22 +1,22 @@
 <script setup lang="ts">
-import { useTheme } from '@bndynet/vue-site'
+import { useTheme, useLocalize } from '@bndynet/vue-site'
 
 const { theme } = useTheme()
+const { localize } = useLocalize()
 </script>
 
 <template>
   <div class="landing">
     <div class="landing-card">
-      <h1 class="landing-title">Standalone Page</h1>
+      <h1 class="landing-title">{{ localize({ en: 'Standalone Page', zh: '独立页面' }) }}</h1>
       <p class="landing-subtitle">
-        This page is registered via <code>pages</code>, not <code>nav</code>. It renders with no top
-        bar, sidebar, or footer — just full-screen content.
+        {{ localize({ en: 'This page is registered via pages, not nav. It renders with no top bar, sidebar, or footer — just full-screen content.', zh: '本页通过 pages 注册，而非 nav。它渲染时没有顶栏、侧栏或页脚——只有全屏内容。' }) }}
       </p>
       <p class="landing-theme">
-        Active theme (still applied via root CSS variables):
+        {{ localize({ en: 'Active theme (still applied via root CSS variables):', zh: '当前主题（仍通过根 CSS 变量生效）：' }) }}
         <code>{{ theme }}</code>
       </p>
-      <router-link to="/" class="landing-link">← Back to the site</router-link>
+      <router-link to="/" class="landing-link">{{ localize({ en: '← Back to the site', zh: '← 返回站点' }) }}</router-link>
     </div>
   </div>
 </template>

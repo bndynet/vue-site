@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { useLocalize } from '@bndynet/vue-site'
 
 const route = useRoute()
 const router = useRouter()
+const { localize } = useLocalize()
 
 const currentRole = computed(() => localStorage.getItem('role') ?? '')
 const redirectTarget = computed(() => {
@@ -34,24 +36,24 @@ function logout() {
 <template>
   <div class="login">
     <div class="login-card">
-      <h1 class="login-title">Sign in</h1>
+      <h1 class="login-title">{{ localize({ en: 'Sign in', zh: '登录' }) }}</h1>
       <p class="login-subtitle">
-        This standalone page demonstrates <code>auth</code>. Pick a role to sign in; you will be sent
-        to <code>{{ redirectTarget }}</code
+        {{ localize({ en: 'This standalone page demonstrates auth. Pick a role to sign in; you will be sent to', zh: '这个独立页面演示 auth。选择一个角色登录后，你将被跳转到' }) }}
+        <code>{{ redirectTarget }}</code
         >.
       </p>
       <p class="login-status">
-        Current role:
-        <code>{{ currentRole || '(not signed in)' }}</code>
+        {{ localize({ en: 'Current role:', zh: '当前角色：' }) }}
+        <code>{{ currentRole || localize({ en: '(not signed in)', zh: '（未登录）' }) }}</code>
       </p>
       <div class="login-actions">
-        <button class="login-btn" type="button" @click="loginAs('user')">Sign in as user</button>
+        <button class="login-btn" type="button" @click="loginAs('user')">{{ localize({ en: 'Sign in as user', zh: '以 user 登录' }) }}</button>
         <button class="login-btn login-btn--primary" type="button" @click="loginAs('admin')">
-          Sign in as admin
+          {{ localize({ en: 'Sign in as admin', zh: '以 admin 登录' }) }}
         </button>
-        <button class="login-btn login-btn--ghost" type="button" @click="logout">Sign out</button>
+        <button class="login-btn login-btn--ghost" type="button" @click="logout">{{ localize({ en: 'Sign out', zh: '退出登录' }) }}</button>
       </div>
-      <router-link to="/" class="login-link">← Back to the site</router-link>
+      <router-link to="/" class="login-link">{{ localize({ en: '← Back to the site', zh: '← 返回站点' }) }}</router-link>
     </div>
   </div>
 </template>
