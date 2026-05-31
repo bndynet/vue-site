@@ -3,10 +3,12 @@ import { ref, shallowRef, watch, onMounted, type Component } from 'vue'
 import { useRoute } from 'vue-router'
 import type { ResolvedNavItem } from '../types'
 import { useSiteConfig } from '../composables/useSiteConfig'
+import { useLocalize } from '../composables/useLocalize'
 import MarkdownView from './MarkdownView.vue'
 
 const route = useRoute()
 const { config } = useSiteConfig()
+const { localize } = useLocalize()
 const markdownContent = ref('')
 const vueComponent = shallowRef<Component | null>(null)
 const loading = ref(true)
@@ -35,10 +37,10 @@ async function loadContent() {
     } else if (navItem.isHome && config.readme) {
       markdownContent.value = config.readme
     } else {
-      markdownContent.value = `# ${navItem.label}`
+      markdownContent.value = `# ${localize(navItem.label)}`
     }
   } catch {
-    markdownContent.value = `# Error loading page\n\nFailed to load content for "${navItem.label}".`
+    markdownContent.value = `# Error loading page\n\nFailed to load content for "${localize(navItem.label)}".`
   }
 
   loading.value = false

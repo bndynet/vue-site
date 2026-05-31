@@ -3,6 +3,7 @@ import { computed } from 'vue'
 import { useRoute } from 'vue-router'
 import type { ResolvedNavItem } from '../types'
 import { isExternalLink } from '../nav-utils'
+import { useLocalize } from '../composables/useLocalize'
 import DynamicIcon from './DynamicIcon.vue'
 
 const props = withDefaults(defineProps<{
@@ -13,6 +14,7 @@ const props = withDefaults(defineProps<{
 })
 
 const route = useRoute()
+const { localize } = useLocalize()
 
 const isExternal = computed(() => !!props.item.link && isExternalLink(props.item.link))
 const target = computed(() => props.item.link ?? props.item.resolvedPath)
@@ -29,7 +31,7 @@ const isActive = computed(() => !isExternal.value && route.path === target.value
     rel="noopener noreferrer"
   >
     <DynamicIcon v-if="item.icon" :name="item.icon" :size="18" />
-    <span class="nav-item-label">{{ item.label }}</span>
+    <span class="nav-item-label">{{ localize(item.label) }}</span>
   </a>
   <router-link
     v-else
@@ -38,7 +40,7 @@ const isActive = computed(() => !isExternal.value && route.path === target.value
     :class="{ 'nav-item--active': isActive, 'nav-item--indent': indent }"
   >
     <DynamicIcon v-if="item.icon" :name="item.icon" :size="18" />
-    <span class="nav-item-label">{{ item.label }}</span>
+    <span class="nav-item-label">{{ localize(item.label) }}</span>
   </router-link>
 </template>
 

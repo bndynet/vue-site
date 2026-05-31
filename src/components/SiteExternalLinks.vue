@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useSiteConfig } from '../composables/useSiteConfig'
+import { useLocalize } from '../composables/useLocalize'
+import type { LocalizedString } from '../types'
 import DynamicIcon from './DynamicIcon.vue'
 import UiTooltip from './UiTooltip.vue'
 
@@ -13,9 +15,10 @@ withDefaults(
 )
 
 const { config } = useSiteConfig()
+const { localize } = useLocalize()
 
-function linkTooltip(item: { link: string; title?: string }): string {
-  const t = item.title?.trim()
+function linkTooltip(item: { link: string; title?: LocalizedString }): string {
+  const t = localize(item.title).trim()
   if (t) return t
   try {
     const u = new URL(item.link)

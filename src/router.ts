@@ -4,7 +4,8 @@ import {
   type RouterHistory,
   type RouteRecordRaw,
 } from 'vue-router'
-import type { NavItem, ResolvedNavItem, StandalonePage } from './types'
+import type { LocaleCode, NavItem, ResolvedNavItem, StandalonePage } from './types'
+import { resolveLocalized } from './i18n-utils'
 import PageView from './components/PageView.vue'
 
 function toPath(label: string): string {
@@ -41,13 +42,23 @@ export async function filterNavItems(items: NavItem[]): Promise<NavItem[]> {
   return result
 }
 
-export function resolveNavItems(items: NavItem[], parentIndex?: number): ResolvedNavItem[] {
+/**
+ * Resolve nav items into `ResolvedNavItem`s. Route paths are derived from a **canonical** label
+ * string (the `defaultLocale` entry, else the first entry) so that switching language never changes
+ * URLs. The original `label` (possibly a `LocalizedString`) is preserved for reactive rendering.
+ */
+export function resolveNavItems(
+  items: NavItem[],
+  defaultLocale?: LocaleCode,
+  parentIndex?: number,
+): ResolvedNavItem[] {
   return items.map((item, index) => {
     const isHome = parentIndex === undefined && index === 0
     const isGroup = !item.page && !!item.children?.length
-    const resolvedPath = item.path ?? (isHome ? '/' : toPath(item.label))
+    const canonicalLabel = resolveLocalized(item.label, defaultLocale ?? '', defaultLocale)
+    const resolvedPath = item.path ?? (isHome ? '/' : toPath(canonicalLabel))
     const resolvedChildren = item.children
-      ? resolveNavItems(item.children, index)
+      ? resolveNavItems(item.children, defaultLocale, index)
       : undefined
 
     return {
@@ -60,18 +71,23 @@ export function resolveNavItems(items: NavItem[], parentIndex?: number): Resolve
   })
 }
 
-function collectRoutes(resolvedNav: ResolvedNavItem[], prefix = ''): RouteRecordRaw[] {
+function collectRoutes(
+  resolvedNav: ResolvedNavItem[],
+  defaultLocale?: LocaleCode,
+  prefix = '',
+): RouteRecordRaw[] {
   const routes: RouteRecordRaw[] = []
 
   for (const item of resolvedNav) {
     if (item.link) {
       continue
     } else if (item.isGroup && item.resolvedChildren) {
-      routes.push(...collectRoutes(item.resolvedChildren, prefix))
+      routes.push(...collectRoutes(item.resolvedChildren, defaultLocale, prefix))
     } else {
+      const canonicalLabel = resolveLocalized(item.label, defaultLocale ?? '', defaultLocale)
       routes.push({
         path: prefix + item.resolvedPath,
-        name: (prefix ? prefix + ':' : '') + item.label,
+        name: (prefix ? prefix + ':' : '') + canonicalLabel,
         component: PageView,
         meta: { navItem: item, auth: item.auth },
       })
@@ -86,8 +102,9 @@ export async function createSiteRouter(
   pages?: StandalonePage[],
   history?: RouterHistory,
   defaultPath?: string,
+  defaultLocale?: LocaleCode,
 ) {
-  const routes = collectRoutes(resolvedNav)
+  const routes = collectRoutes(resolvedNav, defaultLocale)
 
   for (const page of pages ?? []) {
     if (!(await isVisible(page))) continue

@@ -48,7 +48,13 @@ export interface AuthConfig {
 }
 
 export interface NavItem {
-  label: string
+  /**
+   * Display label. Accepts a plain `string`, or a `LocalizedString` map for multi-language sites.
+   * Only the menu text is localized — the derived route path stays stable (computed once from the
+   * default locale / first entry), so switching language never changes URLs. Set an explicit `path`
+   * to control the route directly.
+   */
+  label: LocalizedString
   icon?: string
   page?: (() => Promise<{ default: string }>) | (() => Promise<{ default: Component }>)
   children?: NavItem[]
@@ -238,12 +244,16 @@ export interface SiteEnvConfig {
 export interface SiteExternalLink {
   icon: string
   link: string
-  /** Tooltip text on hover; if omitted, the hostname is used when possible */
-  title?: string
+  /**
+   * Tooltip text on hover; if omitted, the hostname is used when possible. Accepts a
+   * `LocalizedString` for multi-language sites.
+   */
+  title?: LocalizedString
 }
 
 export interface SiteConfig {
-  title: string
+  /** Site title (browser tab + header). Accepts a `LocalizedString` for multi-language sites. */
+  title: LocalizedString
   logo?: string
   nav: NavItem[]
   /**
@@ -279,7 +289,8 @@ export interface SiteConfig {
    * locale via `useLocale()`. Omit to keep the site single-language.
    */
   i18n?: I18nConfig
-  footer?: string
+  /** Footer text. Accepts a `LocalizedString` for multi-language sites. */
+  footer?: LocalizedString
   readme?: string
   /** External links shown as icons next to the theme control */
   links?: SiteExternalLink[]

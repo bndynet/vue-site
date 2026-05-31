@@ -1,6 +1,8 @@
 export { createSiteApp } from './create-app'
 export { useTheme, themeRefKey } from './composables/useTheme'
 export { useLocale, localeRefKey } from './composables/useLocale'
+export { useLocalize } from './composables/useLocalize'
+export { resolveLocalized } from './i18n-utils'
 export { useSiteConfig } from './composables/useSiteConfig'
 export { builtinThemePalettes } from './theme/presets'
 export {

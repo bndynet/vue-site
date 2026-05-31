@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, watchEffect } from 'vue'
 import { useSiteConfig } from '../composables/useSiteConfig'
 import { useNavLayout } from '../composables/useNavLayout'
+import { useLocalize } from '../composables/useLocalize'
 import SideNav from './SideNav.vue'
 import SiteExternalLinks from './SiteExternalLinks.vue'
 import ThemeSwitch from './ThemeSwitch.vue'
@@ -9,8 +10,15 @@ import TopPrimaryNav from './TopPrimaryNav.vue'
 
 const { config } = useSiteConfig()
 const { tieredNav, showSidebar, standalone } = useNavLayout()
+const { localize } = useLocalize()
 
 const themeEnabled = computed(() => config.theme !== false)
+const siteTitle = computed(() => localize(config.title))
+const siteFooter = computed(() => localize(config.footer))
+
+watchEffect(() => {
+  document.title = siteTitle.value
+})
 </script>
 
 <template>
@@ -28,10 +36,10 @@ const themeEnabled = computed(() => config.theme !== false)
           v-if="config.logo"
           class="site-primary-nav-logo"
           :src="config.logo"
-          :alt="`${config.title} logo`"
+          :alt="`${siteTitle} logo`"
           decoding="async"
         />
-        <span class="site-primary-nav-title">{{ config.title }}</span>
+        <span class="site-primary-nav-title">{{ siteTitle }}</span>
       </router-link>
       <TopPrimaryNav />
       <div class="site-primary-nav-end">
@@ -46,22 +54,22 @@ const themeEnabled = computed(() => config.theme !== false)
             v-if="config.logo"
             class="site-sidebar-logo"
             :src="config.logo"
-            :alt="`${config.title} logo`"
+            :alt="`${siteTitle} logo`"
             decoding="async"
           />
-          <div class="site-sidebar-title">{{ config.title }}</div>
+          <div class="site-sidebar-title">{{ siteTitle }}</div>
         </div>
       </div>
       <SideNav />
       <div
-        v-if="!tieredNav || config.footer"
+        v-if="!tieredNav || siteFooter"
         class="site-sidebar-footer"
       >
         <div v-if="!tieredNav" class="site-sidebar-toolbar">
           <SiteExternalLinks compact />
           <ThemeSwitch v-if="themeEnabled" compact />
         </div>
-        <p v-if="config.footer" class="site-footer-text">{{ config.footer }}</p>
+        <p v-if="siteFooter" class="site-footer-text">{{ siteFooter }}</p>
       </div>
     </aside>
     <main class="site-content">
@@ -70,10 +78,10 @@ const themeEnabled = computed(() => config.theme !== false)
       </div>
     </main>
     <footer
-      v-if="tieredNav && !showSidebar && config.footer"
+      v-if="tieredNav && !showSidebar && siteFooter"
       class="site-footer-standalone"
     >
-      <p class="site-footer-text">{{ config.footer }}</p>
+      <p class="site-footer-text">{{ siteFooter }}</p>
     </footer>
   </div>
 </template>

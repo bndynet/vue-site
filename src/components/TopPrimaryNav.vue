@@ -3,10 +3,12 @@ import { computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { useSiteConfig } from '../composables/useSiteConfig'
 import { getFirstLeafPath, subtreeContainsPath, isExternalLink } from '../nav-utils'
+import { useLocalize } from '../composables/useLocalize'
 import DynamicIcon from './DynamicIcon.vue'
 
 const { resolvedNav } = useSiteConfig()
 const route = useRoute()
+const { localize } = useLocalize()
 
 const links = computed(() =>
   resolvedNav.map((item) => {
@@ -24,7 +26,7 @@ const links = computed(() =>
 
 <template>
   <nav class="site-primary-nav-links" aria-label="Primary">
-    <template v-for="{ item, to, external, active } in links" :key="item.resolvedPath + item.label">
+    <template v-for="{ item, to, external, active } in links" :key="item.resolvedPath">
       <a
         v-if="external"
         :href="item.link"
@@ -33,7 +35,7 @@ const links = computed(() =>
         rel="noopener noreferrer"
       >
         <DynamicIcon v-if="item.icon" :name="item.icon" :size="17" />
-        <span class="site-primary-nav-link-label">{{ item.label }}</span>
+        <span class="site-primary-nav-link-label">{{ localize(item.label) }}</span>
       </a>
       <router-link
         v-else
@@ -42,7 +44,7 @@ const links = computed(() =>
         :class="{ 'site-primary-nav-link--active': active }"
       >
         <DynamicIcon v-if="item.icon" :name="item.icon" :size="17" />
-        <span class="site-primary-nav-link-label">{{ item.label }}</span>
+        <span class="site-primary-nav-link-label">{{ localize(item.label) }}</span>
       </router-link>
     </template>
   </nav>

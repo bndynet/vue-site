@@ -7,6 +7,7 @@ import { applyAuthGuard, pruneNavByAuth } from './auth'
 import { initTheme, themeRefKey } from './composables/useTheme'
 import { initLocale, localeRefKey } from './composables/useLocale'
 import { siteContextKey } from './composables/useSiteConfig'
+import { resolveLocalized } from './i18n-utils'
 import { getExtraThemes, resolveThemePalettes } from './theme/resolve-palettes'
 import AppLayout from './components/AppLayout.vue'
 
@@ -17,8 +18,13 @@ import './styles/code-highlight.css'
 import './styles/element-plus-theme.css'
 
 export async function createSiteApp(config: SiteConfig) {
+  // Canonical locale for stable path/name derivation (independent of the user's current language).
+  const defaultLocale = config.i18n
+    ? config.i18n.defaultLocale ?? config.i18n.locales[0]?.code
+    : undefined
+
   const visibleNav = await filterNavItems(config.nav)
-  const resolvedNav = resolveNavItems(visibleNav)
+  const resolvedNav = resolveNavItems(visibleNav, defaultLocale)
 
   // History mode: 'hash' (default) is base-agnostic; 'web' (HTML5) needs the public base, which the
   // CLI injects as `config.baseUrl` (= import.meta.env.BASE_URL) unless `router.base` overrides it.
@@ -31,6 +37,7 @@ export async function createSiteApp(config: SiteConfig) {
     config.pages,
     history,
     config.defaultPath,
+    defaultLocale,
   )
 
   if (config.auth) {
@@ -86,7 +93,8 @@ export async function createSiteApp(config: SiteConfig) {
     )
   }
 
-  document.title = config.title
+  // Initial document title for the resolved locale; AppLayout keeps it in sync on locale change.
+  document.title = resolveLocalized(config.title, localeRef.value, defaultLocale)
 
   const app = createApp(AppLayout)
 

@@ -3,6 +3,7 @@ import { ref, computed, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import type { ResolvedNavItem } from '../types'
 import { subtreeContainsPath } from '../nav-utils'
+import { useLocalize } from '../composables/useLocalize'
 import DynamicIcon from './DynamicIcon.vue'
 import NavLink from './NavItem.vue'
 import NavGroupRecursive from './NavGroup.vue'
@@ -12,6 +13,7 @@ const props = defineProps<{
 }>()
 
 const route = useRoute()
+const { localize } = useLocalize()
 
 const hasActiveChild = computed(() => {
   return props.item.resolvedChildren?.some((child) =>
@@ -34,7 +36,7 @@ function toggle() {
   <div class="nav-group" :class="{ 'nav-group--expanded': expanded }">
     <button class="nav-group-header" @click="toggle">
       <DynamicIcon v-if="item.icon" :name="item.icon" :size="18" />
-      <span class="nav-group-label">{{ item.label }}</span>
+      <span class="nav-group-label">{{ localize(item.label) }}</span>
       <svg
         class="nav-group-chevron"
         width="16"
@@ -50,7 +52,7 @@ function toggle() {
       </svg>
     </button>
     <div v-show="expanded" class="nav-group-children">
-      <template v-for="child in item.resolvedChildren" :key="child.resolvedPath + child.label">
+      <template v-for="child in item.resolvedChildren" :key="child.resolvedPath">
         <NavGroupRecursive v-if="child.isGroup" :item="child" />
         <NavLink v-else :item="child" :indent="true" />
       </template>
