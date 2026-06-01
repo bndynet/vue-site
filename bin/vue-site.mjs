@@ -205,6 +205,7 @@ function buildBootstrapScript({ siteConfig, siteConfigSpecifier }) {
     `    ...siteConfig,`,
     `    ...(hasThemeQuery ? { theme: { ...(siteConfig.theme || {}), default: resolvedTheme } } : {}),`,
     `    packageRepository: repositoryUrl,`,
+    `    baseUrl: import.meta.env.BASE_URL,`,
     `  })`,
     `  app.mount('#app')`,
     `})()`,

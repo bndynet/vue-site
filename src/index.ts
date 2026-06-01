@@ -17,6 +17,7 @@ export type {
   AuthRule,
   AuthContext,
   AuthConfig,
+  RouterConfig,
   ThemeConfig,
   ThemeOption,
   ThemePaletteVars,

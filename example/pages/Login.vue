@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 
 const route = useRoute()
+const router = useRouter()
 
 const currentRole = computed(() => localStorage.getItem('role') ?? '')
 const redirectTarget = computed(() => {
@@ -11,10 +12,11 @@ const redirectTarget = computed(() => {
 })
 
 // The nav menu is filtered once at startup (auth is evaluated when the app is created), so we do a
-// full reload after changing the role. With hash history this re-runs createSiteApp and re-applies
-// both the nav filter and the navigation guard for the new role.
-function reloadTo(path: string) {
-  window.location.hash = path
+// full reload after changing the role. `router.replace` updates the URL correctly for the active
+// history mode (hash or HTML5), then a full reload re-runs createSiteApp so the nav filter and the
+// navigation guard re-evaluate for the new role.
+async function reloadTo(path: string) {
+  await router.replace(path)
   window.location.reload()
 }
 

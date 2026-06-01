@@ -7,7 +7,7 @@
   },
   "scripts": {
     "dev": "vue-site dev",
-    "build": "vue-site build",
+    "build": "vue-site build --base=/vue-site/",
     "preview": "vue-site preview"
   },
   "dependencies": {

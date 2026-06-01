@@ -1,5 +1,8 @@
 <script setup lang="ts">
 import { computed } from 'vue'
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
 
 const role = computed(() => localStorage.getItem('role') ?? '')
 
@@ -9,10 +12,10 @@ const stats = [
   { label: 'Uptime', value: '99.98%' },
 ]
 
-function signOut() {
+async function signOut() {
   localStorage.removeItem('role')
-  // Full reload so the startup nav filter re-runs and the guard re-evaluates.
-  window.location.hash = '/login'
+  // `router.replace` works in both hash and HTML5 modes; the reload re-runs the startup nav filter.
+  await router.replace('/login')
   window.location.reload()
 }
 </script>

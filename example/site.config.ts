@@ -11,6 +11,10 @@ export default defineConfig({
       app,
     )
   },
+  // Router history mode. Default is 'hash' (#/path, works on any static host). Switch to HTML5
+  // clean URLs with `mode: 'web'`; the base defaults to the CLI `--base` value. HTML5 mode needs
+  // the host to serve index.html for unknown paths (SPA fallback).
+  // router: { mode: 'web' },
   logo: 'https://static.bndy.net/images/logo.png',
   footer: 'Copyright © 2026 BNDY.NET',
   links: [

@@ -7,6 +7,7 @@ Configurable Vue 3 site framework: one package, `site.config.ts`, and Markdown p
 - Config-driven nav (Lucide icon names)
 - Permission-gated nav via a `visible` predicate (sync or async; hides item and skips its route)
 - Per-page authorization via `auth` + a central `authorize` policy (navigation guard + login redirect)
+- Hash or HTML5 (`web`) router history, configurable in `site.config.ts`
 - Markdown (`?raw`) or Vue pages
 - highlight.js, light/dark theme + localStorage
 - Project `README.md` as Home
@@ -77,6 +78,7 @@ Add `"dev": "vue-site dev"` (or `vs dev`) in `package.json` scripts if you like.
 | `links` | Header links: Lucide `icon` + `link`, optional `title` |
 | `pages` | `StandalonePage[]` — full-screen routes outside the `nav` tree (no top bar/sidebar/footer) |
 | `auth` | Central authorization policy (`AuthConfig`) — see [Per-page authorization](#per-page-authorization-auth) |
+| `router` | History mode (`RouterConfig`) — `hash` (default) or HTML5 `web`; see [Router history](#router-history-router) |
 | `packageRepository` | Usually set by CLI from `package.json`; omit when using `createSiteApp` alone |
 | `env` | Dev/build options — see below |
 | `bootstrap` | Optional path from site root (e.g. `./bootstrap.ts`) — module loaded once before the Vue app |
@@ -164,6 +166,30 @@ export default defineConfig({
 
 Use `visible` for static existence trimming and `auth` for user-based access. They can be combined on the same item.
 
+## Router history (`router`)
+
+By default routes use **hash** history (`#/path`), which works on any static host with no server configuration and is independent of the public base. To get clean URLs, switch to HTML5 history:
+
+```typescript
+export default defineConfig({
+  title: 'My Site',
+  router: { mode: 'web' }, // /app/admin instead of /app/#/admin
+  nav: [/* ... */],
+})
+```
+
+### `RouterConfig`
+
+| Property | Default | Description |
+|----------|---------|-------------|
+| `mode` | `hash` | `hash` (`#/path`, no server config) or `web` (HTML5 clean URLs) |
+| `base` | `import.meta.env.BASE_URL` | Base path for `web` mode. The CLI sets this from `--base` / `env.vite.base` automatically; override only when calling `createSiteApp` from a custom entry. |
+
+Notes:
+
+- **`web` mode requires SPA fallback**: configure your host to serve `index.html` for unknown paths, otherwise deep links / refreshes 404. Hash mode needs nothing.
+- **Subpath deploys**: with the CLI, `--base=/app/` is picked up automatically as the history base in `web` mode. In [library mode](#library-mode), pass `router: { mode: 'web', base: import.meta.env.BASE_URL }` from your own entry.
+
 ## `env` (`SiteEnvConfig`)
 
 | Property | Description |
@@ -216,7 +242,7 @@ app.mount('#app')
 
 Use a top-level `await` in your entry (or an async IIFE): `createSiteApp` is async and **awaits** `configureApp` when it returns a `Promise`. If you set optional `bootstrap` in config, that module loads before the app is created; if you omit `bootstrap`, that step is skipped.
 
-Exports: `createSiteApp`, `defineConfig`, `useTheme`, `useSiteConfig`, `themeRefKey`. Types: `SiteConfig`, `SiteEnvConfig`, `SiteViteConfig`, `SiteExternalLink`, `NavItem`, `StandalonePage`, `AuthRule`, `AuthContext`, `AuthConfig`, `ThemeConfig`, `ThemeOption`, `ThemePaletteVars`, `ResolvedNavItem`.
+Exports: `createSiteApp`, `defineConfig`, `useTheme`, `useSiteConfig`, `themeRefKey`. Types: `SiteConfig`, `SiteEnvConfig`, `SiteViteConfig`, `SiteExternalLink`, `NavItem`, `StandalonePage`, `AuthRule`, `AuthContext`, `AuthConfig`, `RouterConfig`, `ThemeConfig`, `ThemeOption`, `ThemePaletteVars`, `ResolvedNavItem`.
 
 ### Theme in Vue pages (`useTheme`)
 

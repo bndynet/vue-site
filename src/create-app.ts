@@ -1,4 +1,5 @@
 import { createApp, ref } from 'vue'
+import { createWebHashHistory, createWebHistory } from 'vue-router'
 import ElementPlus from 'element-plus'
 import type { SiteConfig } from './types'
 import { resolveNavItems, createSiteRouter, filterNavItems } from './router'
@@ -17,7 +18,14 @@ import './styles/element-plus-theme.css'
 export async function createSiteApp(config: SiteConfig) {
   const visibleNav = await filterNavItems(config.nav)
   const resolvedNav = resolveNavItems(visibleNav)
-  const router = await createSiteRouter(resolvedNav, config.pages)
+
+  // History mode: 'hash' (default) is base-agnostic; 'web' (HTML5) needs the public base, which the
+  // CLI injects as `config.baseUrl` (= import.meta.env.BASE_URL) unless `router.base` overrides it.
+  const history =
+    config.router?.mode === 'web'
+      ? createWebHistory(config.router.base ?? config.baseUrl ?? '/')
+      : createWebHashHistory()
+  const router = await createSiteRouter(resolvedNav, config.pages, history)
 
   if (config.auth) {
     applyAuthGuard(router, config.auth)

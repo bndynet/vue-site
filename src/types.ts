@@ -144,6 +144,25 @@ export interface ThemeConfig {
   }
 }
 
+/** Router history configuration. */
+export interface RouterConfig {
+  /**
+   * History mode:
+   * - `'hash'` (default) — URLs use a `#` fragment (e.g. `/app/#/admin`). Works on any static host
+   *   with no server config; route paths are independent of the public base.
+   * - `'web'` — HTML5 history with clean URLs (e.g. `/app/admin`). Requires the host to serve
+   *   `index.html` for unknown paths (SPA fallback).
+   * @default 'hash'
+   */
+  mode?: 'hash' | 'web'
+  /**
+   * Base path for `'web'` mode (ignored for `'hash'`). Defaults to the app's public base
+   * (`import.meta.env.BASE_URL`, set by the CLI's `--base` / `env.vite.base`). Set this only to
+   * override that default (e.g. when calling `createSiteApp` from a custom entry).
+   */
+  base?: string
+}
+
 export type SiteViteConfig = Partial<Omit<ViteUserConfig, 'root'>> & {
   /** Options passed to @vitejs/plugin-vue (the Vue plugin is added automatically) */
   vue?: Record<string, any>
@@ -190,6 +209,8 @@ export interface SiteConfig {
    * from the nav menu at startup when not authorized. Omit to disable authorization entirely.
    */
   auth?: AuthConfig
+  /** Router history configuration (hash vs HTML5). See `RouterConfig`. */
+  router?: RouterConfig
   theme?: ThemeConfig
   footer?: string
   readme?: string
@@ -200,6 +221,12 @@ export interface SiteConfig {
    * then site root). Injected by the `vue-site` CLI; omit when calling `createSiteApp` manually.
    */
   packageRepository?: string | null
+  /**
+   * App public base path. Injected by the `vue-site` CLI from `import.meta.env.BASE_URL` (the
+   * resolved Vite `base`) and used as the default base for `'web'` history mode. Prefer setting
+   * `router.base` to override; omit when calling `createSiteApp` manually.
+   */
+  baseUrl?: string
   /** Development / build environment configuration */
   env?: SiteEnvConfig
   /**

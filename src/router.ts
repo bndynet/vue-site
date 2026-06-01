@@ -1,4 +1,9 @@
-import { createRouter, createWebHashHistory, type RouteRecordRaw } from 'vue-router'
+import {
+  createRouter,
+  createWebHashHistory,
+  type RouterHistory,
+  type RouteRecordRaw,
+} from 'vue-router'
 import type { NavItem, ResolvedNavItem, StandalonePage } from './types'
 import PageView from './components/PageView.vue'
 
@@ -79,6 +84,7 @@ function collectRoutes(resolvedNav: ResolvedNavItem[], prefix = ''): RouteRecord
 export async function createSiteRouter(
   resolvedNav: ResolvedNavItem[],
   pages?: StandalonePage[],
+  history?: RouterHistory,
 ) {
   const routes = collectRoutes(resolvedNav)
 
@@ -115,7 +121,7 @@ export async function createSiteRouter(
   })
 
   return createRouter({
-    history: createWebHashHistory(),
+    history: history ?? createWebHashHistory(),
     routes,
   })
 }
