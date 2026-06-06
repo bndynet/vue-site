@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import { ref, shallowRef, watch, onMounted, type Component } from 'vue'
 import { useRoute } from 'vue-router'
-import type { ResolvedNavItem } from '../types'
+import type { PageLoader, ResolvedNavItem } from '../types'
 import { useSiteConfig } from '../composables/useSiteConfig'
 import { useLocalize } from '../composables/useLocalize'
+import { localizedPage } from '../i18n-utils'
 import MarkdownView from './MarkdownView.vue'
 
 const route = useRoute()
@@ -27,8 +28,17 @@ async function loadContent() {
   }
 
   try {
-    if (navItem.page) {
-      const mod = await navItem.page(locale.value)
+    // `page` may be a loader function, a CLI-resolved glob map (`page: './x.vue'`), or a bare
+    // string path (untransformed library-mode use → localizedPage rejects with a clear message).
+    const page = navItem.page as
+      | PageLoader
+      | string
+      | Record<string, () => Promise<{ default: unknown }>>
+      | undefined
+    if (page) {
+      const loader =
+        typeof page === 'function' ? page : localizedPage(page as never)
+      const mod = await loader(locale.value)
       if (typeof mod.default === 'string') {
         markdownContent.value = mod.default
       } else {

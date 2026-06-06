@@ -56,7 +56,16 @@ export interface NavItem {
    */
   label: LocalizedString
   icon?: string
-  page?: PageLoader
+  /**
+   * Page content for this item's route. Either:
+   * - a **loader function** — `() => import('./Page.vue')` / `() => import('./page.md?raw')`, or a
+   *   per-locale loader from {@link localizedPage}; or
+   * - a **file path string** — e.g. `'./pages/AdminView.vue'` or `'./pages/guide.md'`. The
+   *   **vue-site CLI** resolves it exactly like `localizedPage('<path>')`: sibling
+   *   `name.<code>.ext` files are auto-imported per locale and a missing locale falls back to the
+   *   base file. The string form is CLI-only — in library mode use a loader (or {@link localizedPage}).
+   */
+  page?: PageLoader | string
   children?: NavItem[]
   path?: string
   /**
@@ -93,7 +102,8 @@ export interface NavItem {
 export interface StandalonePage {
   /** Route path (used as-is, no label-based derivation), e.g. `/landing`. */
   path: string
-  page: PageLoader
+  /** Page content. Same forms as {@link NavItem.page} (a loader function or a CLI-resolved path string). */
+  page: PageLoader | string
   /**
    * Optional visibility predicate, awaited once at app startup. Return `false` (or a
    * promise resolving to `false`) to skip registering this page's route entirely.

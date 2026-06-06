@@ -93,7 +93,7 @@ Add `"dev": "vue-site dev"` (or `vs dev`) in `package.json` scripts if you like.
 |----------|-------------|
 | `label` | Sidebar text. `LocalizedString` |
 | `icon` | [Lucide](https://lucide.dev/icons) name |
-| `page` | `() => import('./page.md?raw')` or `() => import('./Page.vue')`. Receives the active locale; use `localizedPage({...})` for per-language content |
+| `page` | Page content. Simplest is a **file-path string** like `'./pages/AdminView.vue'` or `'./README.md'` (auto-loads per-locale siblings, falls back to the base file). Also accepts a loader (`() => import('./Page.vue')` / `() => import('./page.md?raw')`) or a `localizedPage(...)` result. See [Per-locale page content](#per-locale-page-content) and [Advanced page loaders](#advanced-page-loaders) |
 | `path` | Route path (derived from `label`'s default-locale value if omitted; stays stable across languages) |
 | `children` | Nested group |
 | `link` | Render as a hyperlink (internal route path or external URL) instead of a page route |
@@ -118,7 +118,7 @@ resolves every `LocalizedString` field (`title`, `nav[].label`, `footer`, `links
 the active locale, and exposes the current locale via `useLocale()` / `useLocalize()`.
 
 ```typescript
-import { defineConfig, localizedPage } from '@bndynet/vue-site'
+import { defineConfig } from '@bndynet/vue-site'
 
 export default defineConfig({
   i18n: {
@@ -131,19 +131,85 @@ export default defineConfig({
   title: { en: 'My Site', zh: '我的站点' }, // a LocalizedString
   footer: { en: '© 2026', zh: '© 2026 版权所有' },
   nav: [
-    { label: { en: 'Home', zh: '首页' }, icon: 'home', page: () => import('../README.md?raw') },
+    { label: { en: 'Home', zh: '首页' }, icon: 'home', page: '../README.md' },
     {
       label: { en: 'Guide', zh: '指南' },
       icon: 'book',
-      // Per-locale page content with fallback (exact > primary-subtag > defaultLocale > first).
-      page: localizedPage({
-        en: () => import('./pages/guide.en.md?raw'),
-        zh: () => import('./pages/guide.zh.md?raw'),
-      }),
+      // Per-locale content: ./pages/guide.md (base) + guide.zh.md, auto-discovered by the CLI.
+      page: './pages/guide.md',
     },
   ],
 })
 ```
+
+### Per-locale page content
+
+Point `page` at a **file-path string** and the framework serves the right file for the active
+locale — no extra wiring:
+
+```typescript
+import { defineConfig, tk } from '@bndynet/vue-site'
+
+export default defineConfig({
+  i18n: { locales: [{ code: 'en' }, { code: 'zh' }], defaultLocale: 'en' },
+  nav: [
+    // Loads ../README.md, and auto-uses ../README.zh.md when the active locale is `zh`.
+    { label: tk('nav.home'), icon: 'home', page: '../README.md' },
+    // Vue pages work the same way: Dashboard.vue + Dashboard.zh.vue.
+    { label: tk('nav.dash'), icon: 'gauge', page: './pages/Dashboard.vue' },
+  ],
+})
+```
+
+- Name the variants `name.<code>.<ext>` next to the base file — `README.zh.md`, `Dashboard.zh.vue`, …
+- A locale with no matching file falls back to the **base file** (`README.md`). Resolution order:
+  exact → primary-subtag (`zh-TW` → `zh`) → base file.
+- **Add a language by dropping in a `name.<code>` file — no config changes.**
+- Works for Markdown (`.md`) and Vue (`.vue`). The base name must not contain dots (`README.md` ✓,
+  `my.page.md` ✗).
+
+> The string form is resolved by the `vue-site` CLI at build time. If you embed the library yourself
+> (no CLI — see [library mode](#library-mode)), use a loader from
+> [Advanced page loaders](#advanced-page-loaders) instead.
+
+### Advanced page loaders
+
+> **Rarely needed.** The file-path string above covers most sites. Reach for these only when you
+> want a plain single-file loader, files that **don't** share a base name, or you run **without** the
+> CLI (library mode).
+
+Besides a string, `page` accepts a **loader function** or a `localizedPage(...)` result:
+
+- **Single file, no localization** — a plain dynamic import:
+
+  ```typescript
+  page: () => import('./pages/Dashboard.vue')   // or () => import('./guide.md?raw') for Markdown
+  ```
+
+- **Explicit locale map** — for files that don't share a base name (so the string form can't infer
+  them):
+
+  ```typescript
+  import { localizedPage } from '@bndynet/vue-site'
+
+  page: localizedPage({
+    en: () => import('./pages/guide-en.md?raw'),
+    zh: () => import('./pages/guide-zh.md?raw'),
+  })
+  ```
+
+- **Glob (library mode)** — the same auto-discovery as the string form, written out so it works
+  without the CLI:
+
+  ```typescript
+  page: localizedPage(import.meta.glob(['../README.md', '../README.*.md'], { query: '?raw' }))
+  ```
+
+  `page: '../README.md'` is exactly this, generated for you by the CLI. (For Vue pages drop the
+  `{ query: '?raw' }`.)
+
+All `localizedPage` forms fall back when the active locale has no file (exact → primary-subtag →
+base file → first entry).
 
 ### How it works
 
@@ -198,7 +264,7 @@ no `messages` field) and you don't even have to list the languages.
 
 ```typescript
 // site.config.ts — reference keys with tk() in config and t() in pages
-import { defineConfig, localizedPage, tk } from '@bndynet/vue-site'
+import { defineConfig, tk } from '@bndynet/vue-site'
 
 export default defineConfig({
   // `i18n` can be omitted entirely: the language list is derived from the file names
@@ -212,14 +278,11 @@ export default defineConfig({
   },
   title: tk('site.title'),
   nav: [
-    { label: tk('nav.home'), icon: 'home', page: () => import('../README.md?raw') },
+    { label: tk('nav.home'), icon: 'home', page: '../README.md' },
     {
       label: tk('nav.guide'),
       icon: 'book',
-      page: localizedPage({
-        en: () => import('./pages/guide.en.md?raw'),
-        zh: () => import('./pages/guide.zh.md?raw'),
-      }),
+      page: './pages/guide.md',
     },
   ],
 })

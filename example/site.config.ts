@@ -9,7 +9,7 @@ export default defineConfig({
   // (with friendly built-in labels). It's declared here only to customize labels/icons/order.
   i18n: {
     locales: [
-      { code: 'en', label: 'English' },
+      { code: 'en', label: 'English', icon: 'languages' },
       { code: 'zh', label: '简体中文', icon: 'languages' },
     ],
     defaultLocale: 'en',
@@ -65,7 +65,14 @@ export default defineConfig({
   nav: [
     // Labels reference the central catalog via `tk('id')`. Brand names like `API` / `Element Plus`
     // stay plain strings since they read the same in every language.
-    { label: tk('nav.home'), icon: 'home', page: () => import('../README.md?raw') },
+    {
+      label: tk('nav.home'),
+      icon: 'home',
+      // Just point at the base file. The CLI auto-imports every sibling `README.<code>.md`
+      // (e.g. `README.zh.md` -> `zh`); a locale with no file falls back to `README.md`.
+      // Add a language by dropping in another `README.<code>.md` — no edits here needed.
+      page: localizedPage('../README.md'),
+    },
     {
       label: tk('nav.docs'),
       icon: 'book-open',
@@ -77,19 +84,13 @@ export default defineConfig({
             {
               label: tk('nav.gettingStarted'),
               icon: 'rocket',
-              // Per-locale page content; falls back to the default locale when a language is missing.
-              page: localizedPage({
-                en: () => import('./pages/GettingStarted.md?raw'),
-                zh: () => import('./pages/GettingStarted.zh.md?raw'),
-              }),
+              // File-name form: picks up ./pages/GettingStarted.md (base) + GettingStarted.zh.md, etc.
+              page: localizedPage('./pages/GettingStarted.md'),
             },
             {
               label: tk('nav.configuration'),
               icon: 'settings',
-              page: localizedPage({
-                en: () => import('./pages/Configuration.md?raw'),
-                zh: () => import('./pages/Configuration.zh.md?raw'),
-              }),
+              page: localizedPage('./pages/Configuration.md'),
             },
           ],
         },
@@ -118,7 +119,11 @@ export default defineConfig({
       ],
     },
     { label: 'Element Plus', icon: 'component', page: () => import('./pages/ElementPlusDemo.vue') },
-    { label: tk('nav.about'), icon: 'info', page: () => import('./pages/AboutView.vue') },
+    // `page` can also be a plain file-path string (CLI sugar). It behaves like
+    // `localizedPage('./pages/AboutView.vue')`: any `AboutView.<code>.vue` sibling is auto-imported
+    // per locale, falling back to this base file. Equivalent to `() => import('./pages/AboutView.vue')`
+    // when there are no localized siblings.
+    { label: tk('nav.about'), icon: 'info', page: './pages/AboutView.vue' },
     // A nav entry that links to the standalone `/landing` page (no own route registered).
     { label: tk('nav.landing'), icon: 'rocket', link: '/landing' },
     // `auth: true` requires any logged-in user (the `authorize` policy above sends guests to
@@ -136,7 +141,7 @@ export default defineConfig({
       label: tk('nav.admin'),
       icon: 'shield',
       auth: ['admin'],
-      page: () => import('./pages/AdminView.vue'),
+      page: './pages/AdminView.vue',
     },
     {
       label: tk('nav.login'),
@@ -146,7 +151,8 @@ export default defineConfig({
   ],
   // Standalone, full-screen pages (no top bar / sidebar / footer). Open at `#/landing`.
   pages: [
-    { path: '/landing', page: () => import('./pages/Landing.vue') },
+    // Standalone pages accept the same string-path sugar.
+    { path: '/landing', page: './pages/Landing.vue' },
     // Login page for the `auth` demo above. Left without an `auth` rule so it is always reachable.
     { path: '/login', page: () => import('./pages/Login.vue') },
   ],

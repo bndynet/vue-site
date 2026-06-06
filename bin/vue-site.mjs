@@ -331,7 +331,7 @@ async function loadSiteConfig() {
   // package. `defineConfig` is identity (the config object passes through); every other named
   // import (e.g. `tk`, `localizedPage`) becomes a callable no-op that returns a no-op, covering
   // helpers used as values. Relative imports (e.g. `./locales`) are left intact and bundled below.
-  const stubbed = raw.replace(
+  let stubbed = raw.replace(
     /import\s*\{([^}]*)\}\s*from\s*['"][^'"]*vue-site['"]\s*;?/g,
     (_match, names) => {
       const ids = names
@@ -352,6 +352,16 @@ async function loadSiteConfig() {
         .join('\n')
     },
   )
+
+  // `import.meta.glob(...)` is a Vite-only feature; in Node it would throw at config-eval time.
+  // Stub it to an empty map so configs using `localizedPageGlob(import.meta.glob(...))` pre-load
+  // (page loaders are never invoked here — only build-time settings are read). The real glob runs
+  // in the browser via Vite.
+  if (/import\.meta\.glob/.test(stubbed)) {
+    stubbed =
+      'const __vueSiteGlobStub = (..._args) => ({});\n' +
+      stubbed.replace(/import\.meta\.glob/g, '__vueSiteGlobStub')
+  }
 
   const isTs = /\.m?ts$/.test(foundConfig)
   // Write the stubbed entry next to the original so its relative imports (`./locales`) resolve.
@@ -394,6 +404,64 @@ async function loadSiteConfig() {
     try {
       fs.rmSync(tmpDir, { recursive: true, force: true })
     } catch {}
+  }
+}
+
+/**
+ * Turn a base file path into a `import.meta.glob(...)` expression matching the base file plus its
+ * per-locale siblings (`name.<code>.ext`) — but NOT unrelated `nameOther.ext`:
+ *   `../README.md`     -> import.meta.glob(["../README.md","../README.*.md"], { query: '?raw' })
+ *   `./pages/Home.vue` -> import.meta.glob(["./pages/Home.vue","./pages/Home.*.vue"], {})
+ * Markdown is loaded `?raw` (string content); other files (e.g. `.vue`) export a component.
+ * Returns `null` when the path has no extension (can't build a sensible glob).
+ */
+function fileToLocaleGlobExpr(rawPath) {
+  const qIdx = rawPath.indexOf('?')
+  const query = qIdx >= 0 ? rawPath.slice(qIdx + 1) : ''
+  const pathOnly = qIdx >= 0 ? rawPath.slice(0, qIdx) : rawPath
+  const dot = pathOnly.lastIndexOf('.')
+  if (dot <= pathOnly.lastIndexOf('/')) return null
+  const ext = pathOnly.slice(dot)
+  const globs = [pathOnly, `${pathOnly.slice(0, dot)}.*${ext}`]
+  const isMarkdown = /\.(?:md|markdown)$/i.test(ext) || /(?:^|&)raw(?:$|&)/.test(query)
+  const opts = isMarkdown ? `{ query: '?raw' }` : `{}`
+  return `import.meta.glob(${JSON.stringify(globs)}, ${opts})`
+}
+
+// Sugar so configs can name page files as plain strings; the CLI turns them into Vite globs so the
+// per-locale files get bundled. Two shapes are rewritten in the user's JS/TS under `cwd`:
+//   localizedPage('./file.md')  -> localizedPage(import.meta.glob([...], { query: '?raw' }))
+//   page: './file.md'           -> page: import.meta.glob([...], { query: '?raw' })
+// Loader functions, locale maps (`localizedPage({ en, zh })`) and explicit `import.meta.glob` are
+// left untouched; the `page:` form only rewrites path-like values (starting with `.` or `/`).
+function localizedPageSugarPlugin() {
+  const CALL_STRING_ARG = /(\blocalizedPage\s*\(\s*)(['"`])((?:\\.|(?!\2).)*)\2/g
+  const PAGE_STRING_FIELD = /(\bpage\s*:\s*)(['"`])((?:\\.|(?!\2).)*)\2/g
+  return {
+    name: 'vue-site:localized-page-sugar',
+    enforce: 'pre',
+    transform(code, id) {
+      const file = id.split('?')[0]
+      if (!/\.(?:[cm]?[jt]sx?)$/.test(file)) return
+      if (!file.startsWith(cwd) || file.includes('/node_modules/')) return
+      if (!code.includes('localizedPage(') && !/\bpage\s*:\s*['"`]/.test(code)) return
+      let changed = false
+      let out = code.replace(CALL_STRING_ARG, (match, head, _q, rawPath) => {
+        const expr = fileToLocaleGlobExpr(rawPath)
+        if (!expr) return match
+        changed = true
+        return `${head}${expr}`
+      })
+      out = out.replace(PAGE_STRING_FIELD, (match, head, _q, rawPath) => {
+        // Only rewrite path-like values to avoid touching unrelated `page: '...'` properties.
+        if (!/^[./]/.test(rawPath)) return match
+        const expr = fileToLocaleGlobExpr(rawPath)
+        if (!expr) return match
+        changed = true
+        return `${head}${expr}`
+      })
+      return changed ? { code: out, map: null } : undefined
+    },
   }
 }
 
@@ -584,7 +652,7 @@ async function buildViteConfig(options = {}) {
 
   const baseConfig = {
     root: cwd,
-    plugins: [vue(vueOpts), ...watchedScssPlugin, ...vueSitePlugin(entryCode), ...(userPlugins || [])],
+    plugins: [localizedPageSugarPlugin(), vue(vueOpts), ...watchedScssPlugin, ...vueSitePlugin(entryCode), ...(userPlugins || [])],
     resolve: {
       alias: {
         vue: resolve(vuePath, 'dist/vue.runtime.esm-bundler.js'),

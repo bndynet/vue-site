@@ -1,5 +1,5 @@
 import type { Component } from 'vue'
-import type { LocaleCode, LocalizedString, MessageRef, MessageTree } from './types'
+import type { LocaleCode, LocalizedString, MessageRef, MessageTree, PageLoader } from './types'
 
 /** Merged, flattened message dictionaries keyed by locale then dotted message id. */
 export type MessageCatalog = Record<LocaleCode, Record<string, string>>
@@ -174,6 +174,59 @@ function resolveKey(
   return keys[0]
 }
 
+type PageModuleLoader = () => Promise<{ default: string | Component }>
+
+/**
+ * Detect a Vite `import.meta.glob` result vs. an explicit locale map. Glob keys are module paths
+ * (always contain `/`, e.g. `../README.zh.md`); locale codes (`en`, `zh`, `zh-TW`) never do.
+ */
+function isGlobModuleMap(map: Record<string, PageModuleLoader>): boolean {
+  const keys = Object.keys(map)
+  return keys.length > 0 && keys.every((k) => k.includes('/'))
+}
+
+/**
+ * Locale code carried by a glob key's file name: `README.md` → none (the base/fallback file),
+ * `README.zh.md` / `guide.zh-TW.md` → the segment before the extension. Base name must not contain
+ * dots.
+ */
+function localeFromGlobKey(path: string): LocaleCode | undefined {
+  const file = path.slice(path.lastIndexOf('/') + 1)
+  const segments = file.split('.')
+  segments.pop() // drop the file extension (e.g. `md`, `vue`)
+  return segments.length >= 2 ? segments[segments.length - 1] : undefined
+}
+
+/**
+ * Build a loader from a glob map: pick the file for the active locale (exact → primary-subtag),
+ * else fall back to the base file (`README.md`, no locale segment), else the first available file.
+ */
+function globPageLoader(
+  map: Record<string, PageModuleLoader>,
+): (locale: LocaleCode) => Promise<{ default: string | Component }> {
+  const byLocale: Record<LocaleCode, PageModuleLoader> = {}
+  let base: PageModuleLoader | undefined
+  for (const path of Object.keys(map)) {
+    const locale = localeFromGlobKey(path)
+    if (locale) byLocale[locale] = map[path]
+    else base = map[path] // file with no locale segment → default/fallback
+  }
+  const codes = Object.keys(byLocale)
+  return (locale: LocaleCode) => {
+    if (byLocale[locale]) return byLocale[locale]()
+    const primary = locale.split('-')[0]
+    const primaryKey = codes.find(
+      (c) => c === primary || c.split('-')[0] === primary,
+    )
+    if (primaryKey) return byLocale[primaryKey]()
+    if (base) return base()
+    if (codes[0]) return byLocale[codes[0]]()
+    return Promise.reject(
+      new Error('[vue-site] localizedPage(): no page files matched.'),
+    )
+  }
+}
+
 /** Options for {@link localizedPage}. */
 export interface LocalizedPageOptions {
   /** Locale to fall back to when the active locale has no entry (else the first entry is used). */
@@ -181,20 +234,33 @@ export interface LocalizedPageOptions {
 }
 
 /**
- * Build a per-locale page loader for `NavItem.page` / `StandalonePage.page`. Pass a map of locale
- * code → content importer; the returned loader picks the importer matching the active locale, with
- * fallback (exact → primary-subtag → `defaultLocale` → first entry).
+ * Build a per-locale page loader for `NavItem.page` / `StandalonePage.page`. The returned loader
+ * receives the active locale and resolves the matching content, with graceful fallback. Three forms:
  *
- * Prefer this over a dynamic template-literal import (e.g. `` import(`./x.${locale}.md?raw`) ``):
- * the per-locale importers are statically analyzable by Vite and a missing locale degrades to the
- * fallback instead of throwing at runtime.
+ * - **File name** (recommended, simplest) — `localizedPage('../README.md')`. The **vue-site CLI**
+ *   rewrites this to a glob, so every `README.<code>.md` sitting next to the base file is picked up
+ *   automatically (e.g. `README.zh.md` → `zh`); a locale with no file falls back to the base file
+ *   (`README.md`). Add a language by dropping in a file — no config edits. Works for Markdown
+ *   (`.md`, loaded as `?raw`) and Vue pages (`.vue`). _Only the CLI understands this form; in
+ *   library mode use the glob form below._
+ * - **Glob map** — `localizedPage(import.meta.glob('../README*.md', { query: '?raw' }))`. Same
+ *   behavior as the file-name form, written explicitly (use this in library mode). Pass a **lazy**
+ *   glob whose modules expose `{ default }`.
+ * - **Locale map** — `localizedPage({ en: () => import('...'), zh: () => import('...') })` for files
+ *   that don't share a base name.
  *
  * @example
+ * // Simplest (via the CLI): ../README.md (base) + ../README.zh.md + ../README.ja.md + ...
+ * page: localizedPage('../README.md')
+ *
+ * @example
+ * // Explicit locale map
  * page: localizedPage({
  *   en: () => import('./pages/guide.en.md?raw'),
  *   zh: () => import('./pages/guide.zh.md?raw'),
  * })
  */
+export function localizedPage(file: string, options?: LocalizedPageOptions): PageLoader
 export function localizedPage(
   loaders: Record<LocaleCode, () => Promise<{ default: string }>>,
   options?: LocalizedPageOptions,
@@ -204,9 +270,29 @@ export function localizedPage(
   options?: LocalizedPageOptions,
 ): (locale: LocaleCode) => Promise<{ default: Component }>
 export function localizedPage(
-  loaders: Record<LocaleCode, () => Promise<{ default: string | Component }>>,
+  source:
+    | string
+    | Record<LocaleCode, () => Promise<{ default: string | Component }>>,
   options?: LocalizedPageOptions,
 ): (locale: LocaleCode) => Promise<{ default: string | Component }> {
+  // File-name form. Reached only when the CLI did NOT rewrite the call (e.g. library mode), since
+  // the CLI replaces the string literal with an `import.meta.glob(...)` map at build time.
+  if (typeof source === 'string') {
+    return () =>
+      Promise.reject(
+        new Error(
+          `[vue-site] localizedPage('${source}') is resolved by the vue-site CLI. ` +
+            `In library mode, pass a glob instead, e.g. ` +
+            `localizedPage(import.meta.glob('${source.replace(/(\.[^./]+)$/, '*$1')}', { query: '?raw' })).`,
+        ),
+      )
+  }
+
+  // Glob map (from `import.meta.glob` or the CLI-rewritten file-name form): keys are file paths.
+  if (isGlobModuleMap(source)) return globPageLoader(source)
+
+  // Explicit locale map.
+  const loaders = source
   const keys = Object.keys(loaders)
   return (locale: LocaleCode) => {
     const key = resolveKey(keys, locale, options?.defaultLocale)
