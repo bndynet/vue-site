@@ -6,7 +6,9 @@ export interface SiteContext {
   resolvedNav: ResolvedNavItem[]
 }
 
-export const siteContextKey: InjectionKey<SiteContext> = Symbol('site-context')
+/** Use `Symbol.for` so pages still inject context if Vite resolves the package twice. */
+export const siteContextKey: InjectionKey<SiteContext> =
+  Symbol.for('vue-site.siteContext')
 
 export function provideSiteConfig(context: SiteContext) {
   provide(siteContextKey, context)
@@ -15,7 +17,9 @@ export function provideSiteConfig(context: SiteContext) {
 export function useSiteConfig(): SiteContext {
   const ctx = inject(siteContextKey)
   if (!ctx) {
-    throw new Error('useSiteConfig() must be used within a site created by createSiteApp()')
+    throw new Error(
+      '[vue-site] useSiteConfig() must be used within an app created by createSiteApp().',
+    )
   }
   return ctx
 }

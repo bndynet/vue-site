@@ -12,6 +12,9 @@ const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
 const pkgDir = resolve(__dirname, '..')
 const require = createRequire(import.meta.url)
+const FRAMEWORK_PACKAGE = '@bndynet/vue-site'
+const frameworkEntry = resolve(pkgDir, 'dist/index.es.js')
+const frameworkStyle = resolve(pkgDir, 'dist/style.css')
 
 function resolvePkgDir(pkg) {
   return dirname(require.resolve(`${pkg}/package.json`))
@@ -208,13 +211,12 @@ function buildBootstrapScript({ siteConfig, siteConfigSpecifier }) {
     bs != null && String(bs).trim() !== ''
       ? `import '${resolveBootstrapUrl(bs)}'\n`
       : ''
-  const pkgDirUrl = pkgDir.replace(/\\/g, '/')
   return [
     bootstrapImport,
     `import 'element-plus/dist/index.css'`,
     `import 'element-plus/theme-chalk/dark/css-vars.css'`,
-    `import { createSiteApp } from '${pkgDirUrl}/dist/index.es.js'`,
-    `import '${pkgDirUrl}/dist/style.css'`,
+    `import { createSiteApp } from '${FRAMEWORK_PACKAGE}'`,
+    `import '${FRAMEWORK_PACKAGE}/style.css'`,
     `import siteConfig from '${siteConfigSpecifier}'`,
     `import { repositoryUrl } from '${VIRTUAL_PACKAGE}'`,
     ``,
@@ -654,10 +656,21 @@ async function buildViteConfig(options = {}) {
     root: cwd,
     plugins: [localizedPageSugarPlugin(), vue(vueOpts), ...watchedScssPlugin, ...vueSitePlugin(entryCode), ...(userPlugins || [])],
     resolve: {
-      alias: {
-        vue: resolve(vuePath, 'dist/vue.runtime.esm-bundler.js'),
-        'vue-router': resolve(vueRouterPath, 'dist/vue-router.mjs'),
-      },
+      alias: [
+        { find: /^@bndynet\/vue-site$/, replacement: frameworkEntry },
+        {
+          find: /^@bndynet\/vue-site\/style\.css$/,
+          replacement: frameworkStyle,
+        },
+        {
+          find: 'vue',
+          replacement: resolve(vuePath, 'dist/vue.runtime.esm-bundler.js'),
+        },
+        {
+          find: 'vue-router',
+          replacement: resolve(vueRouterPath, 'dist/vue-router.mjs'),
+        },
+      ],
     },
     optimizeDeps: {
       // Pre-bundle element-plus so Vite crawls its dependency graph and
@@ -667,6 +680,10 @@ async function buildViteConfig(options = {}) {
       // The virtual entry only imports element-plus CSS, so Vite's static
       // analysis never sees the JS side — this include bridges that gap.
       include: ['element-plus'],
+      // The virtual entry and user-authored pages both import the framework.
+      // Keep it out of dependency pre-bundling so Vite does not instantiate
+      // `dist/index.es.js` once via /@fs and again via node_modules/.vite.
+      exclude: [FRAMEWORK_PACKAGE],
     },
     server: {
       open: true,

@@ -7,13 +7,33 @@ const STORAGE_KEY = 'vue-site-locale'
 export const localeRefKey: InjectionKey<Ref<string>> =
   Symbol.for('vue-site.localeRef')
 
-let allowedLocales: string[] = []
-let storageKey = STORAGE_KEY
+interface LocaleRuntimeState {
+  allowedLocales: string[]
+  storageKey: string
+}
+
+const localeStateKey = Symbol.for('vue-site.localeRuntimeState')
+
+function getLocaleState(): LocaleRuntimeState {
+  const globalScope = globalThis as typeof globalThis &
+    Record<symbol, LocaleRuntimeState | undefined>
+  const existing = globalScope[localeStateKey]
+  if (existing) return existing
+
+  const state: LocaleRuntimeState = {
+    allowedLocales: [],
+    storageKey: STORAGE_KEY,
+  }
+  globalScope[localeStateKey] = state
+  return state
+}
+
+const localeState = getLocaleState()
 
 function getStoredLocale(): string | null {
   try {
-    const stored = localStorage.getItem(storageKey)
-    if (stored && allowedLocales.includes(stored)) return stored
+    const stored = localStorage.getItem(localeState.storageKey)
+    if (stored && localeState.allowedLocales.includes(stored)) return stored
   } catch {
     // localStorage unavailable
   }
@@ -22,7 +42,7 @@ function getStoredLocale(): string | null {
 
 function storeLocale(code: string) {
   try {
-    localStorage.setItem(storageKey, code)
+    localStorage.setItem(localeState.storageKey, code)
   } catch {
     // localStorage unavailable
   }
@@ -35,9 +55,9 @@ function detectBrowserLocale(): string | null {
     Boolean,
   )
   for (const lang of candidates) {
-    if (allowedLocales.includes(lang)) return lang
+    if (localeState.allowedLocales.includes(lang)) return lang
     const primary = lang.split('-')[0]
-    const match = allowedLocales.find(
+    const match = localeState.allowedLocales.find(
       (l) => l === primary || l.split('-')[0] === primary,
     )
     if (match) return match
@@ -62,12 +82,12 @@ export function initLocale(
   detectBrowser = true,
   key: string = STORAGE_KEY,
 ) {
-  allowedLocales = locales.length ? [...locales] : [defaultLocale]
-  storageKey = key
+  localeState.allowedLocales = locales.length ? [...locales] : [defaultLocale]
+  localeState.storageKey = key
 
-  const fallback = allowedLocales.includes(defaultLocale)
+  const fallback = localeState.allowedLocales.includes(defaultLocale)
     ? defaultLocale
-    : (allowedLocales[0] ?? defaultLocale)
+    : (localeState.allowedLocales[0] ?? defaultLocale)
 
   const stored = getStoredLocale()
   const detected = stored ? null : detectBrowser ? detectBrowserLocale() : null
@@ -84,13 +104,13 @@ export function useLocale() {
   const locale = injected
 
   function setLocale(code: string) {
-    if (!allowedLocales.includes(code)) return
+    if (!localeState.allowedLocales.includes(code)) return
     locale.value = code
     storeLocale(code)
   }
 
   function locales() {
-    return [...allowedLocales]
+    return [...localeState.allowedLocales]
   }
 
   return {

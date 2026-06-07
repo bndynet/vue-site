@@ -7,13 +7,34 @@ const STORAGE_KEY = 'vue-site-theme'
 export const themeRefKey: InjectionKey<Ref<string>> =
   Symbol.for('vue-site.themeRef')
 
-let activeThemeRef: Ref<string> | null = null
+interface ThemeRuntimeState {
+  activeThemeRef: Ref<string> | null
+  allowedThemeIds: string[]
+  resolvedPalettes: Record<string, Record<string, string>>
+  colorOverlay: Record<string, string>
+  darkModeIds: ReadonlySet<string>
+}
 
-let allowedThemeIds: string[] = ['light', 'dark']
+const themeStateKey = Symbol.for('vue-site.themeRuntimeState')
 
-let resolvedPalettes: Record<string, Record<string, string>> = {}
-let colorOverlay: Record<string, string> = {}
-let darkModeIds: ReadonlySet<string> = new Set(['dark'])
+function getThemeState(): ThemeRuntimeState {
+  const globalScope = globalThis as typeof globalThis &
+    Record<symbol, ThemeRuntimeState | undefined>
+  const existing = globalScope[themeStateKey]
+  if (existing) return existing
+
+  const state: ThemeRuntimeState = {
+    activeThemeRef: null,
+    allowedThemeIds: ['light', 'dark'],
+    resolvedPalettes: {},
+    colorOverlay: {},
+    darkModeIds: new Set(['dark']),
+  }
+  globalScope[themeStateKey] = state
+  return state
+}
+
+const themeState = getThemeState()
 
 function applyCssVars(vars: Record<string, string>) {
   const root = document.documentElement
@@ -25,29 +46,29 @@ function applyCssVars(vars: Record<string, string>) {
 function applyTheme(mode: string) {
   if (typeof document !== 'undefined') {
     document.documentElement.setAttribute('data-theme', mode)
-    if (darkModeIds.has(mode)) {
+    if (themeState.darkModeIds.has(mode)) {
       document.documentElement.classList.add('dark')
     } else {
       document.documentElement.classList.remove('dark')
     }
   }
-  if (activeThemeRef) {
-    activeThemeRef.value = mode
+  if (themeState.activeThemeRef) {
+    themeState.activeThemeRef.value = mode
   }
 
-  const palette = resolvedPalettes[mode]
+  const palette = themeState.resolvedPalettes[mode]
   if (palette) {
     applyCssVars(palette)
   }
-  if (Object.keys(colorOverlay).length) {
-    applyCssVars(colorOverlay)
+  if (Object.keys(themeState.colorOverlay).length) {
+    applyCssVars(themeState.colorOverlay)
   }
 }
 
 function getStoredTheme(): string | null {
   try {
     const stored = localStorage.getItem(STORAGE_KEY)
-    if (stored && allowedThemeIds.includes(stored)) return stored
+    if (stored && themeState.allowedThemeIds.includes(stored)) return stored
   } catch {
     // localStorage unavailable
   }
@@ -78,17 +99,18 @@ export function initTheme(
   overlay?: Record<string, string>,
   darkThemeIds?: ReadonlySet<string>,
 ) {
-  activeThemeRef = themeRef
+  themeState.activeThemeRef = themeRef
 
-  allowedThemeIds =
+  themeState.allowedThemeIds =
     themeIds?.length && themeIds.length > 0 ? [...themeIds] : ['light', 'dark']
 
-  resolvedPalettes = palettes && Object.keys(palettes).length ? palettes : {}
-  colorOverlay = overlay ? { ...overlay } : {}
-  darkModeIds = darkThemeIds ?? new Set(['dark'])
+  themeState.resolvedPalettes =
+    palettes && Object.keys(palettes).length ? palettes : {}
+  themeState.colorOverlay = overlay ? { ...overlay } : {}
+  themeState.darkModeIds = darkThemeIds ?? new Set(['dark'])
 
-  const fallback = allowedThemeIds[0] ?? 'light'
-  const resolvedDefault = allowedThemeIds.includes(defaultMode)
+  const fallback = themeState.allowedThemeIds[0] ?? 'light'
+  const resolvedDefault = themeState.allowedThemeIds.includes(defaultMode)
     ? defaultMode
     : fallback
 
@@ -106,15 +128,17 @@ export function useTheme() {
   const theme = injected
 
   function setTheme(mode: string) {
-    if (!allowedThemeIds.includes(mode)) return
+    if (!themeState.allowedThemeIds.includes(mode)) return
     applyTheme(mode)
     storeTheme(mode)
   }
 
   function toggleTheme() {
-    const i = allowedThemeIds.indexOf(theme.value)
+    const i = themeState.allowedThemeIds.indexOf(theme.value)
     const next =
-      allowedThemeIds[(i + 1) % allowedThemeIds.length] ?? theme.value
+      themeState.allowedThemeIds[
+        (i + 1) % themeState.allowedThemeIds.length
+      ] ?? theme.value
     setTheme(next)
   }
 
