@@ -2,6 +2,9 @@
 
 import { createServer, build, preview, mergeConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
+import AutoImport from 'unplugin-auto-import/vite'
+import Components from 'unplugin-vue-components/vite'
+import { ElementPlusResolver } from 'unplugin-vue-components/resolvers'
 import { resolve, dirname, basename } from 'path'
 import { fileURLToPath, pathToFileURL } from 'url'
 import { createRequire } from 'module'
@@ -213,7 +216,6 @@ function buildBootstrapScript({ siteConfig, siteConfigSpecifier }) {
       : ''
   return [
     bootstrapImport,
-    `import 'element-plus/dist/index.css'`,
     `import 'element-plus/theme-chalk/dark/css-vars.css'`,
     `import { createSiteApp } from '${FRAMEWORK_PACKAGE}'`,
     `import '${FRAMEWORK_PACKAGE}/style.css'`,
@@ -651,10 +653,27 @@ async function buildViteConfig(options = {}) {
           },
         ]
       : []
+  const elementPlusResolver = ElementPlusResolver({
+    importStyle: 'css',
+  })
 
   const baseConfig = {
     root: cwd,
-    plugins: [localizedPageSugarPlugin(), vue(vueOpts), ...watchedScssPlugin, ...vueSitePlugin(entryCode), ...(userPlugins || [])],
+    plugins: [
+      localizedPageSugarPlugin(),
+      AutoImport({
+        resolvers: [elementPlusResolver],
+        dts: false,
+      }),
+      Components({
+        resolvers: [elementPlusResolver],
+        dts: false,
+      }),
+      vue(vueOpts),
+      ...watchedScssPlugin,
+      ...vueSitePlugin(entryCode),
+      ...(userPlugins || []),
+    ],
     resolve: {
       alias: [
         { find: /^@bndynet\/vue-site$/, replacement: frameworkEntry },
@@ -673,13 +692,6 @@ async function buildViteConfig(options = {}) {
       ],
     },
     optimizeDeps: {
-      // Pre-bundle element-plus so Vite crawls its dependency graph and
-      // discovers dayjs (a CJS/UMD package with no ESM default export).
-      // Without this, dayjs.min.js is served raw to the browser and
-      // Element Plus throws "does not provide an export named 'default'".
-      // The virtual entry only imports element-plus CSS, so Vite's static
-      // analysis never sees the JS side — this include bridges that gap.
-      include: ['element-plus'],
       // The virtual entry and user-authored pages both import the framework.
       // Keep it out of dependency pre-bundling so Vite does not instantiate
       // `dist/index.es.js` once via /@fs and again via node_modules/.vite.

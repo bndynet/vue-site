@@ -1,6 +1,5 @@
 import { createApp, ref } from 'vue'
 import { createWebHashHistory, createWebHistory } from 'vue-router'
-import ElementPlus from 'element-plus'
 import type { SiteConfig } from './types'
 import { resolveNavItems, createSiteRouter, filterNavItems } from './router'
 import { applyAuthGuard, pruneNavByAuth } from './auth'
@@ -107,7 +106,6 @@ export async function createSiteApp(config: SiteConfig) {
   app.provide(themeRefKey, themeRef)
   app.provide(localeRefKey, localeRef)
   app.provide(siteContextKey, { config, resolvedNav: menuNav })
-  app.use(ElementPlus)
   app.use(router)
 
   if (config.configureApp) {

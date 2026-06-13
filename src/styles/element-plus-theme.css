@@ -7,9 +7,9 @@
  * extraThemes — with zero duplication.
  *
  * Load order (guaranteed by bin/vue-site.mjs + create-app.ts):
- *   1. element-plus/dist/index.css           → EP defaults  (:root)
+ *   1. Element Plus component styles imported on demand
  *   2. element-plus/theme-chalk/dark/css-vars.css → EP dark  (html.dark)
- *   3. dist/style.css  (this file)           → our overrides, wins by source-order
+ *   3. dist/style.css  (this file)                → our overrides, wins by source-order
  */
 
 /* ─── Shared token mapping ────────────────────────────────────────────────────
