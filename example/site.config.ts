@@ -19,6 +19,9 @@ export default defineConfig({
   title: tk('site.title'),
   // Optional: remove this line to skip loading `bootstrap.ts`.
   bootstrap: './bootstrap.ts',
+  // Optional nav placement: 'top' forces the top/tiered layout, 'sidebar' forces the full nav tree
+  // into the sidebar. Leave unset to keep the default automatic behavior based on nav depth.
+  navPosition: 'top',
   // Page the site opens at (root `/` and unknown paths redirect here). Must match a registered
   // route (a `nav` item's resolved path or a `pages` entry's `path`). Defaults to the first
   // top-level `nav` item — here that is `Home` (`/`).

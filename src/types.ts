@@ -333,6 +333,13 @@ export interface SiteConfig {
   logo?: string
   nav: NavItem[]
   /**
+   * Navigation placement. Set to `'top'` to force the primary nav into the top header (with the
+   * active top-level item's children in the sidebar when present), or `'sidebar'` to force the
+   * full nav tree into the sidebar. Omit to keep the default automatic behavior: deeply nested
+   * nav trees use the top/tiered layout, while shallow trees use the sidebar-only layout.
+   */
+  navPosition?: 'top' | 'sidebar'
+  /**
    * Path the site opens at: the root `/` and any unknown path redirect here. Must match a
    * registered route — a `nav` item's resolved path or a `pages` entry's `path`.
    * @default the first top-level `nav` item's resolved path

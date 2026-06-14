@@ -73,6 +73,7 @@ Add `"dev": "vue-site dev"` (or `vs dev`) in `package.json` scripts if you like.
 |----------|-------------|
 | `title` | Site title (sidebar + tab). `LocalizedString` |
 | `nav` | `NavItem[]` |
+| `navPosition` | Optional navigation placement: `'top'` forces the top/tiered layout, `'sidebar'` forces the full nav tree into the sidebar. Omit to keep automatic behavior based on nav depth |
 | `defaultPath` | Path the site opens at; `/` and unknown paths redirect here. Must match a registered route (a `nav` item's resolved path or a `pages` entry's `path`). Defaults to the first top-level `nav` item |
 | `logo` | Logo URL or imported image |
 | `theme` | See `ThemeConfig` below; set to `false` to disable theming (hides the switcher, forces a fixed `light` palette, no localStorage persistence) |
@@ -116,7 +117,7 @@ Built-in themes are `light`, `dark`, plus the always-on extras `sepia` and `ocea
 ## Shell actions (`shell.actions`)
 
 Use `shell.actions` to render app-specific Vue components in the active layout's global toolbar.
-In tiered navigation they appear at the end of the top header; in sidebar-only navigation they
+In top/tiered navigation they appear at the end of the top header; in sidebar-only navigation they
 appear in the sidebar footer after the built-in links, locale switcher, and theme switcher. This is
 the recommended place for a signed-in user avatar, notification button, help menu, or tenant
 switcher.
