@@ -8,6 +8,7 @@ import SiteExternalLinks from './SiteExternalLinks.vue'
 import ThemeSwitch from './ThemeSwitch.vue'
 import LocaleSwitch from './LocaleSwitch.vue'
 import TopPrimaryNav from './TopPrimaryNav.vue'
+import ShellActions from './ShellActions.vue'
 
 const { config } = useSiteConfig()
 const { tieredNav, showSidebar, standalone } = useNavLayout()
@@ -48,6 +49,7 @@ watchEffect(() => {
         <SiteExternalLinks />
         <LocaleSwitch v-if="localeEnabled" />
         <ThemeSwitch v-if="themeEnabled" class="site-primary-nav-theme" />
+        <ShellActions />
       </div>
     </header>
     <aside v-if="showSidebar" class="site-sidebar">
@@ -72,6 +74,7 @@ watchEffect(() => {
           <SiteExternalLinks compact />
           <LocaleSwitch v-if="localeEnabled" compact />
           <ThemeSwitch v-if="themeEnabled" compact />
+          <ShellActions placement="sidebar" />
         </div>
         <p v-if="siteFooter" class="site-footer-text">{{ siteFooter }}</p>
       </div>

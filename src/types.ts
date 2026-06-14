@@ -298,6 +298,35 @@ export interface SiteExternalLink {
   title?: LocalizedString
 }
 
+/**
+ * Async loader for a custom component rendered in the site shell action area. In CLI mode, a
+ * file-path string in `shell.actions` is rewritten to this loader shape automatically.
+ */
+export type ShellActionLoader = () => Promise<{ default: Component }>
+
+/**
+ * Custom Vue component rendered alongside the built-in shell controls. In CLI mode, pass a
+ * file-path string such as `'./components/UserAvatar.vue'`; in library mode, pass an imported
+ * component or a dynamic import loader.
+ */
+export type ShellAction = Component | ShellActionLoader | string
+
+/** Site shell action area configuration. */
+export interface ShellConfig {
+  /**
+   * Custom components rendered after the built-in links, locale switcher, and theme switcher.
+   * Use this for user avatars, notification buttons, help menus, tenant switchers, and other
+   * app-specific controls. Components can read site state with the exported composables.
+   */
+  actions?: ShellAction[]
+  /**
+   * Alignment of custom shell actions in the sidebar footer. Top-header rendering keeps the
+   * built-in toolbar flow.
+   * @default 'center'
+   */
+  align?: 'left' | 'center' | 'right'
+}
+
 export interface SiteConfig {
   /** Site title (browser tab + header). Accepts a `LocalizedString` for multi-language sites. */
   title: LocalizedString
@@ -341,6 +370,8 @@ export interface SiteConfig {
   readme?: string
   /** External links shown as icons next to the theme control */
   links?: SiteExternalLink[]
+  /** Custom controls shown in the shell action area. See `ShellConfig`. */
+  shell?: ShellConfig
   /**
    * Normalized repository URL from `package.json` `repository` (parent directory first,
    * then site root). Injected by the `vue-site` CLI; omit when calling `createSiteApp` manually.

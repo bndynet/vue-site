@@ -10,6 +10,7 @@ Configurable Vue 3 site framework: one package, `site.config.ts`, and Markdown p
 - Hash or HTML5 (`web`) router history, configurable in `site.config.ts`
 - Markdown (`?raw`) or Vue pages
 - highlight.js, light/dark theme + localStorage
+- Custom shell actions for avatars, notifications, help menus, and other app controls
 - Built-in multi-language support (locale switcher, `LocalizedString` config, per-locale pages) — see [Internationalization](#internationalization-i18n)
 - Project `README.md` as Home
 - Full TypeScript types
@@ -79,6 +80,7 @@ Add `"dev": "vue-site dev"` (or `vs dev`) in `package.json` scripts if you like.
 | `footer` | Footer text. `LocalizedString` |
 | `readme` | Raw Home content if no `README.md` |
 | `links` | Header links: Lucide `icon` + `link`, optional `title` (`LocalizedString`) |
+| `shell` | Shell action area config (`ShellConfig`) — see [Shell actions](#shell-actions-shellactions) |
 | `pages` | `StandalonePage[]` — full-screen routes outside the `nav` tree (no top bar/sidebar/footer) |
 | `auth` | Central authorization policy (`AuthConfig`) — see [Per-page authorization](#per-page-authorization-auth) |
 | `router` | History mode (`RouterConfig`) — `hash` (default) or HTML5 `web`; see [Router history](#router-history-router) |
@@ -110,6 +112,45 @@ Built-in themes are `light`, `dark`, plus the always-on extras `sepia` and `ocea
 | `colors` | — | Global CSS variable overrides |
 | `palettes` | — | Partial overrides for built-in light/dark only |
 | `extraThemes` | — | Extra themes: `id`, `label`, `icon`, optional `basedOn`, `palette`; reuse a built-in id (`sepia`/`ocean`) to override it. Import `builtinThemePalettes` for full defaults |
+
+## Shell actions (`shell.actions`)
+
+Use `shell.actions` to render app-specific Vue components in the active layout's global toolbar.
+In tiered navigation they appear at the end of the top header; in sidebar-only navigation they
+appear in the sidebar footer after the built-in links, locale switcher, and theme switcher. This is
+the recommended place for a signed-in user avatar, notification button, help menu, or tenant
+switcher.
+
+```typescript
+export default defineConfig({
+  title: 'My Site',
+  shell: {
+    actions: ['./components/UserAvatar.vue'],
+    align: 'left',
+  },
+  nav: [/* ... */],
+})
+```
+
+With the CLI, each path-like string is rewritten to a dynamic import. In library mode, pass an
+imported component or loader instead:
+
+```typescript
+import UserAvatar from './components/UserAvatar.vue'
+
+export default defineConfig({
+  shell: {
+    actions: [UserAvatar, () => import('./components/HelpMenu.vue')],
+    align: 'center',
+  },
+  nav: [/* ... */],
+})
+```
+
+The framework only renders the component; auth state, user data, menus, and logout behavior stay in
+your component so the framework does not need to define a user model.
+Set `align` to `'left'`, `'center'`, or `'right'` for sidebar-footer placement; it defaults to
+`'center'`. Top-header placement keeps the built-in toolbar flow.
 
 ## Internationalization (`i18n`)
 
@@ -461,7 +502,7 @@ app.mount('#app')
 
 Use a top-level `await` in your entry (or an async IIFE): `createSiteApp` is async and **awaits** `configureApp` when it returns a `Promise`. If you set optional `bootstrap` in config, that module loads before the app is created; if you omit `bootstrap`, that step is skipped.
 
-Exports: `createSiteApp`, `defineConfig`, `useTheme`, `useSiteConfig`, `useLocale`, `useLocalize`, `tk`, `resolveLocalized`, `resolveField`, `resolveMessage`, `mergeCatalog`, `flattenMessages`, `isMessageRef`, `localizedPage`, `builtinMessages`, `themeRefKey`, `localeRefKey`. Types: `SiteConfig`, `SiteEnvConfig`, `SiteViteConfig`, `SiteExternalLink`, `NavItem`, `StandalonePage`, `AuthRule`, `AuthContext`, `AuthConfig`, `RouterConfig`, `ThemeConfig`, `ThemeOption`, `ThemePaletteVars`, `ResolvedNavItem`, `I18nConfig`, `LocaleOption`, `LocaleCode`, `LocalizedString`, `MessageRef`, `MessageTree`, `MessageCatalog`, `PageLoader`, `LocalizedPageOptions`.
+Exports: `createSiteApp`, `defineConfig`, `useTheme`, `useSiteConfig`, `useLocale`, `useLocalize`, `tk`, `resolveLocalized`, `resolveField`, `resolveMessage`, `mergeCatalog`, `flattenMessages`, `isMessageRef`, `localizedPage`, `builtinMessages`, `themeRefKey`, `localeRefKey`. Types: `SiteConfig`, `SiteEnvConfig`, `SiteViteConfig`, `SiteExternalLink`, `ShellConfig`, `ShellAction`, `ShellActionLoader`, `NavItem`, `StandalonePage`, `AuthRule`, `AuthContext`, `AuthConfig`, `RouterConfig`, `ThemeConfig`, `ThemeOption`, `ThemePaletteVars`, `ResolvedNavItem`, `I18nConfig`, `LocaleOption`, `LocaleCode`, `LocalizedString`, `MessageRef`, `MessageTree`, `MessageCatalog`, `PageLoader`, `LocalizedPageOptions`.
 
 ### Theme in Vue pages (`useTheme`)
 

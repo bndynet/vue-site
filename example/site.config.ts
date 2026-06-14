@@ -42,6 +42,12 @@ export default defineConfig({
       title: 'npm package',
     },
   ],
+  // Shell actions are custom Vue components rendered in the active layout's global toolbar.
+  // The CLI resolves string paths like page strings, so no top-level .vue import is needed here.
+  shell: {
+    actions: ['./components/UserAvatar.vue'],
+    align: 'left',
+  },
   // Central authorization policy. Pages opt in by adding an `auth` rule (see `nav` below).
   // This demo stores the current role in localStorage (set by the `/login` page). `authorize`
   // runs at navigation time (every navigation) and once at startup to filter the nav menu.

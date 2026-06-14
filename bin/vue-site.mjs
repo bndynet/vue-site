@@ -436,19 +436,41 @@ function fileToLocaleGlobExpr(rawPath) {
 // per-locale files get bundled. Two shapes are rewritten in the user's JS/TS under `cwd`:
 //   localizedPage('./file.md')  -> localizedPage(import.meta.glob([...], { query: '?raw' }))
 //   page: './file.md'           -> page: import.meta.glob([...], { query: '?raw' })
+//   shell.actions: ['./User.vue'] -> shell.actions: [() => import('./User.vue')]
 // Loader functions, locale maps (`localizedPage({ en, zh })`) and explicit `import.meta.glob` are
-// left untouched; the `page:` form only rewrites path-like values (starting with `.` or `/`).
-function localizedPageSugarPlugin() {
+// left untouched; the string forms only rewrite path-like values (starting with `.` or `/`).
+function configSugarPlugin() {
   const CALL_STRING_ARG = /(\blocalizedPage\s*\(\s*)(['"`])((?:\\.|(?!\2).)*)\2/g
   const PAGE_STRING_FIELD = /(\bpage\s*:\s*)(['"`])((?:\\.|(?!\2).)*)\2/g
+  const SHELL_ACTIONS_ARRAY = /(\bshell\s*:\s*\{[\s\S]*?\bactions\s*:\s*\[)([\s\S]*?)(\])/g
+  const STRING_LITERAL = /(['"`])((?:\\.|(?!\1).)*)\1/g
+
+  function rewriteShellActionArray(body) {
+    return body.replace(STRING_LITERAL, (match, _q, rawPath, offset) => {
+      if (!/^[./]/.test(rawPath)) return match
+
+      const before = body.slice(0, offset)
+      const after = body.slice(offset + match.length)
+      if (!/(^|,)\s*$/.test(before) || !/^\s*(,|$)/.test(after)) return match
+
+      return `() => import(${JSON.stringify(rawPath)})`
+    })
+  }
+
   return {
-    name: 'vue-site:localized-page-sugar',
+    name: 'vue-site:config-sugar',
     enforce: 'pre',
     transform(code, id) {
       const file = id.split('?')[0]
       if (!/\.(?:[cm]?[jt]sx?)$/.test(file)) return
       if (!file.startsWith(cwd) || file.includes('/node_modules/')) return
-      if (!code.includes('localizedPage(') && !/\bpage\s*:\s*['"`]/.test(code)) return
+      if (
+        !code.includes('localizedPage(') &&
+        !/\bpage\s*:\s*['"`]/.test(code) &&
+        !/\bshell\s*:\s*\{/.test(code)
+      ) {
+        return
+      }
       let changed = false
       let out = code.replace(CALL_STRING_ARG, (match, head, _q, rawPath) => {
         const expr = fileToLocaleGlobExpr(rawPath)
@@ -463,6 +485,12 @@ function localizedPageSugarPlugin() {
         if (!expr) return match
         changed = true
         return `${head}${expr}`
+      })
+      out = out.replace(SHELL_ACTIONS_ARRAY, (match, head, body, tail) => {
+        const nextBody = rewriteShellActionArray(body)
+        if (nextBody === body) return match
+        changed = true
+        return `${head}${nextBody}${tail}`
       })
       return changed ? { code: out, map: null } : undefined
     },
@@ -660,7 +688,7 @@ async function buildViteConfig(options = {}) {
   const baseConfig = {
     root: cwd,
     plugins: [
-      localizedPageSugarPlugin(),
+      configSugarPlugin(),
       AutoImport({
         resolvers: [elementPlusResolver],
         dts: false,
