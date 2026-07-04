@@ -99,7 +99,7 @@ npx vue-site build --base /app/
 | `icon` | [Lucide](https://lucide.dev/icons) 图标名 |
 | `page` | 页面内容。最简单的是一个**文件路径字符串**，如 `'./pages/AdminView.vue'` 或 `'./README.md'`（自动加载各语言的同名文件，找不到时回退到基础文件）。也接受加载器（`() => import('./Page.vue')` / `() => import('./page.md?raw')`）或 `localizedPage(...)` 的返回值。见[按语言区分的页面内容](#按语言区分的页面内容)与[高级页面加载器](#高级页面加载器) |
 | `path` | 路由路径（省略时从 `label` 的默认语言值派生；切换语言时保持稳定） |
-| `layout` | 页面内容宽度：`'default'` 保持标准居中阅读宽度，`'wide'` 使用更宽的居中画布，`'full'` 填满可用父容器。对分组和链接无效。 |
+| `layout` | 页面内容宽度：`'default'` 保持标准居中阅读宽度，`'wide'` 使用更宽的居中画布，`'full'` 以无框架内边距的方式填满可用父容器。对分组和链接无效。 |
 | `children` | 嵌套分组 |
 | `link` | 渲染为超链接（内部路由路径或外部 URL），而非页面路由 |
 | `visible` | `() => boolean \| Promise<boolean>`，在启动时等待执行一次。返回 `false` 会从导航中隐藏该条目并跳过其路由（无法通过直接 URL 访问）。被隐藏的父项会隐藏其整个子树；没有剩余子项的分组会被剪除。对后续变化不具响应性。 |

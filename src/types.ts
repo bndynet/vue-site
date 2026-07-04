@@ -51,7 +51,8 @@ export interface AuthConfig {
  * Content width mode for a routed page.
  * - `'default'` keeps the standard centered reading width.
  * - `'wide'` uses a wider centered canvas for tables, forms, and dashboards.
- * - `'full'` removes the content max-width so the page fills the available parent container.
+ * - `'full'` removes the content max-width and default padding so the page can own the available
+ *   parent container.
  */
 export type PageLayout = 'default' | 'wide' | 'full'
 

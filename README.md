@@ -101,7 +101,7 @@ Add `"dev": "vue-site dev"` (or `vs dev`) in `package.json` scripts if you like.
 | `icon` | [Lucide](https://lucide.dev/icons) name |
 | `page` | Page content. Simplest is a **file-path string** like `'./pages/AdminView.vue'` or `'./README.md'` (auto-loads per-locale siblings, falls back to the base file). Also accepts a loader (`() => import('./Page.vue')` / `() => import('./page.md?raw')`) or a `localizedPage(...)` result. See [Per-locale page content](#per-locale-page-content) and [Advanced page loaders](#advanced-page-loaders) |
 | `path` | Route path (derived from `label`'s default-locale value if omitted; stays stable across languages) |
-| `layout` | Page content width: `'default'` keeps the standard centered reading width, `'wide'` uses a wider centered canvas, `'full'` fills the available parent container. Ignored for groups and links. |
+| `layout` | Page content width: `'default'` keeps the standard centered reading width, `'wide'` uses a wider centered canvas, `'full'` fills the available parent container with no framework padding. Ignored for groups and links. |
 | `children` | Nested group |
 | `link` | Render as a hyperlink (internal route path or external URL) instead of a page route |
 | `visible` | `() => boolean \| Promise<boolean>`, awaited once at startup. Return `false` to hide the item from the nav and skip its route (not reachable by direct URL). A hidden parent hides its subtree; a group with no remaining children is pruned. Not reactive to later changes. |

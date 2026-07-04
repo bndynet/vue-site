@@ -227,8 +227,5 @@
 .site-content-inner--full {
   max-width: none;
   margin: 0;
-}
-
-.site-layout--blank .site-content-inner--full {
   padding: 0;
 }
