@@ -17,6 +17,7 @@
 
 .site-layout--tiered-nav .site-content {
   margin-top: var(--site-top-nav-height);
+  min-height: calc(100vh - var(--site-top-nav-height));
 }
 
 /* Tiered + current top-level has no children: full-width main, no aside */
@@ -202,6 +203,7 @@
 }
 
 .site-content {
+  display: flex;
   margin-left: var(--site-sidebar-width);
   min-height: 100vh;
   background: var(--color-content-bg);
@@ -209,6 +211,7 @@
 }
 
 .site-content-inner {
+  flex: 1 1 auto;
   max-width: var(--site-content-default-width);
   margin: 0 auto;
   padding: 40px 48px;
