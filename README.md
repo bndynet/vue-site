@@ -101,10 +101,35 @@ Add `"dev": "vue-site dev"` (or `vs dev`) in `package.json` scripts if you like.
 | `icon` | [Lucide](https://lucide.dev/icons) name |
 | `page` | Page content. Simplest is a **file-path string** like `'./pages/AdminView.vue'` or `'./README.md'` (auto-loads per-locale siblings, falls back to the base file). Also accepts a loader (`() => import('./Page.vue')` / `() => import('./page.md?raw')`) or a `localizedPage(...)` result. See [Per-locale page content](#per-locale-page-content) and [Advanced page loaders](#advanced-page-loaders) |
 | `path` | Route path (derived from `label`'s default-locale value if omitted; stays stable across languages) |
+| `layout` | Page content width: `'default'` keeps the standard centered reading width, `'wide'` uses a wider centered canvas, `'full'` fills the available parent container. Ignored for groups and links. |
 | `children` | Nested group |
 | `link` | Render as a hyperlink (internal route path or external URL) instead of a page route |
 | `visible` | `() => boolean \| Promise<boolean>`, awaited once at startup. Return `false` to hide the item from the nav and skip its route (not reachable by direct URL). A hidden parent hides its subtree; a group with no remaining children is pruned. Not reactive to later changes. |
 | `auth` | Authorization rule (`AuthRule`) interpreted by `auth.authorize`. Keeps the route registered and enforces it via a navigation guard (so direct URLs redirect to login). Requires `SiteConfig.auth`. See [Per-page authorization](#per-page-authorization-auth). |
+
+### `StandalonePage`
+
+| Property | Description |
+|----------|-------------|
+| `path` | Route path, used as-is (e.g. `/landing`) |
+| `page` | Page content. Same forms as `NavItem.page` |
+| `layout` | Optional content width. Omit to keep the standalone default: a full-screen, unpadded canvas. |
+| `visible` | `() => boolean \| Promise<boolean>`, awaited once at startup. Return `false` to skip registering the route. |
+| `auth` | Authorization rule (`AuthRule`) enforced by the same navigation guard as `NavItem.auth`. |
+
+### Page layout
+
+Set `layout` on a `NavItem` page when the default reading width is too narrow:
+
+```typescript
+export default defineConfig({
+  nav: [
+    { label: 'Docs', icon: 'book', page: './pages/docs.md' },
+    { label: 'Reports', icon: 'table', layout: 'wide', page: './pages/reports.vue' },
+    { label: 'Dashboard', icon: 'gauge', layout: 'full', page: './pages/dashboard.vue' },
+  ],
+})
+```
 
 ### `ThemeConfig`
 
@@ -506,7 +531,7 @@ app.mount('#app')
 
 Use a top-level `await` in your entry (or an async IIFE): `createSiteApp` is async and **awaits** `configureApp` when it returns a `Promise`. If you set optional `bootstrap` in config, that module loads before the app is created; if you omit `bootstrap`, that step is skipped.
 
-Exports: `createSiteApp`, `defineConfig`, `useTheme`, `useSiteConfig`, `useLocale`, `useLocalize`, `tk`, `resolveLocalized`, `resolveField`, `resolveMessage`, `mergeCatalog`, `flattenMessages`, `isMessageRef`, `localizedPage`, `builtinMessages`, `themeRefKey`, `localeRefKey`. Types: `SiteConfig`, `SiteEnvConfig`, `SiteViteConfig`, `SiteExternalLink`, `ShellConfig`, `ShellAction`, `ShellActionLoader`, `NavItem`, `StandalonePage`, `AuthRule`, `AuthContext`, `AuthConfig`, `RouterConfig`, `ThemeConfig`, `ThemeOption`, `ThemePaletteVars`, `ResolvedNavItem`, `I18nConfig`, `LocaleOption`, `LocaleCode`, `LocalizedString`, `MessageRef`, `MessageTree`, `MessageCatalog`, `PageLoader`, `LocalizedPageOptions`.
+Exports: `createSiteApp`, `defineConfig`, `useTheme`, `useSiteConfig`, `useLocale`, `useLocalize`, `tk`, `resolveLocalized`, `resolveField`, `resolveMessage`, `mergeCatalog`, `flattenMessages`, `isMessageRef`, `localizedPage`, `builtinMessages`, `themeRefKey`, `localeRefKey`. Types: `SiteConfig`, `SiteEnvConfig`, `SiteViteConfig`, `SiteExternalLink`, `ShellConfig`, `ShellAction`, `ShellActionLoader`, `NavItem`, `StandalonePage`, `PageLayout`, `AuthRule`, `AuthContext`, `AuthConfig`, `RouterConfig`, `ThemeConfig`, `ThemeOption`, `ThemePaletteVars`, `ResolvedNavItem`, `I18nConfig`, `LocaleOption`, `LocaleCode`, `LocalizedString`, `MessageRef`, `MessageTree`, `MessageCatalog`, `PageLoader`, `LocalizedPageOptions`.
 
 ### Theme in Vue pages (`useTheme`)
 

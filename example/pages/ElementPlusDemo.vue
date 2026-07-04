@@ -341,10 +341,6 @@ function handleLoadingClick() {
 </template>
 
 <style scoped>
-.ep-demo {
-  max-width: 860px;
-}
-
 .ep-subtitle {
   color: var(--color-text-secondary);
   margin-bottom: 24px;

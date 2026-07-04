@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import { computed, watchEffect } from 'vue'
+import { useRoute } from 'vue-router'
 import { useSiteConfig } from '../composables/useSiteConfig'
 import { useNavLayout } from '../composables/useNavLayout'
 import { useLocalize } from '../composables/useLocalize'
+import type { PageLayout } from '../types'
 import SideNav from './SideNav.vue'
 import SiteExternalLinks from './SiteExternalLinks.vue'
 import ThemeSwitch from './ThemeSwitch.vue'
@@ -13,11 +15,19 @@ import ShellActions from './ShellActions.vue'
 const { config } = useSiteConfig()
 const { tieredNav, showSidebar, standalone } = useNavLayout()
 const { localize } = useLocalize()
+const route = useRoute()
 
 const themeEnabled = computed(() => config.theme !== false)
 const localeEnabled = computed(() => (config.i18n?.locales?.length ?? 0) > 1)
 const siteTitle = computed(() => localize(config.title))
 const siteFooter = computed(() => localize(config.footer))
+const pageLayout = computed<PageLayout>(() => {
+  const navItem = route.meta.navItem as { layout?: PageLayout } | undefined
+  const layout = navItem?.layout
+  if (layout === 'wide' || layout === 'full') return layout
+  if (layout === 'default') return layout
+  return route.meta.standalone ? 'full' : 'default'
+})
 
 watchEffect(() => {
   document.title = siteTitle.value
@@ -80,7 +90,7 @@ watchEffect(() => {
       </div>
     </aside>
     <main class="site-content">
-      <div class="site-content-inner">
+      <div class="site-content-inner" :class="`site-content-inner--${pageLayout}`">
         <router-view />
       </div>
     </main>

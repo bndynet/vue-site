@@ -47,6 +47,14 @@ export interface AuthConfig {
   loginPath?: string
 }
 
+/**
+ * Content width mode for a routed page.
+ * - `'default'` keeps the standard centered reading width.
+ * - `'wide'` uses a wider centered canvas for tables, forms, and dashboards.
+ * - `'full'` removes the content max-width so the page fills the available parent container.
+ */
+export type PageLayout = 'default' | 'wide' | 'full'
+
 export interface NavItem {
   /**
    * Display label. Accepts a plain `string`, or a `LocalizedString` map for multi-language sites.
@@ -68,6 +76,11 @@ export interface NavItem {
   page?: PageLoader | string
   children?: NavItem[]
   path?: string
+  /**
+   * Content width mode for this page route. Ignored for group-only and link-only items.
+   * @default 'default'
+   */
+  layout?: PageLayout
   /**
    * Render this item as a plain hyperlink instead of a page route. Use an internal route path
    * (e.g. `/landing` to point at a `pages` entry) or an external URL (e.g. `https://...`, opened
@@ -104,6 +117,11 @@ export interface StandalonePage {
   path: string
   /** Page content. Same forms as {@link NavItem.page} (a loader function or a CLI-resolved path string). */
   page: PageLoader | string
+  /**
+   * Content width mode for this standalone route. Omit to preserve the standalone default: a
+   * full-screen, unpadded canvas.
+   */
+  layout?: PageLayout
   /**
    * Optional visibility predicate, awaited once at app startup. Return `false` (or a
    * promise resolving to `false`) to skip registering this page's route entirely.

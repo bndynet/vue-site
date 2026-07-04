@@ -99,10 +99,35 @@ npx vue-site build --base /app/
 | `icon` | [Lucide](https://lucide.dev/icons) 图标名 |
 | `page` | 页面内容。最简单的是一个**文件路径字符串**，如 `'./pages/AdminView.vue'` 或 `'./README.md'`（自动加载各语言的同名文件，找不到时回退到基础文件）。也接受加载器（`() => import('./Page.vue')` / `() => import('./page.md?raw')`）或 `localizedPage(...)` 的返回值。见[按语言区分的页面内容](#按语言区分的页面内容)与[高级页面加载器](#高级页面加载器) |
 | `path` | 路由路径（省略时从 `label` 的默认语言值派生；切换语言时保持稳定） |
+| `layout` | 页面内容宽度：`'default'` 保持标准居中阅读宽度，`'wide'` 使用更宽的居中画布，`'full'` 填满可用父容器。对分组和链接无效。 |
 | `children` | 嵌套分组 |
 | `link` | 渲染为超链接（内部路由路径或外部 URL），而非页面路由 |
 | `visible` | `() => boolean \| Promise<boolean>`，在启动时等待执行一次。返回 `false` 会从导航中隐藏该条目并跳过其路由（无法通过直接 URL 访问）。被隐藏的父项会隐藏其整个子树；没有剩余子项的分组会被剪除。对后续变化不具响应性。 |
 | `auth` | 由 `auth.authorize` 解释的授权规则（`AuthRule`）。会保持路由注册并通过导航守卫强制执行（因此直接访问 URL 会重定向到登录页）。需要配置 `SiteConfig.auth`。参见[按页面授权](#按页面授权-auth)。 |
+
+### `StandalonePage`
+
+| 属性 | 说明 |
+|----------|-------------|
+| `path` | 路由路径，按原样使用（如 `/landing`） |
+| `page` | 页面内容。接受形式与 `NavItem.page` 相同 |
+| `layout` | 可选内容宽度。省略时保持 standalone 默认行为：全屏、无内边距画布。 |
+| `visible` | `() => boolean \| Promise<boolean>`，在启动时等待执行一次。返回 `false` 会跳过该路由注册。 |
+| `auth` | 授权规则（`AuthRule`），由与 `NavItem.auth` 相同的导航守卫强制执行。 |
+
+### 页面布局
+
+当默认阅读宽度太窄时，可以在 `NavItem` 页面上设置 `layout`：
+
+```typescript
+export default defineConfig({
+  nav: [
+    { label: 'Docs', icon: 'book', page: './pages/docs.md' },
+    { label: 'Reports', icon: 'table', layout: 'wide', page: './pages/reports.vue' },
+    { label: 'Dashboard', icon: 'gauge', layout: 'full', page: './pages/dashboard.vue' },
+  ],
+})
+```
 
 ### `ThemeConfig`
 
@@ -472,7 +497,7 @@ app.mount('#app')
 返回 `Promise` 时会 **await** 它。如果你在配置中设置了可选的 `bootstrap`，该模块会在应用创建前加载；
 如果省略 `bootstrap`，则跳过该步骤。
 
-导出：`createSiteApp`、`defineConfig`、`useTheme`、`useSiteConfig`、`useLocale`、`useLocalize`、`tk`、`resolveLocalized`、`resolveField`、`resolveMessage`、`mergeCatalog`、`flattenMessages`、`isMessageRef`、`localizedPage`、`builtinMessages`、`themeRefKey`、`localeRefKey`。类型：`SiteConfig`、`SiteEnvConfig`、`SiteViteConfig`、`SiteExternalLink`、`NavItem`、`StandalonePage`、`AuthRule`、`AuthContext`、`AuthConfig`、`RouterConfig`、`ThemeConfig`、`ThemeOption`、`ThemePaletteVars`、`ResolvedNavItem`、`I18nConfig`、`LocaleOption`、`LocaleCode`、`LocalizedString`、`MessageRef`、`MessageTree`、`MessageCatalog`、`PageLoader`、`LocalizedPageOptions`。
+导出：`createSiteApp`、`defineConfig`、`useTheme`、`useSiteConfig`、`useLocale`、`useLocalize`、`tk`、`resolveLocalized`、`resolveField`、`resolveMessage`、`mergeCatalog`、`flattenMessages`、`isMessageRef`、`localizedPage`、`builtinMessages`、`themeRefKey`、`localeRefKey`。类型：`SiteConfig`、`SiteEnvConfig`、`SiteViteConfig`、`SiteExternalLink`、`NavItem`、`StandalonePage`、`PageLayout`、`AuthRule`、`AuthContext`、`AuthConfig`、`RouterConfig`、`ThemeConfig`、`ThemeOption`、`ThemePaletteVars`、`ResolvedNavItem`、`I18nConfig`、`LocaleOption`、`LocaleCode`、`LocalizedString`、`MessageRef`、`MessageTree`、`MessageCatalog`、`PageLoader`、`LocalizedPageOptions`。
 
 ### 在 Vue 页面中使用主题（`useTheme`）
 

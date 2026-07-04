@@ -1,6 +1,8 @@
 :root {
   --site-top-nav-height: 48px;
   --site-sidebar-width: 200px;
+  --site-content-default-width: 860px;
+  --site-content-wide-width: 1200px;
 }
 
 .site-layout {
@@ -26,12 +28,6 @@
 .site-layout--blank .site-content {
   margin-left: 0;
   margin-top: 0;
-}
-
-.site-layout--blank .site-content-inner {
-  max-width: none;
-  margin: 0;
-  padding: 0;
 }
 
 .site-footer-standalone {
@@ -213,7 +209,20 @@
 }
 
 .site-content-inner {
-  max-width: 860px;
+  max-width: var(--site-content-default-width);
   margin: 0 auto;
   padding: 40px 48px;
+}
+
+.site-content-inner--wide {
+  max-width: var(--site-content-wide-width);
+}
+
+.site-content-inner--full {
+  max-width: none;
+  margin: 0;
+}
+
+.site-layout--blank .site-content-inner--full {
+  padding: 0;
 }

@@ -129,7 +129,12 @@ export default defineConfig({
         },
       ],
     },
-    { label: 'Element Plus', icon: 'component', page: () => import('./pages/ElementPlusDemo.vue') },
+    {
+      label: 'Element Plus',
+      icon: 'component',
+      layout: 'full',
+      page: () => import('./pages/ElementPlusDemo.vue'),
+    },
     // `page` can also be a plain file-path string (CLI sugar). It behaves like
     // `localizedPage('./pages/AboutView.vue')`: any `AboutView.<code>.vue` sibling is auto-imported
     // per locale, falling back to this base file. Equivalent to `() => import('./pages/AboutView.vue')`

@@ -26,6 +26,7 @@ export type {
   ShellActionLoader,
   NavItem,
   StandalonePage,
+  PageLayout,
   AuthRule,
   AuthContext,
   AuthConfig,
