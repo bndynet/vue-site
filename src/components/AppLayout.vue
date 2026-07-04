@@ -93,12 +93,12 @@ watchEffect(() => {
       <div class="site-content-inner" :class="`site-content-inner--${pageLayout}`">
         <router-view />
       </div>
+      <footer
+        v-if="tieredNav && !showSidebar && siteFooter"
+        class="site-footer-standalone"
+      >
+        <p class="site-footer-text">{{ siteFooter }}</p>
+      </footer>
     </main>
-    <footer
-      v-if="tieredNav && !showSidebar && siteFooter"
-      class="site-footer-standalone"
-    >
-      <p class="site-footer-text">{{ siteFooter }}</p>
-    </footer>
   </div>
 </template>

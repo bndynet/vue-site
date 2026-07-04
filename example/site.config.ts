@@ -162,7 +162,7 @@ export default defineConfig({
     {
       label: tk('nav.login'),
       icon: 'log-in',
-      page: () => import('./pages/Login.vue'),
+      link: '/login',
     }
   ],
   // Standalone, full-screen pages (no top bar / sidebar / footer). Open at `#/landing`.
