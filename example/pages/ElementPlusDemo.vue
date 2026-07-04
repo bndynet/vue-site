@@ -85,23 +85,23 @@ function handleLoadingClick() {
       <!-- Buttons & Tags -->
       <el-tab-pane :label="localize({ en: 'Buttons & Tags', zh: '按钮与标签' })" name="buttons">
         <h3>{{ localize({ en: 'Buttons', zh: '按钮' }) }}</h3>
-        <el-space wrap>
+        <div class="ep-button-row">
           <el-button>Default</el-button>
           <el-button type="primary">Primary</el-button>
           <el-button type="success">Success</el-button>
           <el-button type="warning">Warning</el-button>
           <el-button type="danger">Danger</el-button>
           <el-button type="info">Info</el-button>
-        </el-space>
+        </div>
 
-        <el-space wrap style="margin-top: 12px">
+        <div class="ep-button-row ep-button-row--spaced">
           <el-button type="primary" plain>Plain</el-button>
           <el-button type="primary" round>Round</el-button>
           <el-button type="primary" :loading="loading" @click="handleLoadingClick">
             {{ loading ? localize({ en: 'Loading...', zh: '加载中…' }) : localize({ en: 'Click to Load', zh: '点击加载' }) }}
           </el-button>
           <el-button type="primary" disabled>Disabled</el-button>
-        </el-space>
+        </div>
 
         <h3 style="margin-top: 24px">{{ localize({ en: 'Tags', zh: '标签' }) }}</h3>
         <el-space wrap>
@@ -118,7 +118,7 @@ function handleLoadingClick() {
         </el-space>
 
         <h3 style="margin-top: 24px">{{ localize({ en: 'Badges & Progress', zh: '徽标与进度' }) }}</h3>
-        <el-space :size="30">
+        <div class="ep-badge-row">
           <el-badge :value="12">
             <el-button>Messages</el-button>
           </el-badge>
@@ -131,9 +131,9 @@ function handleLoadingClick() {
           <el-badge is-dot>
             <el-button>Dot</el-button>
           </el-badge>
-        </el-space>
+        </div>
 
-        <div style="margin-top: 20px; max-width: 400px">
+        <div class="ep-progress-stack">
           <el-progress :percentage="percentage" :stroke-width="18" striped striped-flow />
           <el-progress :percentage="100" status="success" style="margin-top: 8px" />
           <el-progress :percentage="45" status="warning" style="margin-top: 8px" />
@@ -238,13 +238,13 @@ function handleLoadingClick() {
         </el-space>
 
         <h3 style="margin-top: 24px">{{ localize({ en: 'Messages & Dialogs', zh: '消息与对话框' }) }}</h3>
-        <el-space wrap>
+        <div class="ep-button-row">
           <el-button type="primary" @click="handleClick">{{ localize({ en: 'Message', zh: '消息' }) }}</el-button>
           <el-button type="warning" @click="handleConfirm">{{ localize({ en: 'Confirm Box', zh: '确认框' }) }}</el-button>
           <el-button type="success" @click="showNotification">{{ localize({ en: 'Notification', zh: '通知' }) }}</el-button>
           <el-button type="info" @click="dialogVisible = true">{{ localize({ en: 'Open Dialog', zh: '打开对话框' }) }}</el-button>
           <el-button @click="drawerVisible = true">{{ localize({ en: 'Open Drawer', zh: '打开抽屉' }) }}</el-button>
-        </el-space>
+        </div>
 
         <el-dialog v-model="dialogVisible" :title="localize({ en: 'Dialog Example', zh: '对话框示例' })" width="480">
           <p>{{ localize({ en: 'This is a dialog content. It should respect the current theme.', zh: '这是对话框内容，应当遵循当前主题。' }) }}</p>
@@ -343,6 +343,34 @@ function handleLoadingClick() {
 <style scoped>
 .ep-demo {
   padding: 40px 48px;
+}
+
+.ep-button-row,
+.ep-badge-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  width: 100%;
+}
+
+.ep-button-row--spaced {
+  margin-top: 12px;
+}
+
+.ep-badge-row {
+  gap: 18px 30px;
+}
+
+.ep-button-row :deep(.el-button),
+.ep-badge-row :deep(.el-button) {
+  margin-left: 0;
+}
+
+.ep-progress-stack {
+  width: 100%;
+  max-width: 400px;
+  margin-top: 20px;
 }
 
 .ep-subtitle {
