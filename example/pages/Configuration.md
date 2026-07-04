@@ -2,7 +2,7 @@
 
 Use `defineConfig({ ... })` in `site.config.ts`. Full tables and `env` / `theme` details: root [README.md](https://github.com/bndynet/vue-site/blob/main/README.md).
 
-**Common fields:** `title`, `nav` (`label`, `icon`, `page`, `children`, `link`, `visible`), `pages`, `logo`, `theme`, `footer`, `links`, `env` (`port`, `outDir`, `vite`, …).
+**Common fields:** `title`, `nav` (`label`, `icon`, `page`, `children`, `link`, `visible`), `pages`, `favicon`, `logo`, `theme`, `footer`, `links`, `env` (`port`, `outDir`, `vite`, …).
 
 **`nav[].page`** — the page content. Simplest is a **file-path string** like `'./pages/About.vue'` or `'./README.md'`: the framework loads it and, for multi-language sites, automatically uses the matching `name.<code>` sibling (e.g. `README.zh.md`), falling back to the base file. You can also pass a loader (`() => import('./About.vue')`) when you don't need this. See *Advanced page loaders* in the root README.
 

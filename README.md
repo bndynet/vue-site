@@ -30,6 +30,7 @@ import { defineConfig } from '@bndynet/vue-site'
 
 export default defineConfig({
   title: 'My Project',
+  favicon: '/favicon.ico',
   nav: [
     { label: 'Home', icon: 'home', page: () => import('./README.md?raw') },
     { label: 'Guide', icon: 'book-open', page: () => import('./pages/guide.md?raw') },
@@ -43,6 +44,7 @@ export default defineConfig({
 my-site/
   package.json
   site.config.ts
+  public/favicon.ico
   README.md
   pages/guide.md
 ```
@@ -75,6 +77,7 @@ Add `"dev": "vue-site dev"` (or `vs dev`) in `package.json` scripts if you like.
 | `nav` | `NavItem[]` |
 | `navPosition` | Optional navigation placement: `'top'` forces the top/tiered layout, `'sidebar'` forces the full nav tree into the sidebar. Omit to keep automatic behavior based on nav depth |
 | `defaultPath` | Path the site opens at; `/` and unknown paths redirect here. Must match a registered route (a `nav` item's resolved path or a `pages` entry's `path`). Defaults to the first top-level `nav` item |
+| `favicon` | Browser tab icon URL. Use a public asset path, remote URL, or imported asset URL |
 | `logo` | Logo URL or imported image |
 | `theme` | See `ThemeConfig` below; set to `false` to disable theming (hides the switcher, forces a fixed `light` palette, no localStorage persistence) |
 | `i18n` | Multi-language config (`I18nConfig`) — see [Internationalization](#internationalization-i18n) |

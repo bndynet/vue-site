@@ -172,6 +172,25 @@ function resolveBootstrapUrl(path) {
   return '/' + t.replace(/^\.\//, '')
 }
 
+function escapeHtmlAttr(value) {
+  return String(value)
+    .replace(/&/g, '&amp;')
+    .replace(/"/g, '&quot;')
+    .replace(/</g, '&lt;')
+}
+
+function getConfiguredFavicon(siteConfig) {
+  const favicon = siteConfig?.favicon
+  return typeof favicon === 'string' ? favicon.trim() : ''
+}
+
+function buildFaviconLink(siteConfig) {
+  const favicon = getConfiguredFavicon(siteConfig)
+  return favicon
+    ? `  <link rel="icon" href="${escapeHtmlAttr(favicon)}" />\n`
+    : ''
+}
+
 // Friendly display names for auto-discovered locale files (`/locales/<code>.json`). Used only when
 // the config doesn't declare `i18n.locales`; unknown codes fall back to the code itself.
 const LOCALE_LABELS = {
@@ -289,13 +308,13 @@ function buildEntryCode(siteConfig) {
   })
 }
 
-function buildHtmlShell(scriptTag) {
+function buildHtmlShell(scriptTag, siteConfig) {
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title></title>
+${buildFaviconLink(siteConfig)}  <title></title>
 </head>
 <body>
   <div id="app"></div>
@@ -303,10 +322,6 @@ function buildHtmlShell(scriptTag) {
 </body>
 </html>`
 }
-
-const htmlTemplate = buildHtmlShell(
-  `<script type="module" src="/@id/__x00__${VIRTUAL_ENTRY}"></script>`,
-)
 
 // esbuild plugin stubbing asset / SFC / `?raw` imports (static or dynamic) to an empty default
 // export, so bundling the config for pre-load doesn't choke on resources Node can't load. Page
@@ -497,7 +512,7 @@ function configSugarPlugin() {
   }
 }
 
-function vueSitePlugin(entryCode) {
+function vueSitePlugin(entryCode, htmlTemplate) {
   return [
     {
       name: 'vue-site:virtual-entry',
@@ -649,6 +664,10 @@ async function buildViteConfig(options = {}) {
   }
 
   const entryCode = buildEntryCode(siteConfig)
+  const htmlTemplate = buildHtmlShell(
+    `<script type="module" src="/@id/__x00__${VIRTUAL_ENTRY}"></script>`,
+    siteConfig,
+  )
 
   // When watchPackages uses entryPath, SCSS files imported inside the watched
   // package source (e.g. Lit web components with `import styles from './foo.scss'`
@@ -699,7 +718,7 @@ async function buildViteConfig(options = {}) {
       }),
       vue(vueOpts),
       ...watchedScssPlugin,
-      ...vueSitePlugin(entryCode),
+      ...vueSitePlugin(entryCode, htmlTemplate),
       ...(userPlugins || []),
     ],
     resolve: {
@@ -763,6 +782,7 @@ async function run() {
       })
       const buildHtml = buildHtmlShell(
         `<script type="module">\n${bootstrapScript}\n  </script>`,
+        siteConfig,
       )
       fs.writeFileSync(tempHtml, buildHtml)
     }

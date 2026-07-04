@@ -2,7 +2,7 @@
 
 在 `site.config.ts` 中使用 `defineConfig({ ... })`。完整字段表与 `env` / `theme` 细节见根目录 [README.md](https://github.com/bndynet/vue-site/blob/main/README.md)。
 
-**常用字段：** `title`、`nav`（`label`、`icon`、`page`、`children`、`link`、`visible`）、`pages`、`logo`、`theme`、`footer`、`links`、`env`（`port`、`outDir`、`vite` 等）。
+**常用字段：** `title`、`nav`（`label`、`icon`、`page`、`children`、`link`、`visible`）、`pages`、`favicon`、`logo`、`theme`、`footer`、`links`、`env`（`port`、`outDir`、`vite` 等）。
 
 **`nav[].page`** —— 页面内容。最简单的是一个**文件路径字符串**，如 `'./pages/About.vue'` 或 `'./README.md'`：框架会加载它，并在多语言站点中自动使用同名的 `名.<code>` 文件（如 `README.zh.md`），找不到时回退到基础文件。如果不需要这种行为，也可以传入一个加载器（`() => import('./About.vue')`）。详见根目录 README 的「高级页面加载器」。
 

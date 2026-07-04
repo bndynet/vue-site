@@ -17,6 +17,8 @@ export default defineConfig({
   // `tk('site.title')` references a key from the auto-loaded catalog instead of inlining text.
   // (You can still pass a plain string or an inline `{ en, zh }` map if you prefer.)
   title: tk('site.title'),
+  // Browser tab icon. Use a public asset path, remote URL, or imported asset URL.
+  favicon: 'https://static.bndy.net/images/logo.png',
   // Optional: remove this line to skip loading `bootstrap.ts`.
   bootstrap: './bootstrap.ts',
   // Optional nav placement: 'top' forces the top/tiered layout, 'sidebar' forces the full nav tree

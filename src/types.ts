@@ -330,6 +330,12 @@ export interface ShellConfig {
 export interface SiteConfig {
   /** Site title (browser tab + header). Accepts a `LocalizedString` for multi-language sites. */
   title: LocalizedString
+  /**
+   * Browser tab icon URL. Pass an absolute URL, a public asset path, or an imported asset URL.
+   * In CLI mode this is also emitted as a `<link rel="icon">` in the generated HTML when the
+   * value is available at config preload time.
+  */
+  favicon?: string
   logo?: string
   nav: NavItem[]
   /**

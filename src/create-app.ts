@@ -17,6 +17,26 @@ import './styles/markdown.css'
 import './styles/code-highlight.css'
 import './styles/element-plus-theme.css'
 
+function getConfiguredFavicon(config: SiteConfig) {
+  return typeof config.favicon === 'string' ? config.favicon.trim() : ''
+}
+
+function applyFavicon(config: SiteConfig) {
+  if (typeof document === 'undefined') return
+
+  const favicon = getConfiguredFavicon(config)
+  if (!favicon) return
+
+  const existing = document.querySelector<HTMLLinkElement>('link[rel~="icon"]')
+  const link = existing ?? document.createElement('link')
+  link.rel = 'icon'
+  link.href = favicon
+
+  if (!existing) {
+    document.head.appendChild(link)
+  }
+}
+
 export async function createSiteApp(config: SiteConfig) {
   // Canonical locale for stable path/name derivation (independent of the user's current language).
   const defaultLocale = config.i18n
@@ -100,6 +120,7 @@ export async function createSiteApp(config: SiteConfig) {
 
   // Initial document title for the resolved locale; AppLayout keeps it in sync on locale change.
   document.title = resolveField(config.title, localeRef.value, defaultLocale, catalog)
+  applyFavicon(config)
 
   const app = createApp(AppLayout)
 
