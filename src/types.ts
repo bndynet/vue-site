@@ -173,6 +173,13 @@ export interface MessageRef {
 export type LocalizedString = string | Record<LocaleCode, string> | MessageRef
 
 /**
+ * Map of Lucide icon names to Vue components. The CLI generates this automatically from every
+ * configured icon name so only used icons are bundled. When calling `createSiteApp` directly
+ * without the CLI, pass the icons your config references.
+ */
+export type IconRegistry = Record<string, Component>
+
+/**
  * A dictionary of messages for one locale. Values are either the message string or a nested group,
  * so both flat (`{ 'site.title': '…' }`) and nested (`{ site: { title: '…' } }`) layouts are
  * accepted. Nested groups are flattened to dotted ids (`site.title`) when resolved.
@@ -404,6 +411,12 @@ export interface SiteConfig {
   links?: SiteExternalLink[]
   /** Custom controls shown in the shell action area. See `ShellConfig`. */
   shell?: ShellConfig
+  /**
+   * Lucide icon components used by navigation, links, language choices, and the theme switcher.
+   * The CLI injects this automatically from configured icon names. Provide it manually only when
+   * calling `createSiteApp` without the CLI.
+   */
+  icons?: IconRegistry
   /**
    * Normalized repository URL from `package.json` `repository` (parent directory first,
    * then site root). Injected by the `vue-site` CLI; omit when calling `createSiteApp` manually.

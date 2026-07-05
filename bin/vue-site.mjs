@@ -125,6 +125,8 @@ const VIRTUAL_ENTRY = 'virtual:vue-site-entry'
 const RESOLVED_ENTRY = '\0' + VIRTUAL_ENTRY
 const VIRTUAL_PACKAGE = 'virtual:vue-site-package'
 const RESOLVED_PACKAGE = '\0' + VIRTUAL_PACKAGE
+const VIRTUAL_ICONS = 'virtual:vue-site-icons'
+const RESOLVED_ICONS = '\0' + VIRTUAL_ICONS
 
 function parseRepositoryUrl(pkg) {
   const r = pkg.repository
@@ -252,6 +254,7 @@ function buildBootstrapScript({ siteConfig, siteConfigSpecifier }) {
     `import '${FRAMEWORK_PACKAGE}/style.css'`,
     `import siteConfig from '${siteConfigSpecifier}'`,
     `import { repositoryUrl } from '${VIRTUAL_PACKAGE}'`,
+    `import { iconRegistry } from '${VIRTUAL_ICONS}'`,
     ``,
     `// Auto-discover translations: /locales/<code>.json -> { [code]: { ...messages } }.`,
     `const __localeFiles = import.meta.glob('/locales/*.json', { eager: true, import: 'default' })`,
@@ -307,6 +310,7 @@ function buildBootstrapScript({ siteConfig, siteConfigSpecifier }) {
     `    ...(hasThemeQuery ? { theme: { ...(siteConfig.theme || {}), default: resolvedTheme } } : {}),`,
     `    packageRepository: repositoryUrl,`,
     `    baseUrl: import.meta.env.BASE_URL,`,
+    `    icons: { ...iconRegistry, ...(siteConfig.icons || {}) },`,
     `  })`,
     `  app.mount('#app')`,
     `})()`,
@@ -524,13 +528,149 @@ function configSugarPlugin() {
   }
 }
 
-function vueSitePlugin(entryCode, htmlTemplate) {
+const BUILTIN_ICON_NAMES = [
+  'sun',
+  'moon',
+  'palette',
+  'languages',
+  'github',
+  'coffee',
+  'waves',
+]
+
+function normalizeLucideIconName(name) {
+  const trimmed = String(name ?? '').trim()
+  if (!trimmed) return ''
+  return trimmed
+    .replace(/^lucide[\s_-]?/i, '')
+    .replace(/[\s_-]?icon$/i, '')
+    .replace(/([a-z0-9])([A-Z])/g, '$1-$2')
+    .replace(/[\s_]+/g, '-')
+    .toLowerCase()
+}
+
+function toPascalIconName(name) {
+  return normalizeLucideIconName(name)
+    .split('-')
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join('')
+}
+
+function readLucideIconExportMap() {
+  const map = new Map()
+  const entry = resolve(lucidePath, 'dist/esm/lucide-vue-next.js')
+  const code = fs.readFileSync(entry, 'utf-8')
+  const re = /export\s+\{([^}]+)\}\s+from\s+['"]\.\/icons\/([^'"]+)['"]/g
+  let match
+
+  while ((match = re.exec(code))) {
+    const exports = match[1]
+    const file = match[2]
+    for (const part of exports.split(',')) {
+      const alias = /default\s+as\s+([A-Za-z0-9_$]+)/.exec(part.trim())?.[1]
+      if (alias) map.set(alias, file)
+    }
+  }
+
+  return map
+}
+
+const lucideIconExportMap = readLucideIconExportMap()
+
+function addIconName(set, value) {
+  if (typeof value !== 'string') return
+  const name = value.trim()
+  if (name) set.add(name)
+}
+
+function collectNavIconNames(set, nav = []) {
+  for (const item of nav) {
+    addIconName(set, item?.icon)
+    collectNavIconNames(set, item?.children ?? [])
+  }
+}
+
+function collectIconNames(siteConfig = {}) {
+  const names = new Set(BUILTIN_ICON_NAMES)
+  const themeConfig =
+    siteConfig.theme && typeof siteConfig.theme === 'object'
+      ? siteConfig.theme
+      : undefined
+
+  collectNavIconNames(names, siteConfig.nav ?? [])
+
+  for (const link of siteConfig.links ?? []) {
+    addIconName(names, link?.icon)
+  }
+  for (const locale of siteConfig.i18n?.locales ?? []) {
+    addIconName(names, locale?.icon)
+  }
+  for (const theme of themeConfig?.extraThemes ?? []) {
+    addIconName(names, theme?.icon)
+  }
+
+  return [...names]
+}
+
+function buildIconRegistryCode(siteConfig) {
+  const imports = []
+  const entries = []
+  const imported = new Map()
+  const addedEntries = new Set()
+
+  for (const name of collectIconNames(siteConfig)) {
+    const normalized = normalizeLucideIconName(name)
+    if (!normalized) continue
+
+    const pascal = toPascalIconName(name)
+    const iconSource =
+      lucideIconExportMap.get(pascal) ??
+      lucideIconExportMap.get(`${pascal}Icon`) ??
+      `${normalized}.js`
+    const iconFile = resolve(lucidePath, 'dist/esm/icons', iconSource)
+
+    if (!fs.existsSync(iconFile)) {
+      console.warn(
+        `[vue-site] Icon "${name}" was not found in lucide-vue-next. It will render empty.`,
+      )
+      continue
+    }
+
+    let local = imported.get(normalized)
+    if (!local) {
+      local = `Icon${imported.size}`
+      imported.set(normalized, local)
+      imports.push(
+        `import ${local} from ${JSON.stringify(
+          `lucide-vue-next/dist/esm/icons/${iconSource}`,
+        )}`,
+      )
+    }
+
+    for (const key of new Set([name, normalized])) {
+      if (addedEntries.has(key)) continue
+      addedEntries.add(key)
+      entries.push(`  ${JSON.stringify(key)}: ${local},`)
+    }
+  }
+
+  return [
+    ...imports,
+    `export const iconRegistry = {`,
+    ...entries,
+    `}`,
+  ].join('\n')
+}
+
+function vueSitePlugin(entryCode, htmlTemplate, iconRegistryCode) {
   return [
     {
       name: 'vue-site:virtual-entry',
       resolveId(id) {
         if (id === VIRTUAL_ENTRY) return RESOLVED_ENTRY
         if (id === VIRTUAL_PACKAGE) return RESOLVED_PACKAGE
+        if (id === VIRTUAL_ICONS) return RESOLVED_ICONS
       },
       load(id) {
         if (id === RESOLVED_ENTRY) return entryCode
@@ -538,6 +678,7 @@ function vueSitePlugin(entryCode, htmlTemplate) {
           const url = readPackageRepositoryUrl()
           return `export const repositoryUrl = ${JSON.stringify(url)}`
         }
+        if (id === RESOLVED_ICONS) return iconRegistryCode
       },
     },
     {
@@ -676,6 +817,7 @@ async function buildViteConfig(options = {}) {
   }
 
   const entryCode = buildEntryCode(siteConfig)
+  const iconRegistryCode = buildIconRegistryCode(siteConfig)
   const htmlTemplate = buildHtmlShell(
     `<script type="module" src="/@id/__x00__${VIRTUAL_ENTRY}"></script>`,
     siteConfig,
@@ -730,7 +872,7 @@ async function buildViteConfig(options = {}) {
       }),
       vue(vueOpts),
       ...watchedScssPlugin,
-      ...vueSitePlugin(entryCode, htmlTemplate),
+      ...vueSitePlugin(entryCode, htmlTemplate, iconRegistryCode),
       ...(userPlugins || []),
     ],
     resolve: {

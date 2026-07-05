@@ -73,6 +73,8 @@ export default defineConfig({
   theme: {
     default: 'light',
   },
+  // `icons` is omitted here because the CLI auto-generates a Lucide icon registry from the icon
+  // names used in nav, links, languages, and themes. Only direct `createSiteApp` usage needs it.
   nav: [
     // Labels reference the central catalog via `tk('id')`. Brand names like `API` / `Element Plus`
     // stay plain strings since they read the same in every language.

@@ -37,6 +37,7 @@ export type {
   ResolvedNavItem,
   LocaleCode,
   LocalizedString,
+  IconRegistry,
   MessageRef,
   MessageTree,
   LocaleOption,

@@ -85,6 +85,7 @@ Add `"dev": "vue-site dev"` (or `vs dev`) in `package.json` scripts if you like.
 | `readme` | Raw Home content if no `README.md` |
 | `links` | Header links: Lucide `icon` + `link`, optional `title` (`LocalizedString`) |
 | `shell` | Shell action area config (`ShellConfig`) — see [Shell actions](#shell-actions-shellactions) |
+| `icons` | Lucide icon registry. Generated automatically by the CLI; provide manually only when calling `createSiteApp` without the CLI |
 | `pages` | `StandalonePage[]` — full-screen routes outside the `nav` tree (no top bar/sidebar/footer) |
 | `auth` | Central authorization policy (`AuthConfig`) — see [Per-page authorization](#per-page-authorization-auth) |
 | `router` | History mode (`RouterConfig`) — `hash` (default) or HTML5 `web`; see [Router history](#router-history-router) |
@@ -127,6 +128,29 @@ export default defineConfig({
     { label: 'Docs', icon: 'book', page: './pages/docs.md' },
     { label: 'Reports', icon: 'table', layout: 'wide', page: './pages/reports.vue' },
     { label: 'Dashboard', icon: 'gauge', layout: 'full', page: './pages/dashboard.vue' },
+  ],
+})
+```
+
+### Icon registry
+
+The CLI scans configured Lucide icon names in `nav`, `links`, `i18n.locales`, and `theme.extraThemes`
+and generates an icon registry automatically. Only the icons referenced by the config are bundled.
+
+When using the library directly without the CLI, pass the registry yourself:
+
+```typescript
+import Home from 'lucide-vue-next/dist/esm/icons/home.js'
+import BookOpen from 'lucide-vue-next/dist/esm/icons/book-open.js'
+
+createSiteApp({
+  title: 'My Site',
+  icons: {
+    home: Home,
+    'book-open': BookOpen,
+  },
+  nav: [
+    { label: 'Home', icon: 'home', page: () => import('./README.md?raw') },
   ],
 })
 ```
@@ -531,7 +555,7 @@ app.mount('#app')
 
 Use a top-level `await` in your entry (or an async IIFE): `createSiteApp` is async and **awaits** `configureApp` when it returns a `Promise`. If you set optional `bootstrap` in config, that module loads before the app is created; if you omit `bootstrap`, that step is skipped.
 
-Exports: `createSiteApp`, `defineConfig`, `useTheme`, `useSiteConfig`, `useLocale`, `useLocalize`, `tk`, `resolveLocalized`, `resolveField`, `resolveMessage`, `mergeCatalog`, `flattenMessages`, `isMessageRef`, `localizedPage`, `builtinMessages`, `themeRefKey`, `localeRefKey`. Types: `SiteConfig`, `SiteEnvConfig`, `SiteViteConfig`, `SiteExternalLink`, `ShellConfig`, `ShellAction`, `ShellActionLoader`, `NavItem`, `StandalonePage`, `PageLayout`, `AuthRule`, `AuthContext`, `AuthConfig`, `RouterConfig`, `ThemeConfig`, `ThemeOption`, `ThemePaletteVars`, `ResolvedNavItem`, `I18nConfig`, `LocaleOption`, `LocaleCode`, `LocalizedString`, `MessageRef`, `MessageTree`, `MessageCatalog`, `PageLoader`, `LocalizedPageOptions`.
+Exports: `createSiteApp`, `defineConfig`, `useTheme`, `useSiteConfig`, `useLocale`, `useLocalize`, `tk`, `resolveLocalized`, `resolveField`, `resolveMessage`, `mergeCatalog`, `flattenMessages`, `isMessageRef`, `localizedPage`, `builtinMessages`, `themeRefKey`, `localeRefKey`. Types: `SiteConfig`, `SiteEnvConfig`, `SiteViteConfig`, `SiteExternalLink`, `ShellConfig`, `ShellAction`, `ShellActionLoader`, `NavItem`, `StandalonePage`, `PageLayout`, `AuthRule`, `AuthContext`, `AuthConfig`, `RouterConfig`, `ThemeConfig`, `ThemeOption`, `ThemePaletteVars`, `ResolvedNavItem`, `I18nConfig`, `LocaleOption`, `LocaleCode`, `LocalizedString`, `IconRegistry`, `MessageRef`, `MessageTree`, `MessageCatalog`, `PageLoader`, `LocalizedPageOptions`.
 
 ### Theme in Vue pages (`useTheme`)
 
