@@ -72,13 +72,18 @@ watch([() => route.path, locale], loadContent)
 
 <style scoped>
 .page-view {
-  min-height: 200px;
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  width: 100%;
 }
 
 .page-loading {
   display: flex;
+  align-items: center;
   justify-content: center;
-  padding: 60px 0;
+  flex: 1 1 auto;
 }
 
 .page-loading-dot {
