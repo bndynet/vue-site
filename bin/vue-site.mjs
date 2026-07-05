@@ -14,17 +14,29 @@ import fs from 'fs'
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
 const pkgDir = resolve(__dirname, '..')
-const require = createRequire(import.meta.url)
 const FRAMEWORK_PACKAGE = '@bndynet/vue-site'
 const frameworkEntry = resolve(pkgDir, 'dist/index.es.js')
 const frameworkStyle = resolve(pkgDir, 'dist/style.css')
 
-function resolvePkgDir(pkg) {
-  return dirname(require.resolve(`${pkg}/package.json`))
+function resolvePkgDir(pkg, from = import.meta.url) {
+  return dirname(createRequire(from).resolve(`${pkg}/package.json`))
+}
+
+function toVitePath(file) {
+  return file.replace(/\\/g, '/')
 }
 
 const vuePath = resolvePkgDir('vue')
 const vueRouterPath = resolvePkgDir('vue-router')
+const lucidePath = resolvePkgDir('lucide-vue-next')
+const elementPlusPath = resolvePkgDir('element-plus')
+const elementPlusPackage = resolve(elementPlusPath, 'package.json')
+const elementPlusIconsPath = resolvePkgDir('@element-plus/icons-vue', elementPlusPackage)
+const dayjsPath = resolvePkgDir('dayjs', elementPlusPackage)
+const lucideAliasPath = toVitePath(lucidePath)
+const elementPlusAliasPath = toVitePath(elementPlusPath)
+const elementPlusIconsAliasPath = toVitePath(elementPlusIconsPath)
+const dayjsAliasPath = toVitePath(dayjsPath)
 const cwd = process.cwd()
 /** Lets `import('../file.md?raw')` work when `site.config` lives in a subfolder (README next to cwd). In-repo, ../ often falls under pkgDir; from npm install it does not, so we allow cwd's parent explicitly. */
 const cwdParent = resolve(cwd, '..')
@@ -736,6 +748,38 @@ async function buildViteConfig(options = {}) {
           find: 'vue-router',
           replacement: resolve(vueRouterPath, 'dist/vue-router.mjs'),
         },
+        {
+          find: /^lucide-vue-next$/,
+          replacement: toVitePath(resolve(lucidePath, 'dist/esm/lucide-vue-next.js')),
+        },
+        {
+          find: /^lucide-vue-next\//,
+          replacement: `${lucideAliasPath}/`,
+        },
+        {
+          find: /^element-plus$/,
+          replacement: toVitePath(resolve(elementPlusPath, 'es/index.mjs')),
+        },
+        {
+          find: /^element-plus\//,
+          replacement: `${elementPlusAliasPath}/`,
+        },
+        {
+          find: /^@element-plus\/icons-vue$/,
+          replacement: toVitePath(resolve(elementPlusIconsPath, 'dist/index.js')),
+        },
+        {
+          find: /^@element-plus\/icons-vue\//,
+          replacement: `${elementPlusIconsAliasPath}/`,
+        },
+        {
+          find: /^dayjs$/,
+          replacement: dayjsAliasPath,
+        },
+        {
+          find: /^dayjs\//,
+          replacement: `${dayjsAliasPath}/`,
+        },
       ],
     },
     optimizeDeps: {
@@ -743,6 +787,11 @@ async function buildViteConfig(options = {}) {
       // Keep it out of dependency pre-bundling so Vite does not instantiate
       // `dist/index.es.js` once via /@fs and again via node_modules/.vite.
       exclude: [FRAMEWORK_PACKAGE],
+      // Element Plus imports dayjs from ESM files, but dayjs itself ships as
+      // CommonJS. Force Vite's CJS interop for the package while letting
+      // discovered `dayjs/*` plugin imports be optimized normally.
+      include: ['dayjs'],
+      needsInterop: ['dayjs'],
     },
     server: {
       open: true,
