@@ -1,6 +1,6 @@
-import { createApp, ref } from 'vue'
+import { createApp, reactive, ref } from 'vue'
 import { createWebHashHistory, createWebHistory } from 'vue-router'
-import type { SiteConfig } from './types'
+import type { ResolvedNavItem, SiteConfig } from './types'
 import { resolveNavItems, createSiteRouter, filterNavItems } from './router'
 import { applyAuthGuard, pruneNavByAuth } from './auth'
 import { initTheme, themeRefKey } from './composables/useTheme'
@@ -70,8 +70,26 @@ export async function createSiteApp(config: SiteConfig) {
   }
 
   // Routes are registered from the full `resolvedNav` so guarded pages stay reachable (the guard
-  // redirects unauthorized direct access). The menu, however, renders from an auth-filtered list.
-  const menuNav = config.auth ? await pruneNavByAuth(resolvedNav, config.auth) : resolvedNav
+  // redirects unauthorized direct access). The menu, however, renders from an auth-filtered list
+  // that can be refreshed after login/logout without recreating the app.
+  const initialMenuNav = config.auth ? await pruneNavByAuth(resolvedNav, config.auth) : resolvedNav
+  const menuNav = reactive<ResolvedNavItem[]>(initialMenuNav)
+  let authNavRefreshId = 0
+
+  async function refreshAuthNav() {
+    const auth = config.auth
+    if (!auth) return
+    const refreshId = ++authNavRefreshId
+    const nextMenuNav = await pruneNavByAuth(resolvedNav, auth)
+    if (refreshId !== authNavRefreshId) return
+    menuNav.splice(0, menuNav.length, ...nextMenuNav)
+  }
+
+  if (config.auth) {
+    router.afterEach(() => {
+      void refreshAuthNav()
+    })
+  }
 
   // `theme: false` disables theming: a fixed `light` palette is applied (so the CSS-variable
   // driven layout still renders), the switcher is hidden (see AppLayout), and since `light` is
@@ -126,7 +144,7 @@ export async function createSiteApp(config: SiteConfig) {
 
   app.provide(themeRefKey, themeRef)
   app.provide(localeRefKey, localeRef)
-  app.provide(siteContextKey, { config, resolvedNav: menuNav })
+  app.provide(siteContextKey, { config, resolvedNav: menuNav, refreshAuthNav })
   app.use(router)
 
   if (config.configureApp) {

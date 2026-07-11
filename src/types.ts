@@ -17,7 +17,7 @@ export type AuthRule =
 
 /**
  * Context passed to `SiteConfig.auth.authorize`. `to` / `from` are present when the guard runs
- * during navigation; they are absent during the one-time startup pass that filters the nav menu.
+ * during navigation; they are absent while filtering the nav menu.
  */
 export interface AuthContext {
   /** The `auth` rule declared on the matched nav / standalone item. */
@@ -35,8 +35,8 @@ export interface AuthConfig {
   /**
    * Decide whether the current user may access a route carrying `rule`. Return `true` to allow,
    * `false` to deny, or a path string to redirect (e.g. your login page). Runs at navigation time
-   * on every guarded route, and once at startup (with only `rule` / `item`) to filter the nav menu
-   * — there, any result other than `true` hides the item.
+   * on every guarded route, and whenever the auth-filtered nav menu is refreshed (with only
+   * `rule` / `item`) — there, any result other than `true` hides the item.
    */
   authorize: (ctx: AuthContext) => boolean | string | Promise<boolean | string>
   /**
@@ -102,7 +102,7 @@ export interface NavItem {
    * Per-page authorization rule, interpreted by `SiteConfig.auth.authorize`. Unlike `visible`
    * (a build/startup-time existence switch), `auth` keeps the route registered and is enforced by
    * a navigation guard on every navigation, so it reacts to login/logout and can redirect to a
-   * login page. It is also evaluated once at startup to hide unauthorized items from the menu.
+   * login page. It is also evaluated for the menu whenever auth navigation is refreshed.
    * Requires `SiteConfig.auth` to be set; otherwise it is ignored.
    */
   auth?: AuthRule
@@ -386,7 +386,7 @@ export interface SiteConfig {
   /**
    * Central authorization policy. When set, any `NavItem` / `StandalonePage` carrying an `auth`
    * rule is enforced by a navigation guard (redirecting to `auth.loginPath` on denial) and hidden
-   * from the nav menu at startup when not authorized. Omit to disable authorization entirely.
+   * from the nav menu when not authorized. Omit to disable authorization entirely.
    */
   auth?: AuthConfig
   /** Router history configuration (hash vs HTML5). See `RouterConfig`. */

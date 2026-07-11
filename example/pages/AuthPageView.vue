@@ -1,18 +1,18 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useRouter } from 'vue-router'
-import { useLocalize } from '@bndynet/vue-site'
+import { useLocalize, useSiteConfig } from '@bndynet/vue-site'
 
 const router = useRouter()
 const { localize } = useLocalize()
+const { refreshAuthNav } = useSiteConfig()
 
 const role = computed(() => localStorage.getItem('role') ?? '')
 
 async function signOut() {
   localStorage.removeItem('role')
-  // `router.replace` works in both hash and HTML5 modes; the reload re-runs the startup nav filter.
+  await refreshAuthNav()
   await router.replace('/login')
-  window.location.reload()
 }
 </script>
 

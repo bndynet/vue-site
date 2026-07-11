@@ -55,7 +55,7 @@ export default defineConfig({
   },
   // Central authorization policy. Pages opt in by adding an `auth` rule (see `nav` below).
   // This demo stores the current role in localStorage (set by the `/login` page). `authorize`
-  // runs at navigation time (every navigation) and once at startup to filter the nav menu.
+  // runs at navigation time and whenever the auth-filtered nav menu refreshes.
   auth: {
     loginPath: '/login',
     authorize: ({ rule }) => {
@@ -153,8 +153,8 @@ export default defineConfig({
       auth: true,
       page: () => import('./pages/AuthPageView.vue'),
     },
-    // `auth: ['admin']` requires the `admin` role. The item is also hidden from the menu at
-    // startup when the current user is not authorized (try logging in via `#/login`).
+    // `auth: ['admin']` requires the `admin` role. The item is hidden from the menu whenever the
+    // current user is not authorized (try logging in via `#/login`).
     {
       label: tk('nav.admin'),
       icon: 'shield',

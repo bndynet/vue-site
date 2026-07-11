@@ -1,35 +1,34 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { useLocalize } from '@bndynet/vue-site'
+import { useLocalize, useSiteConfig } from '@bndynet/vue-site'
 
 const route = useRoute()
 const router = useRouter()
 const { localize } = useLocalize()
+const { refreshAuthNav } = useSiteConfig()
 
-const currentRole = computed(() => localStorage.getItem('role') ?? '')
+const currentRole = ref(localStorage.getItem('role') ?? '')
 const redirectTarget = computed(() => {
   const r = route.query.redirect
   return typeof r === 'string' && r ? r : '/'
 })
 
-// The nav menu is filtered once at startup (auth is evaluated when the app is created), so we do a
-// full reload after changing the role. `router.replace` updates the URL correctly for the active
-// history mode (hash or HTML5), then a full reload re-runs createSiteApp so the nav filter and the
-// navigation guard re-evaluate for the new role.
-async function reloadTo(path: string) {
+async function goTo(path: string) {
+  await refreshAuthNav()
   await router.replace(path)
-  window.location.reload()
 }
 
 function loginAs(role: 'user' | 'admin') {
   localStorage.setItem('role', role)
-  reloadTo(redirectTarget.value)
+  currentRole.value = role
+  void goTo(redirectTarget.value)
 }
 
 function logout() {
   localStorage.removeItem('role')
-  reloadTo('/login')
+  currentRole.value = ''
+  void goTo('/login')
 }
 </script>
 

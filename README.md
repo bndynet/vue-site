@@ -454,7 +454,7 @@ export default defineConfig({
 
 - `authorize` runs **on every navigation** (a Vue Router `beforeEach` guard). It receives `{ rule, item, to, from }` and returns `true` (allow), `false` (deny), or a path `string` (redirect, e.g. to a login page).
 - On `false`, the user is sent to `auth.loginPath` with the requested path as a `redirect` query (`/login?redirect=/admin`); if `loginPath` is unset, the navigation is cancelled.
-- `authorize` also runs **once at startup** (with only `rule` / `item`) to hide unauthorized items from the nav menu. Like `visible`, this menu filtering is not reactive — it reflects the state at app creation, so update it by recreating the app (e.g. a full reload after login).
+- `authorize` also runs when the auth-filtered nav menu is refreshed (with only `rule` / `item`) to hide unauthorized items from the nav menu. The framework refreshes this menu after navigations; after changing auth state without a navigation, call `useSiteConfig().refreshAuthNav()`.
 - Guarded routes stay **registered**, so visiting a protected URL directly triggers the guard (and your login redirect) rather than silently 404-ing.
 - The login page itself must **not** carry an `auth` rule (and `loginPath` is always allowed by the guard) to avoid redirect loops.
 
@@ -472,9 +472,9 @@ export default defineConfig({
 | | `visible` | `auth` |
 |--|-----------|--------|
 | Decides | Whether the item/route **exists** | Whether the **current user** may enter |
-| When | Build/startup (once) | Navigation (every time) + startup for menu filtering |
+| When | Build/startup (once) | Navigation (every time) + refreshed menu filtering |
 | Route registered | No (unreachable by URL) | Yes (guarded; can redirect to login) |
-| Reacts to login/logout | No | Guard yes; menu filtering no |
+| Reacts to login/logout | No | Guard yes; menu filtering yes after navigation or `refreshAuthNav()` |
 | Best for | Env / feature-flag / static trimming | Login state, roles, login redirects |
 
 Use `visible` for static existence trimming and `auth` for user-based access. They can be combined on the same item.

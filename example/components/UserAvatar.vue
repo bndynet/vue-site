@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import { useLocalize } from '@bndynet/vue-site'
+import { useLocalize, useSiteConfig } from '@bndynet/vue-site'
 
 const router = useRouter()
 const { localize } = useLocalize()
+const { refreshAuthNav } = useSiteConfig()
 
 const root = ref<HTMLElement | null>(null)
 const menu = ref<HTMLElement | null>(null)
@@ -65,8 +66,8 @@ async function signOut() {
   localStorage.removeItem('role')
   syncRole()
   open.value = false
+  await refreshAuthNav()
   await router.replace('/login')
-  window.location.reload()
 }
 
 onMounted(() => {

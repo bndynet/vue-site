@@ -5,11 +5,11 @@ import type { AuthConfig, AuthRule, ResolvedNavItem } from './types'
 export const AUTH_REDIRECT_QUERY = 'redirect'
 
 /**
- * Startup-once pass that drops nav items the current user is not authorized to see, so they do not
- * appear in the rendered menu. Mirrors the pruning of `filterNavItems`: a hidden parent removes its
- * subtree, and a group left with no children and no own `page` / `link` is pruned. Routes are not
- * affected (they are still registered by `createSiteRouter`); only the menu list is filtered. An
- * item is shown only when `authorize` returns exactly `true`.
+ * Drop nav items the current user is not authorized to see, so they do not appear in the rendered
+ * menu. Mirrors the pruning of `filterNavItems`: a hidden parent removes its subtree, and a group
+ * left with no children and no own `page` / `link` is pruned. Routes are not affected (they are
+ * still registered by `createSiteRouter`); only the menu list is filtered. An item is shown only
+ * when `authorize` returns exactly `true`.
  */
 export async function pruneNavByAuth(
   items: ResolvedNavItem[],
