@@ -4,6 +4,14 @@
 npm install @bndynet/vue-site
 ```
 
+生成 `site.config.ts`、`env.d.ts` 和 `README.md`，且不会覆盖已有文件：
+
+```bash
+npx vue-site init
+```
+
+也可以手动创建配置：
+
 ```typescript
 import { defineConfig } from '@bndynet/vue-site'
 

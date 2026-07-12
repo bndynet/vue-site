@@ -4,6 +4,14 @@
 npm install @bndynet/vue-site
 ```
 
+Generate `site.config.ts`, `env.d.ts`, and `README.md` without overwriting existing files:
+
+```bash
+npx vue-site init
+```
+
+Or create the configuration manually:
+
 ```typescript
 import { defineConfig } from '@bndynet/vue-site'
 

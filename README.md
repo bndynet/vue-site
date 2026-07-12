@@ -23,6 +23,15 @@ Configurable Vue 3 site framework: one package, `site.config.ts`, and Markdown p
 npm install @bndynet/vue-site
 ```
 
+Create starter files in the current directory:
+
+```bash
+npx vue-site init
+```
+
+This creates `site.config.ts`, `env.d.ts`, and `README.md`. Existing files are never overwritten.
+You can also create the configuration manually:
+
 **`site.config.ts`**
 
 ```typescript
@@ -44,6 +53,7 @@ export default defineConfig({
 my-site/
   package.json
   site.config.ts
+  env.d.ts
   public/favicon.ico
   README.md
   pages/guide.md
@@ -52,10 +62,14 @@ my-site/
 **CLI** (`vue-site` and `vs` are the same)
 
 ```bash
+npx vue-site init
 npx vue-site dev
 npx vue-site build
 npx vue-site preview
 ```
+
+`init` is safe to run more than once: it creates only missing starter files and leaves existing
+configuration, type declarations, and README content unchanged.
 
 Use a different config for an environment with `--config` / `-c`. The selected file must live in
 the current site root and may use the `.ts`, `.js`, `.mts`, or `.mjs` extension. `dev`, `build`, and

@@ -126,7 +126,76 @@ const configCandidates = [
   'site.config.mjs',
 ]
 
+const initSiteConfig = `import { defineConfig } from '@bndynet/vue-site'
+
+export default defineConfig({
+  title: 'My Site',
+  // Public client configuration. Never place secrets here.
+  custom: {
+    // apiBaseUrl: 'http://localhost/api/v1',
+  },
+  nav: [
+    { label: 'Home', icon: 'home', page: './README.md' },
+  ],
+})
+`
+
+const initEnvTypes = `/// <reference types="vite/client" />
+
+import '@bndynet/vue-site'
+
+declare module '@bndynet/vue-site' {
+  interface SiteCustomConfig {
+    // apiBaseUrl: string
+  }
+}
+`
+
+const initReadme = `# My Site
+
+Welcome to your vue-site project.
+`
+
 class CliConfigError extends Error {}
+
+function createInitFile(name, contents) {
+  const filePath = resolve(cwd, name)
+  try {
+    fs.writeFileSync(filePath, contents, { flag: 'wx' })
+    console.log(`  created ${name}`)
+    return true
+  } catch (e) {
+    if (e && typeof e === 'object' && e.code === 'EEXIST') {
+      console.log(`  skipped ${name} (already exists)`)
+      return false
+    }
+    throw e
+  }
+}
+
+function initSite() {
+  console.log('[vue-site] Initializing site files:')
+
+  let created = 0
+  const existingConfig = configCandidates.find((file) =>
+    fs.existsSync(resolve(cwd, file)),
+  )
+
+  if (existingConfig) {
+    console.log(`  skipped site.config.ts (${existingConfig} already exists)`)
+  } else if (createInitFile('site.config.ts', initSiteConfig)) {
+    created++
+  }
+
+  if (createInitFile('env.d.ts', initEnvTypes)) created++
+  if (createInitFile('README.md', initReadme)) created++
+
+  console.log(
+    created > 0
+      ? `\n[vue-site] Created ${created} file${created === 1 ? '' : 's'}. Run \`npx vue-site dev\` to start.`
+      : '\n[vue-site] Nothing to create; existing files were left unchanged.',
+  )
+}
 
 function resolveSiteConfig(cliConfig) {
   if (cliConfig) {
@@ -155,7 +224,7 @@ function resolveSiteConfig(cliConfig) {
 
   throw new CliConfigError(
     '\x1b[31mError: No site.config.ts found in the current directory.\x1b[0m\n\n' +
-      'Create a site.config.ts file:\n\n' +
+      'Run `npx vue-site init` to create starter files, or create site.config.ts manually:\n\n' +
       '  import type { SiteConfig } from \'@bndynet/vue-site\'\n\n' +
       '  export default {\n' +
       '    title: \'My Site\',\n' +
@@ -999,6 +1068,11 @@ async function buildViteConfig(options = {}) {
 
 async function run() {
   const { command, cliBase, cliConfig } = parseCliArgv()
+  if (command === 'init') {
+    initSite()
+    return
+  }
+
   const configFile = resolveSiteConfig(cliConfig)
   const siteConfig = await loadSiteConfig(configFile)
   const viteConfig = await buildViteConfig({ cliBase, configFile, siteConfig })
@@ -1038,7 +1112,8 @@ async function run() {
     server.printUrls()
   } else {
     console.log(
-      'Usage: vue-site|vs <dev|build|preview> [--base=<path>] [--config=<file>]\n' +
+      'Usage: vue-site|vs <init|dev|build|preview> [--base=<path>] [--config=<file>]\n' +
+        '  init           Create site.config.ts, env.d.ts, and README.md without overwriting files\n' +
         '  --base         Public path for assets (overrides env.vite.base); e.g. --base=/app/\n' +
         '  --config, -c   Site config file in the current site root; e.g. site.config.prod.ts',
     )

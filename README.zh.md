@@ -22,6 +22,15 @@
 npm install @bndynet/vue-site
 ```
 
+在当前目录创建初始文件：
+
+```bash
+npx vue-site init
+```
+
+该命令会创建 `site.config.ts`、`env.d.ts` 和 `README.md`，绝不会覆盖已有文件。
+也可以手动创建配置：
+
 **`site.config.ts`**
 
 ```typescript
@@ -43,6 +52,7 @@ export default defineConfig({
 my-site/
   package.json
   site.config.ts
+  env.d.ts
   public/favicon.ico
   README.md
   pages/guide.md
@@ -51,10 +61,13 @@ my-site/
 **CLI**（`vue-site` 与 `vs` 等价）
 
 ```bash
+npx vue-site init
 npx vue-site dev
 npx vue-site build
 npx vue-site preview
 ```
+
+`init` 可以安全地重复执行：它只创建缺失的初始文件，不会改动已有配置、类型声明或 README。
 
 可以通过 `--config` / `-c` 为不同环境选择配置文件。指定的文件必须直接位于当前站点根目录，
 扩展名可以是 `.ts`、`.js`、`.mts` 或 `.mjs`；`dev`、`build`、`preview` 都支持该参数：
