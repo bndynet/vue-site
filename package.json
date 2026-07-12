@@ -1,6 +1,6 @@
 {
   "name": "@bndynet/vue-site",
-  "version": "1.3.3",
+  "version": "1.4.0",
   "type": "module",
   "description": "A configurable Vue 3 site framework with sidebar navigation, markdown rendering, and theme switching.",
   "repository": {
@@ -34,7 +34,7 @@
     "lint": "node -e \"process.exit(0)\"",
     "clean": "rimraf dist example/example-dist",
     "build:lib": "vite build",
-    "build:lib:watch": "vite build --watch",
+    "build:lib:watch": "vite build --watch --emptyOutDir false",
     "dev:example": "npm --prefix example run dev",
     "dev": "npm run build:lib && concurrently -k -n lib,example -c blue,magenta \"npm run build:lib:watch\" \"npm run dev:example\"",
     "build": "npm run build:lib && npm install --prefix example && npm run build --prefix example",

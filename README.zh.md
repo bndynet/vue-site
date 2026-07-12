@@ -56,10 +56,22 @@ npx vue-site build
 npx vue-site preview
 ```
 
+可以通过 `--config` / `-c` 为不同环境选择配置文件。指定的文件必须直接位于当前站点根目录，
+扩展名可以是 `.ts`、`.js`、`.mts` 或 `.mjs`；`dev`、`build`、`preview` 都支持该参数：
+
+```bash
+npx vue-site dev --config site.config.dev.ts
+npx vue-site build --config site.config.prod.ts
+npx vue-site preview -c site.config.prod.ts
+```
+
+省略 `--config` 时，CLI 仍会依次自动查找 `site.config.ts`、`site.config.js`、
+`site.config.mts`、`site.config.mjs`。
+
 子路径部署：在 CLI 上传入 Vite 的公共 base（会覆盖 `site.config` 中的 `env.vite.base`）：
 
 ```bash
-npx vue-site build --base=/app/
+npx vue-site build --config site.config.prod.ts --base=/app/
 # 或
 npx vue-site build --base /app/
 ```

@@ -57,10 +57,23 @@ npx vue-site build
 npx vue-site preview
 ```
 
+Use a different config for an environment with `--config` / `-c`. The selected file must live in
+the current site root and may use the `.ts`, `.js`, `.mts`, or `.mjs` extension. `dev`, `build`, and
+`preview` all support the option:
+
+```bash
+npx vue-site dev --config site.config.dev.ts
+npx vue-site build --config site.config.prod.ts
+npx vue-site preview -c site.config.prod.ts
+```
+
+When `--config` is omitted, the CLI keeps auto-discovering `site.config.ts`, `site.config.js`,
+`site.config.mts`, or `site.config.mjs` in that order.
+
 Subpath deploy: pass Vite’s public base on the CLI (overrides `env.vite.base` in `site.config`):
 
 ```bash
-npx vue-site build --base=/app/
+npx vue-site build --config site.config.prod.ts --base=/app/
 # or
 npx vue-site build --base /app/
 ```

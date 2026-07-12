@@ -45,7 +45,7 @@ const cwdGrandparent = resolve(cwd, '../..')
 
 /**
  * @param {string[]} argv
- * @returns {{ command: string, cliBase?: string }}
+ * @returns {{ command: string, cliBase?: string, cliConfig?: string }}
  */
 function parseCliArgv(argv = process.argv) {
   const sub = argv[2]
@@ -55,6 +55,7 @@ function parseCliArgv(argv = process.argv) {
       : 'dev'
 
   let cliBase
+  let cliConfig
   const flagStart = command === sub && sub ? 3 : 2
   for (let i = flagStart; i < argv.length; i++) {
     const a = argv[i]
@@ -77,9 +78,28 @@ function parseCliArgv(argv = process.argv) {
         process.exit(1)
       }
       cliBase = v
+    } else if (a === '--config' || a === '-c') {
+      const v = argv[i + 1]
+      if (!v || v.startsWith('-')) {
+        console.error(
+          '[vue-site] --config requires a value (e.g. --config site.config.prod.ts)',
+        )
+        process.exit(1)
+      }
+      cliConfig = v
+      i++
+    } else if (a.startsWith('--config=')) {
+      const v = a.slice('--config='.length)
+      if (!v) {
+        console.error(
+          '[vue-site] --config= requires a value (e.g. --config=site.config.prod.ts)',
+        )
+        process.exit(1)
+      }
+      cliConfig = v
     }
   }
-  return { command, cliBase }
+  return { command, cliBase, cliConfig }
 }
 
 function isLikelyFilesystemRoot(dir) {
@@ -105,20 +125,45 @@ const configCandidates = [
   'site.config.mts',
   'site.config.mjs',
 ]
-const foundConfig = configCandidates.find((f) => fs.existsSync(resolve(cwd, f)))
-if (!foundConfig) {
-  console.error(
-    '\x1b[31mError: No site.config.ts found in the current directory.\x1b[0m\n\n' +
-    'Create a site.config.ts file:\n\n' +
-    '  import type { SiteConfig } from \'@bndynet/vue-site\'\n\n' +
-    '  export default {\n' +
-    '    title: \'My Site\',\n' +
-    '    nav: [\n' +
-    '      { label: \'Home\', icon: \'home\', page: () => import(\'./README.md?raw\') },\n' +
-    '    ],\n' +
-    '  } satisfies SiteConfig\n'
+
+class CliConfigError extends Error {}
+
+function resolveSiteConfig(cliConfig) {
+  if (cliConfig) {
+    const configPath = resolve(cwd, cliConfig)
+    if (dirname(configPath) !== cwd) {
+      throw new CliConfigError(
+        `[vue-site] --config must name a file in the site root (${cwd}): ${cliConfig}`,
+      )
+    }
+    if (!/\.(?:ts|js|mts|mjs)$/.test(configPath)) {
+      throw new CliConfigError(
+        `[vue-site] Unsupported config extension: ${cliConfig}. ` +
+          'Use a .ts, .js, .mts, or .mjs file.',
+      )
+    }
+    if (!fs.existsSync(configPath) || !fs.statSync(configPath).isFile()) {
+      throw new CliConfigError(`[vue-site] Config file not found: ${configPath}`)
+    }
+    return basename(configPath)
+  }
+
+  const foundConfig = configCandidates.find((f) =>
+    fs.existsSync(resolve(cwd, f)),
   )
-  process.exit(1)
+  if (foundConfig) return foundConfig
+
+  throw new CliConfigError(
+    '\x1b[31mError: No site.config.ts found in the current directory.\x1b[0m\n\n' +
+      'Create a site.config.ts file:\n\n' +
+      '  import type { SiteConfig } from \'@bndynet/vue-site\'\n\n' +
+      '  export default {\n' +
+      '    title: \'My Site\',\n' +
+      '    nav: [\n' +
+      '      { label: \'Home\', icon: \'home\', page: () => import(\'./README.md?raw\') },\n' +
+      '    ],\n' +
+      '  } satisfies SiteConfig\n',
+  )
 }
 
 const VIRTUAL_ENTRY = 'virtual:vue-site-entry'
@@ -317,10 +362,10 @@ function buildBootstrapScript({ siteConfig, siteConfigSpecifier }) {
   ].join('\n')
 }
 
-function buildEntryCode(siteConfig) {
+function buildEntryCode(siteConfig, configFile) {
   return buildBootstrapScript({
     siteConfig,
-    siteConfigSpecifier: `/${foundConfig}`,
+    siteConfigSpecifier: `/${configFile}`,
   })
 }
 
@@ -358,8 +403,8 @@ function preloadAssetStubPlugin() {
   }
 }
 
-async function loadSiteConfig() {
-  const configPath = resolve(cwd, foundConfig)
+async function loadSiteConfig(configFile) {
+  const configPath = resolve(cwd, configFile)
   const raw = fs.readFileSync(configPath, 'utf-8')
 
   // Stub the framework's value imports so the config evaluates without the real (browser-only)
@@ -398,7 +443,7 @@ async function loadSiteConfig() {
       stubbed.replace(/import\.meta\.glob/g, '__vueSiteGlobStub')
   }
 
-  const isTs = /\.m?ts$/.test(foundConfig)
+  const isTs = /\.m?ts$/.test(configFile)
   // Write the stubbed entry next to the original so its relative imports (`./locales`) resolve.
   const entryFile = resolve(
     dirname(configPath),
@@ -428,7 +473,7 @@ async function loadSiteConfig() {
     return mod.default || {}
   } catch (e) {
     throw new Error(
-      `[vue-site] Could not pre-load site config from ${foundConfig}: ${e.message}\n` +
+      `[vue-site] Could not pre-load site config from ${configFile}: ${e.message}\n` +
         `  This usually means your config imports modules Node can't resolve directly ` +
         `(path aliases like @/..., or framework APIs other than defineConfig).`,
     )
@@ -704,8 +749,8 @@ function vueSitePlugin(entryCode, htmlTemplate, iconRegistryCode) {
 }
 
 async function buildViteConfig(options = {}) {
-  const { cliBase, siteConfig: siteConfigOption } = options
-  const siteConfig = siteConfigOption ?? (await loadSiteConfig())
+  const { cliBase, configFile, siteConfig: siteConfigOption } = options
+  const siteConfig = siteConfigOption ?? (await loadSiteConfig(configFile))
   const env = siteConfig.env || {}
   const {
     port,
@@ -816,7 +861,7 @@ async function buildViteConfig(options = {}) {
     }
   }
 
-  const entryCode = buildEntryCode(siteConfig)
+  const entryCode = buildEntryCode(siteConfig, configFile)
   const iconRegistryCode = buildIconRegistryCode(siteConfig)
   const htmlTemplate = buildHtmlShell(
     `<script type="module" src="/@id/__x00__${VIRTUAL_ENTRY}"></script>`,
@@ -953,9 +998,10 @@ async function buildViteConfig(options = {}) {
 }
 
 async function run() {
-  const { command, cliBase } = parseCliArgv()
-  const siteConfig = await loadSiteConfig()
-  const viteConfig = await buildViteConfig({ cliBase, siteConfig })
+  const { command, cliBase, cliConfig } = parseCliArgv()
+  const configFile = resolveSiteConfig(cliConfig)
+  const siteConfig = await loadSiteConfig(configFile)
+  const viteConfig = await buildViteConfig({ cliBase, configFile, siteConfig })
 
   if (command === 'dev') {
     const server = await createServer(viteConfig)
@@ -969,7 +1015,7 @@ async function run() {
     if (!hadHtml) {
       const bootstrapScript = buildBootstrapScript({
         siteConfig,
-        siteConfigSpecifier: `./${foundConfig}`,
+        siteConfigSpecifier: `./${configFile}`,
       })
       const buildHtml = buildHtmlShell(
         `<script type="module">\n${bootstrapScript}\n  </script>`,
@@ -992,14 +1038,15 @@ async function run() {
     server.printUrls()
   } else {
     console.log(
-      'Usage: vue-site|vs <dev|build|preview> [--base=<path>]\n' +
-        '  --base   Public path for assets (overrides env.vite.base); e.g. --base=/app/',
+      'Usage: vue-site|vs <dev|build|preview> [--base=<path>] [--config=<file>]\n' +
+        '  --base         Public path for assets (overrides env.vite.base); e.g. --base=/app/\n' +
+        '  --config, -c   Site config file in the current site root; e.g. site.config.prod.ts',
     )
     process.exit(1)
   }
 }
 
 run().catch((err) => {
-  console.error(err)
+  console.error(err instanceof CliConfigError ? err.message : err)
   process.exit(1)
 })
