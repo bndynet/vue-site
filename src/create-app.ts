@@ -5,7 +5,7 @@ import { resolveNavItems, createSiteRouter, filterNavItems } from './router'
 import { applyAuthGuard, pruneNavByAuth } from './auth'
 import { initTheme, themeRefKey } from './composables/useTheme'
 import { initLocale, localeRefKey } from './composables/useLocale'
-import { siteContextKey } from './composables/useSiteConfig'
+import { registerSiteConfig, siteContextKey } from './composables/useSiteConfig'
 import { mergeCatalog, resolveField } from './i18n-utils'
 import { builtinMessages } from './i18n-messages'
 import { getExtraThemes, resolveThemePalettes } from './theme/resolve-palettes'
@@ -56,8 +56,7 @@ function applyFavicon(config: SiteConfig) {
 }
 
 export async function createSiteApp(config: SiteConfig) {
-  // Store config globally so non-component code can access it via getSiteConfig().
-  _siteConfig = config
+  registerSiteConfig(config)
 
   // Canonical locale for stable path/name derivation (independent of the user's current language).
   const defaultLocale = config.i18n

@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
-import { useTheme, useLocalize, useSiteConfig } from '@bndynet/vue-site'
+import { useTheme, useLocalize } from '@bndynet/vue-site'
+import { getApiBaseUrl } from '../utils/site'
 
 const { theme } = useTheme()
-const { config } = useSiteConfig()
-const apiBaseUrl = config.custom?.apiBaseUrl
+const apiBaseUrl = getApiBaseUrl()
 // Two ways to localize in a Vue page:
 //  - `t('id')`     resolves a key from the central catalog (example/locales.ts). Best for shared,
 //                  centrally managed text.

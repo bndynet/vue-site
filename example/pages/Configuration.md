@@ -4,7 +4,7 @@ Use `defineConfig({ ... })` in `site.config.ts`. Full tables and `env` / `theme`
 
 **Common fields:** `title`, `nav` (`label`, `icon`, `page`, `layout`, `children`, `link`, `visible`), `pages`, `favicon`, `logo`, `theme`, `footer`, `links`, `custom`, `env` (`port`, `outDir`, `vite`, …).
 
-**`custom`** — public application-specific values preserved by the framework and available from `useSiteConfig().config.custom`. Use separate config files for environment-specific values, such as a local or production API base URL. These values are bundled into client code and must not contain secrets.
+**`custom`** — public application-specific values preserved by the framework. Read them from `useSiteConfig().config.custom` in components or `getSiteConfig().custom` in ordinary runtime modules such as `utils.ts`. Use separate config files for environment-specific values, such as a local or production API base URL. These values are bundled into client code and must not contain secrets.
 
 **`nav[].page`** — the page content. Simplest is a **file-path string** like `'./pages/About.vue'` or `'./README.md'`: the framework loads it and, for multi-language sites, automatically uses the matching `name.<code>` sibling (e.g. `README.zh.md`), falling back to the base file. You can also pass a loader (`() => import('./About.vue')`) when you don't need this. See *Advanced page loaders* in the root README.
 

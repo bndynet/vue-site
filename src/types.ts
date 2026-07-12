@@ -354,7 +354,8 @@ export interface ShellConfig {
 }
 
 /**
- * Consumer-defined public configuration exposed through `useSiteConfig().config.custom`.
+ * Consumer-defined public configuration exposed through `useSiteConfig().config.custom` and
+ * `getSiteConfig().custom`.
  * Extend this interface with TypeScript module augmentation to type application-specific keys.
  * Values are bundled into client code and must not contain secrets.
  */
@@ -441,8 +442,8 @@ export interface SiteConfig {
   env?: SiteEnvConfig
   /**
    * Consumer-defined public configuration. The framework preserves these values without
-   * interpreting them and exposes them through `useSiteConfig().config.custom`. Values are
-   * bundled into client code and must not contain secrets.
+   * interpreting them and exposes them through `useSiteConfig().config.custom` and
+   * `getSiteConfig().custom`. Values are bundled into client code and must not contain secrets.
    */
   custom?: SiteCustomConfig
   /**

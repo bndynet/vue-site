@@ -9,7 +9,7 @@ export { useLocalize } from './composables/useLocalize'
 export { resolveLocalized, resolveField, resolveMessage, mergeCatalog, flattenMessages, tk, isMessageRef, localizedPage } from './i18n-utils'
 export type { LocalizedPageOptions, MessageCatalog } from './i18n-utils'
 export { builtinMessages } from './i18n-messages'
-export { useSiteConfig } from './composables/useSiteConfig'
+export { getSiteConfig, useSiteConfig } from './composables/useSiteConfig'
 export { builtinThemePalettes } from './theme/presets'
 export {
   ElMessage,

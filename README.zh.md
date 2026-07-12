@@ -112,15 +112,14 @@ npx vue-site build --base /app/
 | `auth` | 中心化的授权策略（`AuthConfig`）—— 参见[按页面授权](#按页面授权-auth) |
 | `router` | 历史模式（`RouterConfig`）—— `hash`（默认）或 HTML5 `web`；参见[路由历史](#路由历史-router) |
 | `packageRepository` | 通常由 CLI 从 `package.json` 设置；单独使用 `createSiteApp` 时可省略 |
-| `custom` | 公开的业务自定义配置，可通过 `useSiteConfig().config.custom` 读取；参见[自定义客户端配置](#自定义客户端配置-custom) |
+| `custom` | 公开的业务自定义配置；组件内通过 `useSiteConfig().config.custom` 读取，其他代码通过 `getSiteConfig().custom` 读取；参见[自定义客户端配置](#自定义客户端配置-custom) |
 | `env` | 开发/构建选项 —— 见下文 |
 | `bootstrap` | 可选的站点根目录相对路径（如 `./bootstrap.ts`）—— 在 Vue 应用之前加载一次的模块 |
 | `configureApp` | 可选的 `(app) => void \| Promise<void>`，在路由安装之后、`mount` 之前执行（参见 [`configureApp` 中的本地包](#在-configureapp-中使用本地包)） |
 
 ### 自定义客户端配置（`custom`）
 
-`custom` 用于存放框架无需解释、只需原样保留的公开业务配置。任何组件都可以通过
-`useSiteConfig()` 读取：
+`custom` 用于存放框架无需解释、只需原样保留的公开业务配置：
 
 ```typescript
 // site.config.ts
@@ -138,6 +137,20 @@ export default defineConfig({
 const { config } = useSiteConfig()
 const apiBaseUrl = config.custom?.apiBaseUrl
 ```
+
+`utils.ts` 等普通模块没有 Vue 注入上下文，应改用 `getSiteConfig()` 读取当前配置：
+
+```typescript
+// utils/api.ts
+import { getSiteConfig } from '@bndynet/vue-site'
+
+export function getApiBaseUrl() {
+  return getSiteConfig().custom?.apiBaseUrl
+}
+```
+
+请在 `createSiteApp()` 已开始执行后的运行时代码中调用 `getSiteConfig()`。不要在被
+`site.config.ts` 导入的模块顶层立即求值，因为此时当前配置尚未注册。
 
 如果不同构建环境使用不同的值，可以选择不同的配置文件：
 
@@ -577,7 +590,7 @@ app.mount('#app')
 返回 `Promise` 时会 **await** 它。如果你在配置中设置了可选的 `bootstrap`，该模块会在应用创建前加载；
 如果省略 `bootstrap`，则跳过该步骤。
 
-导出：`createSiteApp`、`defineConfig`、`useTheme`、`useSiteConfig`、`useLocale`、`useLocalize`、`tk`、`resolveLocalized`、`resolveField`、`resolveMessage`、`mergeCatalog`、`flattenMessages`、`isMessageRef`、`localizedPage`、`builtinMessages`、`themeRefKey`、`localeRefKey`。类型：`SiteConfig`、`SiteEnvConfig`、`SiteViteConfig`、`SiteCustomConfig`、`SiteExternalLink`、`NavItem`、`StandalonePage`、`PageLayout`、`AuthRule`、`AuthContext`、`AuthConfig`、`RouterConfig`、`ThemeConfig`、`ThemeOption`、`ThemePaletteVars`、`ResolvedNavItem`、`I18nConfig`、`LocaleOption`、`LocaleCode`、`LocalizedString`、`MessageRef`、`MessageTree`、`MessageCatalog`、`PageLoader`、`LocalizedPageOptions`。
+导出：`createSiteApp`、`defineConfig`、`useTheme`、`useSiteConfig`、`getSiteConfig`、`useLocale`、`useLocalize`、`tk`、`resolveLocalized`、`resolveField`、`resolveMessage`、`mergeCatalog`、`flattenMessages`、`isMessageRef`、`localizedPage`、`builtinMessages`、`themeRefKey`、`localeRefKey`。类型：`SiteConfig`、`SiteEnvConfig`、`SiteViteConfig`、`SiteCustomConfig`、`SiteExternalLink`、`NavItem`、`StandalonePage`、`PageLayout`、`AuthRule`、`AuthContext`、`AuthConfig`、`RouterConfig`、`ThemeConfig`、`ThemeOption`、`ThemePaletteVars`、`ResolvedNavItem`、`I18nConfig`、`LocaleOption`、`LocaleCode`、`LocalizedString`、`MessageRef`、`MessageTree`、`MessageCatalog`、`PageLoader`、`LocalizedPageOptions`。
 
 ### 在 Vue 页面中使用主题（`useTheme`）
 
