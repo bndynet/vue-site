@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
-import { useTheme, useLocalize } from '@bndynet/vue-site'
+import { useTheme, useLocalize, useSiteConfig } from '@bndynet/vue-site'
 
 const { theme } = useTheme()
+const { config } = useSiteConfig()
+const apiBaseUrl = config.custom?.apiBaseUrl
 // Two ways to localize in a Vue page:
 //  - `t('id')`     resolves a key from the central catalog (example/locales.ts). Best for shared,
 //                  centrally managed text.
@@ -61,6 +63,11 @@ const charCount = computed(() => form.value.message.length)
       <span v-if="lastThemeChange" class="theme-line-change">
         ({{ localize({ en: 'last switch:', zh: '上次切换：' }) }} <code>{{ lastThemeChange }}</code>)
       </span>
+    </p>
+
+    <p class="theme-line">
+      <span class="theme-line-label">API base URL:</span>
+      <code class="theme-line-value">{{ apiBaseUrl }}</code>
     </p>
 
     <div class="tabs">

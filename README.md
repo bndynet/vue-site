@@ -103,9 +103,66 @@ Add `"dev": "vue-site dev"` (or `vs dev`) in `package.json` scripts if you like.
 | `auth` | Central authorization policy (`AuthConfig`) — see [Per-page authorization](#per-page-authorization-auth) |
 | `router` | History mode (`RouterConfig`) — `hash` (default) or HTML5 `web`; see [Router history](#router-history-router) |
 | `packageRepository` | Usually set by CLI from `package.json`; omit when using `createSiteApp` alone |
+| `custom` | Public application-specific values, available from `useSiteConfig().config.custom`; see [Custom client configuration](#custom-client-configuration-custom) |
 | `env` | Dev/build options — see below |
 | `bootstrap` | Optional path from site root (e.g. `./bootstrap.ts`) — module loaded once before the Vue app |
 | `configureApp` | Optional `(app) => void \| Promise<void>` after router install, before `mount` (see [Local packages in `configureApp`](#local-packages-in-configureapp)) |
+
+### Custom client configuration (`custom`)
+
+Use `custom` for public, application-specific values that the framework should preserve without
+interpreting. They are available to every component through `useSiteConfig()`:
+
+```typescript
+// site.config.ts
+export default defineConfig({
+  title: 'My Site',
+  nav: [/* ... */],
+  custom: {
+    apiBaseUrl: 'http://localhost/api/v1',
+  },
+})
+```
+
+```typescript
+// Inside a Vue component
+const { config } = useSiteConfig()
+const apiBaseUrl = config.custom?.apiBaseUrl
+```
+
+Use a different config file when the value changes between builds:
+
+```typescript
+// site.config.prod.ts
+export default defineConfig({
+  title: 'My Site',
+  nav: [/* ... */],
+  custom: {
+    apiBaseUrl: 'https://prod.com/api/v1',
+  },
+})
+```
+
+```bash
+npx vue-site build --config site.config.prod.ts
+```
+
+`custom` is typed as `SiteCustomConfig`. Application-specific keys can be made type-safe with
+module augmentation:
+
+```typescript
+// site-custom.d.ts
+import '@bndynet/vue-site'
+
+declare module '@bndynet/vue-site' {
+  interface SiteCustomConfig {
+    apiBaseUrl: string
+  }
+}
+```
+
+All `custom` values are bundled into client code and are visible to users. Never store passwords,
+tokens, private keys, or other secrets in this field.
 
 ### `NavItem`
 
@@ -568,7 +625,7 @@ app.mount('#app')
 
 Use a top-level `await` in your entry (or an async IIFE): `createSiteApp` is async and **awaits** `configureApp` when it returns a `Promise`. If you set optional `bootstrap` in config, that module loads before the app is created; if you omit `bootstrap`, that step is skipped.
 
-Exports: `createSiteApp`, `defineConfig`, `useTheme`, `useSiteConfig`, `useLocale`, `useLocalize`, `tk`, `resolveLocalized`, `resolveField`, `resolveMessage`, `mergeCatalog`, `flattenMessages`, `isMessageRef`, `localizedPage`, `builtinMessages`, `themeRefKey`, `localeRefKey`. Types: `SiteConfig`, `SiteEnvConfig`, `SiteViteConfig`, `SiteExternalLink`, `ShellConfig`, `ShellAction`, `ShellActionLoader`, `NavItem`, `StandalonePage`, `PageLayout`, `AuthRule`, `AuthContext`, `AuthConfig`, `RouterConfig`, `ThemeConfig`, `ThemeOption`, `ThemePaletteVars`, `ResolvedNavItem`, `I18nConfig`, `LocaleOption`, `LocaleCode`, `LocalizedString`, `IconRegistry`, `MessageRef`, `MessageTree`, `MessageCatalog`, `PageLoader`, `LocalizedPageOptions`.
+Exports: `createSiteApp`, `defineConfig`, `useTheme`, `useSiteConfig`, `useLocale`, `useLocalize`, `tk`, `resolveLocalized`, `resolveField`, `resolveMessage`, `mergeCatalog`, `flattenMessages`, `isMessageRef`, `localizedPage`, `builtinMessages`, `themeRefKey`, `localeRefKey`. Types: `SiteConfig`, `SiteEnvConfig`, `SiteViteConfig`, `SiteCustomConfig`, `SiteExternalLink`, `ShellConfig`, `ShellAction`, `ShellActionLoader`, `NavItem`, `StandalonePage`, `PageLayout`, `AuthRule`, `AuthContext`, `AuthConfig`, `RouterConfig`, `ThemeConfig`, `ThemeOption`, `ThemePaletteVars`, `ResolvedNavItem`, `I18nConfig`, `LocaleOption`, `LocaleCode`, `LocalizedString`, `IconRegistry`, `MessageRef`, `MessageTree`, `MessageCatalog`, `PageLoader`, `LocalizedPageOptions`.
 
 ### Theme in Vue pages (`useTheme`)
 

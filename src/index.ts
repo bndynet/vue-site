@@ -20,6 +20,7 @@ export type {
   SiteConfig,
   SiteEnvConfig,
   SiteViteConfig,
+  SiteCustomConfig,
   SiteExternalLink,
   ShellConfig,
   ShellAction,

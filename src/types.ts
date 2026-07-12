@@ -353,6 +353,15 @@ export interface ShellConfig {
   align?: 'left' | 'center' | 'right'
 }
 
+/**
+ * Consumer-defined public configuration exposed through `useSiteConfig().config.custom`.
+ * Extend this interface with TypeScript module augmentation to type application-specific keys.
+ * Values are bundled into client code and must not contain secrets.
+ */
+export interface SiteCustomConfig {
+  [key: string]: unknown
+}
+
 export interface SiteConfig {
   /** Site title (browser tab + header). Accepts a `LocalizedString` for multi-language sites. */
   title: LocalizedString
@@ -430,6 +439,12 @@ export interface SiteConfig {
   baseUrl?: string
   /** Development / build environment configuration */
   env?: SiteEnvConfig
+  /**
+   * Consumer-defined public configuration. The framework preserves these values without
+   * interpreting them and exposes them through `useSiteConfig().config.custom`. Values are
+   * bundled into client code and must not contain secrets.
+   */
+  custom?: SiteCustomConfig
   /**
    * Same as `env.watchPackages` (CLI only). Used when `env.watchPackages` is omitted.
    */

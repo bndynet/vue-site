@@ -38,6 +38,11 @@ export default defineConfig({
   // clean URLs with `mode: 'web'`; the base defaults to the CLI `--base` value. HTML5 mode needs
   // the host to serve index.html for unknown paths (SPA fallback).
   // router: { mode: 'web' },
+  // Public application-specific values are available from `useSiteConfig().config.custom`.
+  // They are bundled into client code, so never place secrets here.
+  custom: {
+    apiBaseUrl: 'http://localhost/api/v1',
+  },
   logo: 'https://static.bndy.net/images/logo.png',
   footer: tk('site.footer'),
   links: [
