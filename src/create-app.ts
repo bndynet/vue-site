@@ -17,24 +17,6 @@ import './styles/markdown.css'
 import './styles/code-highlight.css'
 import './styles/element-plus-theme.css'
 
-/**
- * Module-level hold of the config so non-component code can access `custom` and other fields
- * without Vue injection context. Set once by `createSiteApp`; read with {@link getSiteConfig}.
- */
-let _siteConfig: SiteConfig | undefined
-
-/**
- * Returns the site config passed to `createSiteApp()`. Can be called from anywhere — plain
- * modules, `bootstrap.ts` (after the app is created), utility functions, etc. — without a Vue
- * injection context. Returns `undefined` if `createSiteApp` has not been called yet.
- *
- * For reactive, component-scoped access to the full `SiteContext` (config + nav + refreshAuthNav),
- * use {@link useSiteConfig} inside a Vue component instead.
- */
-export function getSiteConfig(): SiteConfig | undefined {
-  return _siteConfig
-}
-
 function getConfiguredFavicon(config: SiteConfig) {
   return typeof config.favicon === 'string' ? config.favicon.trim() : ''
 }

@@ -2,7 +2,7 @@ import 'element-plus/es/components/message/style/css'
 import 'element-plus/es/components/message-box/style/css'
 import 'element-plus/es/components/notification/style/css'
 
-export { createSiteApp, getSiteConfig } from './create-app'
+export { createSiteApp } from './create-app'
 export { useTheme, themeRefKey } from './composables/useTheme'
 export { useLocale, localeRefKey } from './composables/useLocale'
 export { useLocalize } from './composables/useLocalize'
