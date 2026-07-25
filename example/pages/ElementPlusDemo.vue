@@ -386,4 +386,27 @@ h3 {
   margin-bottom: 12px;
   color: var(--color-text);
 }
+
+@media (max-width: 640px) {
+  .ep-demo {
+    padding: 0;
+  }
+
+  .ep-demo :deep(.el-form-item) {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .ep-demo :deep(.el-form-item__label) {
+    justify-content: flex-start;
+    width: 100% !important;
+    height: auto;
+    margin: 0;
+  }
+
+  .ep-demo :deep(.el-form-item__content) {
+    margin-left: 0 !important;
+  }
+}
 </style>

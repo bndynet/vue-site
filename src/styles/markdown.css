@@ -102,6 +102,20 @@
   border: 1px solid var(--color-table-border);
 }
 
+@media (max-width: 840px) {
+  .markdown-body table {
+    display: block;
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .markdown-body th,
+  .markdown-body td {
+    white-space: nowrap;
+  }
+}
+
 .markdown-body th {
   background: var(--color-table-header-bg);
   padding: 10px 14px;
