@@ -312,6 +312,15 @@
     opacity: 0.9;
   }
 
+  .site-mobile-header .site-shell-actions--top {
+    margin-left: 0;
+    padding-left: 0;
+  }
+
+  .site-mobile-header .site-shell-actions--top::before {
+    display: none;
+  }
+
   .site-mobile-logo {
     display: block;
     flex: 0 0 auto;

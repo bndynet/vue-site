@@ -150,6 +150,7 @@ watchEffect(() => {
         />
         <span class="site-mobile-title">{{ siteTitle }}</span>
       </router-link>
+      <ShellActions v-if="isMobileViewport" />
     </header>
     <header v-if="tieredNav && !isMobileViewport" class="site-primary-nav">
       <router-link to="/" class="site-primary-nav-brand">
@@ -224,7 +225,7 @@ watchEffect(() => {
           <SiteExternalLinks compact />
           <LocaleSwitch v-if="localeEnabled" compact />
           <ThemeSwitch v-if="themeEnabled" compact />
-          <ShellActions placement="sidebar" />
+          <ShellActions v-if="!isMobileViewport" placement="sidebar" />
         </div>
         <p v-if="siteFooter" class="site-footer-text">{{ siteFooter }}</p>
       </div>

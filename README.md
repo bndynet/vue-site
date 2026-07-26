@@ -268,10 +268,10 @@ Built-in themes are `light`, `dark`, plus the always-on extras `sepia` and `ocea
 ## Shell actions (`shell.actions`)
 
 Use `shell.actions` to render app-specific Vue components in the active layout's global toolbar.
-In top/tiered navigation they appear at the end of the top header; in sidebar-only navigation they
-appear in the sidebar footer after the built-in links, locale switcher, and theme switcher. This is
-the recommended place for a signed-in user avatar, notification button, help menu, or tenant
-switcher.
+On mobile, they appear at the right side of the mobile header. On desktop, they appear at the end
+of the top header in tiered navigation, or in the sidebar footer after the built-in controls in
+sidebar-only navigation. This is the recommended place for a signed-in user avatar, notification
+button, help menu, or tenant switcher.
 
 ```typescript
 export default defineConfig({
@@ -658,7 +658,7 @@ Exports: `createSiteApp`, `defineConfig`, `useTheme`, `useMobileViewport`, `useS
 
 ### Theme in Vue pages (`useTheme`)
 
-Import `useTheme` from `@bndynet/vue-site`. It returns a reactive `theme` ref (the active theme id, e.g. `light`, `dark`, or an `extraThemes[].id`) plus `setTheme` and `toggleTheme`. The root layout also sets `document.documentElement` attribute `data-theme` and applies CSS variables, so you can style with `var(--color-*)` without JavaScript.
+Import `useTheme` from `@bndynet/vue-site`. It returns a reactive `theme` ref (the active theme id, e.g. `light`, `dark`, or an `extraThemes[].id`) plus `setTheme` and `toggleTheme`. The root layout also sets `document.documentElement` attribute `data-theme`, applies CSS variables, and updates `color-scheme` so native browser controls and scrollbars use the active theme's light or dark scheme.
 
 The theme ref is **provided** by `createSiteApp()` (same Vue runtime as your app), so `watch(theme, …)` works reliably even when another tool would otherwise load a second copy of `vue` from nested `node_modules`.
 

@@ -45,11 +45,14 @@ function applyCssVars(vars: Record<string, string>) {
 
 function applyTheme(mode: string) {
   if (typeof document !== 'undefined') {
-    document.documentElement.setAttribute('data-theme', mode)
-    if (themeState.darkModeIds.has(mode)) {
-      document.documentElement.classList.add('dark')
+    const root = document.documentElement
+    const isDark = themeState.darkModeIds.has(mode)
+    root.setAttribute('data-theme', mode)
+    root.style.colorScheme = isDark ? 'dark' : 'light'
+    if (isDark) {
+      root.classList.add('dark')
     } else {
-      document.documentElement.classList.remove('dark')
+      root.classList.remove('dark')
     }
   }
   if (themeState.activeThemeRef) {

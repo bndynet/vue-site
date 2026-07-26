@@ -597,7 +597,8 @@ app.mount('#app')
 从 `@bndynet/vue-site` 导入 `useTheme`。它返回一个响应式的 `theme` ref（当前激活的主题 id，
 如 `light`、`dark` 或某个 `extraThemes[].id`），外加 `setTheme` 和 `toggleTheme`。
 根布局还会在 `document.documentElement` 上设置 `data-theme` 属性并应用 CSS 变量，
-因此你可以用 `var(--color-*)` 来设置样式，无需 JavaScript。
+因此你可以用 `var(--color-*)` 来设置样式，无需 JavaScript。它还会更新 `color-scheme`，
+让浏览器原生控件和滚动条跟随当前主题的亮色或暗色模式。
 
 theme ref 由 `createSiteApp()` **提供**（与你的应用同一个 Vue 运行时），所以 `watch(theme, …)`
 能可靠工作，即使其他工具可能会从嵌套的 `node_modules` 加载第二份 `vue`。
