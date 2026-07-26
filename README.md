@@ -654,7 +654,7 @@ app.mount('#app')
 
 Use a top-level `await` in your entry (or an async IIFE): `createSiteApp` is async and **awaits** `configureApp` when it returns a `Promise`. If you set optional `bootstrap` in config, that module loads before the app is created; if you omit `bootstrap`, that step is skipped.
 
-Exports: `createSiteApp`, `defineConfig`, `useTheme`, `useSiteConfig`, `getSiteConfig`, `useLocale`, `useLocalize`, `tk`, `resolveLocalized`, `resolveField`, `resolveMessage`, `mergeCatalog`, `flattenMessages`, `isMessageRef`, `localizedPage`, `builtinMessages`, `themeRefKey`, `localeRefKey`. Types: `SiteConfig`, `SiteEnvConfig`, `SiteViteConfig`, `SiteCustomConfig`, `SiteExternalLink`, `ShellConfig`, `ShellAction`, `ShellActionLoader`, `NavItem`, `StandalonePage`, `PageLayout`, `AuthRule`, `AuthContext`, `AuthConfig`, `RouterConfig`, `ThemeConfig`, `ThemeOption`, `ThemePaletteVars`, `ResolvedNavItem`, `I18nConfig`, `LocaleOption`, `LocaleCode`, `LocalizedString`, `IconRegistry`, `MessageRef`, `MessageTree`, `MessageCatalog`, `PageLoader`, `LocalizedPageOptions`.
+Exports: `createSiteApp`, `defineConfig`, `useTheme`, `useMobileViewport`, `useSiteConfig`, `getSiteConfig`, `useLocale`, `useLocalize`, `tk`, `resolveLocalized`, `resolveField`, `resolveMessage`, `mergeCatalog`, `flattenMessages`, `isMessageRef`, `localizedPage`, `builtinMessages`, `themeRefKey`, `localeRefKey`. Types: `SiteConfig`, `SiteEnvConfig`, `SiteViteConfig`, `SiteCustomConfig`, `SiteExternalLink`, `ShellConfig`, `ShellAction`, `ShellActionLoader`, `NavItem`, `StandalonePage`, `PageLayout`, `AuthRule`, `AuthContext`, `AuthConfig`, `RouterConfig`, `ThemeConfig`, `ThemeOption`, `ThemePaletteVars`, `ResolvedNavItem`, `I18nConfig`, `LocaleOption`, `LocaleCode`, `LocalizedString`, `IconRegistry`, `MessageRef`, `MessageTree`, `MessageCatalog`, `PageLoader`, `LocalizedPageOptions`.
 
 ### Theme in Vue pages (`useTheme`)
 
@@ -680,6 +680,28 @@ watch(theme, (next, prev) => {
 ```
 
 `watch` only runs when the theme **changes** after your component is set up (for example after the user clicks the theme control). It does not run on the initial value unless you pass `{ immediate: true }`.
+
+### Responsive viewport state (`useMobileViewport`)
+
+Import `useMobileViewport` when component behavior needs to react to the same mobile breakpoint as
+the site layout. It returns a read-only ref that is `true` at viewport widths of 840 CSS pixels or
+narrower. The layout provides one shared ref, so components do not need to create their own media
+query listeners. For visual-only changes, prefer CSS media queries.
+
+```vue
+<script setup lang="ts">
+import { useMobileViewport } from '@bndynet/vue-site'
+
+const isMobileViewport = useMobileViewport()
+</script>
+
+<template>
+  <button v-if="isMobileViewport">Open compact menu</button>
+</template>
+```
+
+Call the composable from a Vue component rendered inside the site layout. It throws a `[vue-site]`
+error when used outside that context.
 
 ## Upgrade
 

@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import { useLocalize, useSiteConfig } from '@bndynet/vue-site'
+import { useLocalize, useMobileViewport, useSiteConfig } from '@bndynet/vue-site'
 
 const router = useRouter()
 const { localize } = useLocalize()
+const isMobileViewport = useMobileViewport()
 const { refreshAuthNav } = useSiteConfig()
 
 const root = ref<HTMLElement | null>(null)
@@ -93,11 +94,12 @@ watch(open, async (value) => {
 </script>
 
 <template>
-  <div v-if="role" ref="root" class="user-avatar">
+  <div v-if="role" ref="root" class="user-avatar" :class="{ 'user-avatar--mobile': isMobileViewport }">
     <button
       class="user-avatar-trigger"
       type="button"
       :aria-expanded="open"
+      :aria-label="displayName"
       aria-haspopup="menu"
       @click.stop="open = !open"
     >
@@ -194,6 +196,16 @@ watch(open, async (value) => {
   white-space: nowrap;
   font-size: 0.85rem;
   font-weight: 600;
+}
+
+.user-avatar--mobile .user-avatar-trigger {
+  width: 40px;
+  max-width: 40px;
+  padding: 0 6px;
+}
+
+.user-avatar--mobile .user-avatar-name {
+  display: none;
 }
 
 .user-avatar-menu {

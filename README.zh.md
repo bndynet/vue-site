@@ -590,7 +590,7 @@ app.mount('#app')
 返回 `Promise` 时会 **await** 它。如果你在配置中设置了可选的 `bootstrap`，该模块会在应用创建前加载；
 如果省略 `bootstrap`，则跳过该步骤。
 
-导出：`createSiteApp`、`defineConfig`、`useTheme`、`useSiteConfig`、`getSiteConfig`、`useLocale`、`useLocalize`、`tk`、`resolveLocalized`、`resolveField`、`resolveMessage`、`mergeCatalog`、`flattenMessages`、`isMessageRef`、`localizedPage`、`builtinMessages`、`themeRefKey`、`localeRefKey`。类型：`SiteConfig`、`SiteEnvConfig`、`SiteViteConfig`、`SiteCustomConfig`、`SiteExternalLink`、`NavItem`、`StandalonePage`、`PageLayout`、`AuthRule`、`AuthContext`、`AuthConfig`、`RouterConfig`、`ThemeConfig`、`ThemeOption`、`ThemePaletteVars`、`ResolvedNavItem`、`I18nConfig`、`LocaleOption`、`LocaleCode`、`LocalizedString`、`MessageRef`、`MessageTree`、`MessageCatalog`、`PageLoader`、`LocalizedPageOptions`。
+导出：`createSiteApp`、`defineConfig`、`useTheme`、`useMobileViewport`、`useSiteConfig`、`getSiteConfig`、`useLocale`、`useLocalize`、`tk`、`resolveLocalized`、`resolveField`、`resolveMessage`、`mergeCatalog`、`flattenMessages`、`isMessageRef`、`localizedPage`、`builtinMessages`、`themeRefKey`、`localeRefKey`。类型：`SiteConfig`、`SiteEnvConfig`、`SiteViteConfig`、`SiteCustomConfig`、`SiteExternalLink`、`NavItem`、`StandalonePage`、`PageLayout`、`AuthRule`、`AuthContext`、`AuthConfig`、`RouterConfig`、`ThemeConfig`、`ThemeOption`、`ThemePaletteVars`、`ResolvedNavItem`、`I18nConfig`、`LocaleOption`、`LocaleCode`、`LocalizedString`、`MessageRef`、`MessageTree`、`MessageCatalog`、`PageLoader`、`LocalizedPageOptions`。
 
 ### 在 Vue 页面中使用主题（`useTheme`）
 
@@ -621,6 +621,26 @@ watch(theme, (next, prev) => {
 
 `watch` 仅在你的组件初始化之后主题**发生变化**时运行（例如用户点击主题控件之后）。
 除非你传入 `{ immediate: true }`，否则它不会在初始值上运行。
+
+### 响应式视口状态（`useMobileViewport`）
+
+当组件行为需要和站点布局使用相同的移动端断点时，导入 `useMobileViewport`。它返回一个只读 ref；
+视口宽度不超过 840 CSS 像素时值为 `true`。站点布局提供的是共享 ref，因此组件无需各自创建媒体查询监听器。
+如果只是调整视觉样式，优先使用 CSS 媒体查询。
+
+```vue
+<script setup lang="ts">
+import { useMobileViewport } from '@bndynet/vue-site'
+
+const isMobileViewport = useMobileViewport()
+</script>
+
+<template>
+  <button v-if="isMobileViewport">打开紧凑菜单</button>
+</template>
+```
+
+请在站点布局内部渲染的 Vue 组件中调用此 composable。在该上下文之外调用时，会抛出 `[vue-site]` 错误。
 
 ## 升级
 

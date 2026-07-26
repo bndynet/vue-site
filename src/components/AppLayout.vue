@@ -4,6 +4,7 @@ import { useRoute } from 'vue-router'
 import { useSiteConfig } from '../composables/useSiteConfig'
 import { useNavLayout } from '../composables/useNavLayout'
 import { useLocalize } from '../composables/useLocalize'
+import { provideMobileViewport } from '../composables/useMobileViewport'
 import type { PageLayout } from '../types'
 import SideNav from './SideNav.vue'
 import SiteExternalLinks from './SiteExternalLinks.vue'
@@ -23,6 +24,8 @@ const drawerCloseButton = ref<HTMLButtonElement | null>(null)
 const mobileDrawer = ref<HTMLElement | null>(null)
 let mobileMediaQuery: MediaQueryList | undefined
 let previousBodyOverflow = ''
+
+provideMobileViewport(isMobileViewport)
 
 function updateMobileViewport() {
   isMobileViewport.value = mobileMediaQuery?.matches ?? false
