@@ -200,8 +200,10 @@ watch(open, async (value) => {
 
 .user-avatar--mobile .user-avatar-trigger {
   width: 40px;
+  height: 40px;
   max-width: 40px;
-  padding: 0 6px;
+  padding: 0;
+  justify-content: center;
 }
 
 .user-avatar--mobile .user-avatar-name {
