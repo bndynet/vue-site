@@ -100,7 +100,7 @@ npx vue-site build --base /app/
 | `title` | 站点标题（侧边栏 + 标签页）。`LocalizedString` |
 | `nav` | `NavItem[]` |
 | `navPosition` | 可选的导航位置：`'top'` 强制使用顶部/分层导航，`'sidebar'` 强制将完整导航树放在侧边栏。不传时保持基于导航深度的自动行为 |
-| `defaultPath` | 站点打开时的路径；`/` 和未知路径会重定向到此。必须匹配一个已注册的路由（某个 `nav` 条目解析后的路径，或某个 `pages` 条目的 `path`）。默认为第一个顶级 `nav` 条目 |
+| `defaultPath` | 站点打开时的路径；`/` 和未知路径会重定向到此。必须匹配一个已注册的路由（某个 `nav` 条目解析后的路径，或某个 `pages` 条目的 `path`）。默认选择导航顺序中的第一个已注册页面；如果导航中没有页面，则选择第一个可见的独立页面 |
 | `favicon` | 浏览器标签页图标 URL。可使用 public 资源路径、远程 URL 或导入后的资源 URL |
 | `logo` | Logo 的 URL 或导入的图片 |
 | `theme` | 见下方 `ThemeConfig`；设为 `false` 可禁用主题（隐藏切换器、强制使用固定的 `light` 调色板、不进行 localStorage 持久化） |

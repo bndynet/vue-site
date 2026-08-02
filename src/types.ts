@@ -384,7 +384,7 @@ export interface SiteConfig {
   /**
    * Path the site opens at: the root `/` and any unknown path redirect here. Must match a
    * registered route — a `nav` item's resolved path or a `pages` entry's `path`.
-   * @default the first top-level `nav` item's resolved path
+   * @default the first registered page in navigation order, then the first visible standalone page
    */
   defaultPath?: string
   /**

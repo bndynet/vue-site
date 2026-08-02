@@ -125,11 +125,13 @@ export async function createSiteRouter(
     })
   }
 
-  const fallbackHome = resolvedNav.length > 0 ? resolvedNav[0].resolvedPath : '/'
+  // Routes are collected from leaf pages in navigation order, followed by standalone pages.
+  // Using the first registered route avoids choosing a group-only nav item as the fallback.
+  const fallbackHome = routes[0]?.path ?? '/'
 
   // Prefer the explicit `defaultPath`, but only when it matches a registered, non-redirect
   // route. An unknown target would bounce through the catch-all back to itself, so fall back
-  // to the first nav item and warn instead of risking a redirect loop / blank page.
+  // to the first registered page and warn instead of risking a redirect loop / blank page.
   let homePath = fallbackHome
   if (defaultPath) {
     const matches = routes.some((route) => route.path === defaultPath)

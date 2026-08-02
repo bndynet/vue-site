@@ -103,7 +103,7 @@ Add `"dev": "vue-site dev"` (or `vs dev`) in `package.json` scripts if you like.
 | `title` | Site title (sidebar + tab). `LocalizedString` |
 | `nav` | `NavItem[]` |
 | `navPosition` | Optional navigation placement: `'top'` forces the top/tiered layout, `'sidebar'` forces the full nav tree into the sidebar. Omit to keep automatic behavior based on nav depth |
-| `defaultPath` | Path the site opens at; `/` and unknown paths redirect here. Must match a registered route (a `nav` item's resolved path or a `pages` entry's `path`). Defaults to the first top-level `nav` item |
+| `defaultPath` | Path the site opens at; `/` and unknown paths redirect here. Must match a registered route (a `nav` item's resolved path or a `pages` entry's `path`). Defaults to the first registered page in navigation order, then the first visible standalone page |
 | `favicon` | Browser tab icon URL. Use a public asset path, remote URL, or imported asset URL |
 | `logo` | Logo URL or imported image |
 | `theme` | See `ThemeConfig` below; set to `false` to disable theming (hides the switcher, forces a fixed `light` palette, no localStorage persistence) |
