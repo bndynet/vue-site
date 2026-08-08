@@ -423,8 +423,8 @@ base file → first entry).
 
 | Property | Default | Description |
 |----------|---------|-------------|
-| `locales` | discovered `locales/*.json` | `{ code, label, icon? }[]` — supported languages, in display order. Optional: derived from the auto-loaded file names (with built-in labels) when omitted. First entry is the fallback |
-| `defaultLocale` | `locales[0].code` | Initial locale when nothing is stored and detection finds no match |
+| `locales` | discovered `locales/*.json` | `{ code, label, icon? }[]` — supported languages, in display order. Optional in CLI mode; without the CLI, codes are derived from `i18n.messages` keys, or from `defaultLocale` / `en` if omitted. First entry is the fallback |
+| `defaultLocale` | first resolved locale, or `en` | Initial locale when nothing is stored and browser detection finds no match |
 | `detectBrowser` | `true` | Detect the initial locale from `navigator.language(s)` on first visit |
 | `storageKey` | `vue-site-locale` | localStorage key for the chosen locale |
 | `messages` | auto-loaded from `locales/<code>.json` | `Record<LocaleCode, Record<string, string>>` — extra/override translations, merged over the auto-loaded files and built-in UI strings |
@@ -491,9 +491,12 @@ mixed freely — use `tk()` for shared/centrally managed text and an inline map 
   relative to the config directory. `code` is the file name (a `LocaleCode` like `en` or `zh-TW`).
 - An explicit `i18n.messages` is still supported and **overrides** auto-loaded keys (per id); an
   explicit `i18n.locales` controls the label/icon/order. Both are optional.
-- Auto-discovery is a **CLI** feature. If you embed the library yourself (calling `createSiteApp`
-  without the `vue-site` CLI), pass `i18n.messages` directly — e.g. build it from JSON with explicit
-  imports (avoid `import.meta.glob` inside `site.config.ts`, which the CLI pre-loads in Node).
+- Auto-discovery of `locales/<code>.json` is a **CLI** feature. If you embed the library yourself
+  (calling `createSiteApp` without the `vue-site` CLI), pass `i18n.messages` directly — e.g. build it
+  from JSON with explicit imports (avoid `import.meta.glob` inside `site.config.ts`, which the CLI
+  pre-loads in Node). When `i18n.locales` is omitted, the library derives locale codes from the
+  `messages` keys and uses those codes as display labels. For localized content without a messages
+  catalog, provide `locales` explicitly so the locale switcher has the intended options and labels.
 
 ### Localizing in your own pages
 

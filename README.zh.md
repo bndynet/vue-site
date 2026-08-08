@@ -340,8 +340,8 @@ export default defineConfig({
 
 | 属性 | 默认值 | 说明 |
 |----------|---------|-------------|
-| `locales` | 自动发现的 `locales/*.json` | `{ code, label, icon? }[]` —— 支持的语言，按显示顺序排列。可选：省略时从自动加载的文件名派生（使用内置标签）。第一个条目为回退项 |
-| `defaultLocale` | `locales[0].code` | 当没有存储值且检测未命中时使用的初始语言 |
+| `locales` | 自动发现的 `locales/*.json` | `{ code, label, icon? }[]` —— 支持的语言，按显示顺序排列。CLI 模式下可省略；不使用 CLI 时，省略后从 `i18n.messages` 的键派生，若也没有则使用 `defaultLocale` 或 `en`。第一个条目为回退项 |
+| `defaultLocale` | 第一个解析出的语言，或 `en` | 当没有存储值且检测未命中时使用的初始语言 |
 | `detectBrowser` | `true` | 首次访问时从 `navigator.language(s)` 检测初始语言 |
 | `storageKey` | `vue-site-locale` | 用于存储所选语言的 localStorage 键 |
 | `messages` | 自动从 `locales/<code>.json` 加载 | `Record<LocaleCode, Record<string, string>>` —— 额外/覆盖的翻译，会合并到自动加载的文件和内置 UI 字符串之上 |
@@ -407,9 +407,11 @@ export default defineConfig({
   `code` 即文件名（一个 `LocaleCode`，如 `en` 或 `zh-TW`）。
 - 仍支持显式的 `i18n.messages`，并会**覆盖**自动加载的键（按 id）；显式的 `i18n.locales`
   控制 label/icon/顺序。两者均为可选。
-- 自动发现是 **CLI** 特性。如果你自行嵌入该库（不使用 `vue-site` CLI 而直接调用 `createSiteApp`），
-  请直接传入 `i18n.messages` —— 例如用显式 import 从 JSON 构建（避免在 `site.config.ts` 中使用
-  `import.meta.glob`，CLI 会在 Node 中预加载它）。
+- 自动发现 `locales/<code>.json` 是 **CLI** 特性。如果你自行嵌入该库（不使用 `vue-site` CLI 而直接调用
+  `createSiteApp`），请直接传入 `i18n.messages` —— 例如用显式 import 从 JSON 构建（避免在
+  `site.config.ts` 中使用 `import.meta.glob`，CLI 会在 Node 中预加载它）。省略 `i18n.locales` 时，库会
+  从 `messages` 的键派生语言代码，并直接用代码作为显示名称。若本地化内容没有消息目录，请显式提供
+  `locales`，以设置语言切换器的选项和名称。
 
 ### 在你自己的页面中本地化
 

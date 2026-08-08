@@ -200,11 +200,15 @@ export interface LocaleOption {
 
 /** Internationalization configuration. Omit to disable multi-language support entirely. */
 export interface I18nConfig {
-  /** Supported languages, in display order. The first entry is the implicit fallback. */
-  locales: LocaleOption[]
+  /**
+   * Supported languages, in display order. The first entry is the implicit fallback. Optional
+   * with the CLI, which discovers `locales/<code>.json`; direct `createSiteApp` usage derives codes
+   * from `messages` when omitted, or falls back to `defaultLocale` / `'en'`.
+   */
+  locales?: LocaleOption[]
   /**
    * Initial locale used when nothing valid is persisted and browser detection finds no match.
-   * Must be one of `locales[].code`. Defaults to `locales[0].code`.
+   * Must be one of the resolved locale codes. Defaults to the first resolved locale, or `'en'`.
    */
   defaultLocale?: LocaleCode
   /**

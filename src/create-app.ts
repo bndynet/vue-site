@@ -11,6 +11,27 @@ import { builtinMessages } from './i18n-messages'
 import { getExtraThemes, resolveThemePalettes } from './theme/resolve-palettes'
 import AppLayout from './components/AppLayout.vue'
 
+function resolveConfigLocales(config: SiteConfig): SiteConfig {
+  if (!config.i18n) return config
+
+  const locales = config.i18n.locales?.length
+    ? config.i18n.locales
+    : Object.keys(config.i18n.messages ?? {}).map((code) => ({ code, label: code }))
+
+  if (locales.length) {
+    return {
+      ...config,
+      i18n: { ...config.i18n, locales },
+    }
+  }
+
+  const code = config.i18n.defaultLocale ?? 'en'
+  return {
+    ...config,
+    i18n: { ...config.i18n, locales: [{ code, label: code }] },
+  }
+}
+
 import './styles/base.css'
 import './styles/layout.css'
 import './styles/markdown.css'
@@ -38,11 +59,12 @@ function applyFavicon(config: SiteConfig) {
 }
 
 export async function createSiteApp(config: SiteConfig) {
+  config = resolveConfigLocales(config)
   registerSiteConfig(config)
 
   // Canonical locale for stable path/name derivation (independent of the user's current language).
   const defaultLocale = config.i18n
-    ? config.i18n.defaultLocale ?? config.i18n.locales[0]?.code
+    ? config.i18n.defaultLocale ?? config.i18n.locales?.[0]?.code
     : undefined
 
   // Merged message catalog (built-in strings + user `i18n.messages`) so `tk()` key references in
@@ -128,7 +150,7 @@ export async function createSiteApp(config: SiteConfig) {
   // without `i18n` it stays empty and resolution falls back to the first available entry.
   const localeRef = ref<string>('')
   if (config.i18n) {
-    const codes = config.i18n.locales.map((l) => l.code)
+    const codes = config.i18n.locales?.map((l) => l.code) ?? []
     initLocale(
       localeRef,
       config.i18n.defaultLocale ?? codes[0] ?? '',
