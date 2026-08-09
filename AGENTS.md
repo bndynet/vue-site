@@ -42,8 +42,11 @@ dist/                 Build output. Generated — never edit by hand.
 - **Vue 3** (`<script setup lang="ts">` SFCs), **Vue Router 4**, **Element Plus**.
 - **Vite 6** library build (`vite.config.ts`), ESM-only output (`formats: ['es']`).
 - **TypeScript ~5.7**, `strict: true`, `moduleResolution: "bundler"`, `noEmit` (Vite/dts emit).
-- `vue`, `vue-router`, `element-plus` are **externalized** in the lib build — they are peer
-  runtime deps provided by the consumer. Do not bundle them; do not rely on a second copy.
+- `vue`, `vue-router`, and `element-plus` are **externalized** in the lib build and declared as
+  package dependencies so installing `@bndynet/vue-site` also installs the runtime needed by its
+  CLI-generated sites. The CLI aliases app imports to the package-resolved copies; keep these
+  dependencies available and do not bundle them into the library output.
+- Every package imported directly by `bin/vue-site.mjs` must be declared in `dependencies`.
 - **No test runner and no linter are configured** (`test` / `lint` scripts are no-ops).
   Don't assume `npm test` validates anything; verify via type-check + the example site.
 - **`highlight.js`, `markdown-it`, `lucide-vue-next`** power rendering/icons.
