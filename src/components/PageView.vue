@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, shallowRef, watch, onMounted, type Component } from 'vue'
+import { ref, shallowRef, watch, onMounted, onBeforeUnmount, type Component } from 'vue'
 import { useRoute } from 'vue-router'
 import type { PageLoader, ResolvedNavItem } from '../types'
 import { useSiteConfig } from '../composables/useSiteConfig'
@@ -13,8 +13,10 @@ const { localize, locale, t } = useLocalize()
 const markdownContent = ref('')
 const vueComponent = shallowRef<Component | null>(null)
 const loading = ref(true)
+let loadRequestId = 0
 
 async function loadContent() {
+  const requestId = ++loadRequestId
   loading.value = true
   markdownContent.value = ''
   vueComponent.value = null
@@ -39,6 +41,7 @@ async function loadContent() {
       const loader =
         typeof page === 'function' ? page : localizedPage(page as never)
       const mod = await loader(locale.value)
+      if (requestId !== loadRequestId) return
       if (typeof mod.default === 'string') {
         markdownContent.value = mod.default
       } else {
@@ -50,14 +53,20 @@ async function loadContent() {
       markdownContent.value = `# ${localize(navItem.label)}`
     }
   } catch {
+    if (requestId !== loadRequestId) return
     markdownContent.value = `# ${t('page.loadErrorTitle')}\n\n${t('page.loadErrorBody', { label: localize(navItem.label) })}`
+  } finally {
+    if (requestId === loadRequestId) {
+      loading.value = false
+    }
   }
-
-  loading.value = false
 }
 
 onMounted(loadContent)
 watch([() => route.path, locale], loadContent)
+onBeforeUnmount(() => {
+  loadRequestId++
+})
 </script>
 
 <template>
