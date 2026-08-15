@@ -233,6 +233,68 @@ export default defineConfig({
 | `palettes` | — | 仅针对内置 light/dark 的部分覆盖 |
 | `extraThemes` | — | 额外主题：`id`、`label`、`icon`，可选 `basedOn`、`palette`；复用内置 id（`sepia`/`ocean`）即可覆盖它。导入 `builtinThemePalettes` 获取完整默认值 |
 
+### 语义化颜色变量
+
+每个主题都由语义化的 `--color-*` CSS 变量驱动。Element Plus 的变量在
+`element-plus-theme.css` 中映射到这些变量，因此所有组件（按钮、标签、开关、滑块、提示、
+对话框、遮罩）都会自动跟随当前主题，无需为每个主题单独覆盖。内置调色板只定义少量种子色，
+其余通过 `color-mix()` / `var()` 派生，因此 `builtinThemePalettes` 中的值可能是 CSS 表达式
+而不是字面色值。
+
+| 变量 | 用途 |
+|------|------|
+| `--color-primary` | 品牌/主色（映射到 `--el-color-primary` 及其色阶） |
+| `--color-success` | 成功 |
+| `--color-warning` | 警告 |
+| `--color-danger` | 危险/错误（`--el-color-error` 复用该值） |
+| `--color-info` | 信息 |
+| `--color-surface-raised` | 浮层表面：下拉、对话框、遮罩背景 |
+| `--color-overlay` | 弹窗 / 加载遮罩 |
+
+自定义主题只需定义这些基础色，框架会用 `color-mix()` 自动派生 Element Plus 的
+`light-3/5/7/8/9` 与 `dark-2` 色阶：
+
+```typescript
+theme: {
+  extraThemes: [
+    {
+      id: 'forest',
+      label: 'Forest',
+      basedOn: 'light',
+      palette: {
+        '--color-primary': '#2f855a',
+        '--color-surface-raised': '#f7faf8',
+      },
+    },
+  ],
+}
+```
+
+### 覆盖任意 token
+
+不只是基础色，**任何 token 都可以覆盖**。覆盖按三级优先级从低到高应用：
+
+1. `palettes.light` / `palettes.dark`，或 `extraThemes[].palette` —— 合并到该主题的内置调色板。
+2. `colors` —— 在激活调色板之后全局应用，对所有主题生效。
+3. 运行时直接调用 `document.documentElement.style.setProperty('--color-…', …)`。
+
+覆盖 **种子色**（如 `--color-border`）会同时更新引用它的派生 token（`--color-sidebar-border`、
+`--color-code-border`、`--color-table-border`、`--color-blockquote-border`）；覆盖 **派生 token**
+则只影响它本身。如果希望颜色能随主题自动适配，优先覆盖种子色。
+
+```typescript
+theme: {
+  colors: {
+    '--color-theme-switch-hover': 'rgba(0, 0, 0, 0.08)',
+  },
+  palettes: {
+    light: {
+      '--color-sidebar-bg': '#f0f2f5',
+    },
+  },
+}
+```
+
 ## 国际化（`i18n`）
 
 设置 `i18n` 以启用多语言支持。框架会在头部添加语言切换器，

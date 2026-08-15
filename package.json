@@ -36,7 +36,7 @@
     "build:lib": "vite build",
     "build:lib:watch": "vite build --watch --emptyOutDir false",
     "dev:example": "npm --prefix example run dev",
-    "dev": "npm run build:lib && concurrently -k -n lib,example -c blue,magenta \"npm run build:lib:watch\" \"npm run dev:example\"",
+    "dev": "npm run build:lib && npm install --prefix example && concurrently -k -n lib,example -c blue,magenta \"npm run build:lib:watch\" \"npm run dev:example\"",
     "build": "npm run build:lib && npm install --prefix example && npm run build --prefix example",
     "preview": "npm run build:lib && cd example && npm run build && npm run preview"
   },

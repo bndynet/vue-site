@@ -27,7 +27,7 @@
   /* Backgrounds */
   --el-bg-color-page:    var(--color-bg);
   --el-bg-color:         var(--color-content-bg);
-  --el-bg-color-overlay: var(--color-content-bg);
+  --el-bg-color-overlay: var(--color-surface-raised);
 
   /* Text */
   --el-text-color-primary:     var(--color-text);
@@ -68,6 +68,71 @@
   /* Dropdown */
   --el-dropdown-menuItem-hover-fill:  var(--color-sidebar-item-hover);
   --el-dropdown-menuItem-hover-color: var(--color-text);
+
+  /* Brand & status — global semantic tokens (see src/theme/presets.ts).
+   * Scale variants are derived from the base token so a single color per role
+   * is enough for any built-in or custom theme. */
+  --el-color-primary: var(--color-primary);
+  --el-color-primary-light-3: color-mix(in srgb, var(--color-primary) 70%, var(--color-bg));
+  --el-color-primary-light-5: color-mix(in srgb, var(--color-primary) 50%, var(--color-bg));
+  --el-color-primary-light-7: color-mix(in srgb, var(--color-primary) 30%, var(--color-bg));
+  --el-color-primary-light-8: color-mix(in srgb, var(--color-primary) 20%, var(--color-bg));
+  --el-color-primary-light-9: color-mix(in srgb, var(--color-primary) 10%, var(--color-bg));
+  --el-color-primary-dark-2: color-mix(in srgb, var(--color-primary) 80%, var(--color-text));
+
+  --el-color-success: var(--color-success);
+  --el-color-success-light-3: color-mix(in srgb, var(--color-success) 70%, var(--color-bg));
+  --el-color-success-light-5: color-mix(in srgb, var(--color-success) 50%, var(--color-bg));
+  --el-color-success-light-7: color-mix(in srgb, var(--color-success) 30%, var(--color-bg));
+  --el-color-success-light-8: color-mix(in srgb, var(--color-success) 20%, var(--color-bg));
+  --el-color-success-light-9: color-mix(in srgb, var(--color-success) 10%, var(--color-bg));
+  --el-color-success-dark-2: color-mix(in srgb, var(--color-success) 80%, var(--color-text));
+
+  --el-color-warning: var(--color-warning);
+  --el-color-warning-light-3: color-mix(in srgb, var(--color-warning) 70%, var(--color-bg));
+  --el-color-warning-light-5: color-mix(in srgb, var(--color-warning) 50%, var(--color-bg));
+  --el-color-warning-light-7: color-mix(in srgb, var(--color-warning) 30%, var(--color-bg));
+  --el-color-warning-light-8: color-mix(in srgb, var(--color-warning) 20%, var(--color-bg));
+  --el-color-warning-light-9: color-mix(in srgb, var(--color-warning) 10%, var(--color-bg));
+  --el-color-warning-dark-2: color-mix(in srgb, var(--color-warning) 80%, var(--color-text));
+
+  --el-color-danger: var(--color-danger);
+  --el-color-danger-light-3: color-mix(in srgb, var(--color-danger) 70%, var(--color-bg));
+  --el-color-danger-light-5: color-mix(in srgb, var(--color-danger) 50%, var(--color-bg));
+  --el-color-danger-light-7: color-mix(in srgb, var(--color-danger) 30%, var(--color-bg));
+  --el-color-danger-light-8: color-mix(in srgb, var(--color-danger) 20%, var(--color-bg));
+  --el-color-danger-light-9: color-mix(in srgb, var(--color-danger) 10%, var(--color-bg));
+  --el-color-danger-dark-2: color-mix(in srgb, var(--color-danger) 80%, var(--color-text));
+
+  --el-color-error: var(--color-danger);
+  --el-color-error-light-3: color-mix(in srgb, var(--color-danger) 70%, var(--color-bg));
+  --el-color-error-light-5: color-mix(in srgb, var(--color-danger) 50%, var(--color-bg));
+  --el-color-error-light-7: color-mix(in srgb, var(--color-danger) 30%, var(--color-bg));
+  --el-color-error-light-8: color-mix(in srgb, var(--color-danger) 20%, var(--color-bg));
+  --el-color-error-light-9: color-mix(in srgb, var(--color-danger) 10%, var(--color-bg));
+  --el-color-error-dark-2: color-mix(in srgb, var(--color-danger) 80%, var(--color-text));
+
+  --el-color-info: var(--color-info);
+  --el-color-info-light-3: color-mix(in srgb, var(--color-info) 70%, var(--color-bg));
+  --el-color-info-light-5: color-mix(in srgb, var(--color-info) 50%, var(--color-bg));
+  --el-color-info-light-7: color-mix(in srgb, var(--color-info) 30%, var(--color-bg));
+  --el-color-info-light-8: color-mix(in srgb, var(--color-info) 20%, var(--color-bg));
+  --el-color-info-light-9: color-mix(in srgb, var(--color-info) 10%, var(--color-bg));
+  --el-color-info-dark-2: color-mix(in srgb, var(--color-info) 80%, var(--color-text));
+
+  /* Disabled */
+  --el-disabled-bg-color:     color-mix(in srgb, var(--color-text-secondary) 8%, var(--color-bg));
+  --el-disabled-text-color:   color-mix(in srgb, var(--color-text-secondary) 50%, var(--color-bg));
+  --el-disabled-border-color: color-mix(in srgb, var(--color-border) 70%, var(--color-bg));
+
+  /* Surfaces & overlays */
+  --el-overlay-color:          var(--color-overlay);
+  --el-overlay-color-lighter:  color-mix(in srgb, var(--color-overlay) 60%, transparent);
+  --el-overlay-color-light:    color-mix(in srgb, var(--color-overlay) 85%, transparent);
+  --el-overlay-color-dark:     var(--color-overlay);
+  --el-overlay-color-darker:   var(--color-overlay);
+  --el-mask-color:             color-mix(in srgb, var(--color-surface-raised) 90%, transparent);
+  --el-mask-color-extra-light: color-mix(in srgb, var(--color-surface-raised) 30%, transparent);
 }
 
 /* ─── Dark-only adjustments ───────────────────────────────────────────────────
@@ -76,14 +141,14 @@
  * resets several vars back to hardcoded dark values.  Re-assert our var()
  * references here so they win via source-order for any var EP overrides in dark.
  *
- * Shadows and masks are not available as vue-site tokens, so they stay here
- * with adjusted values for the dark background.
+ * Masks derive from `--color-surface-raised`; shadows have no vue-site token
+ * equivalent, so the dark-specific values stay here.
  * ─────────────────────────────────────────────────────────────────────────── */
 html.dark {
   /* Re-assert the same var() references so they beat EP's html.dark block */
   --el-bg-color-page:    var(--color-bg);
   --el-bg-color:         var(--color-content-bg);
-  --el-bg-color-overlay: var(--color-sidebar-bg);
+  --el-bg-color-overlay: var(--color-surface-raised);
 
   --el-text-color-primary:     var(--color-text);
   --el-text-color-regular:     var(--color-sidebar-text);
@@ -119,6 +184,65 @@ html.dark {
   --el-dropdown-menuItem-hover-fill:  var(--color-sidebar-item-hover);
   --el-dropdown-menuItem-hover-color: var(--color-text);
 
+  /* Re-assert brand/status/disabled/overlay mappings over EP's dark block */
+  --el-color-primary: var(--color-primary);
+  --el-color-primary-light-3: color-mix(in srgb, var(--color-primary) 70%, var(--color-bg));
+  --el-color-primary-light-5: color-mix(in srgb, var(--color-primary) 50%, var(--color-bg));
+  --el-color-primary-light-7: color-mix(in srgb, var(--color-primary) 30%, var(--color-bg));
+  --el-color-primary-light-8: color-mix(in srgb, var(--color-primary) 20%, var(--color-bg));
+  --el-color-primary-light-9: color-mix(in srgb, var(--color-primary) 10%, var(--color-bg));
+  --el-color-primary-dark-2: color-mix(in srgb, var(--color-primary) 80%, var(--color-text));
+
+  --el-color-success: var(--color-success);
+  --el-color-success-light-3: color-mix(in srgb, var(--color-success) 70%, var(--color-bg));
+  --el-color-success-light-5: color-mix(in srgb, var(--color-success) 50%, var(--color-bg));
+  --el-color-success-light-7: color-mix(in srgb, var(--color-success) 30%, var(--color-bg));
+  --el-color-success-light-8: color-mix(in srgb, var(--color-success) 20%, var(--color-bg));
+  --el-color-success-light-9: color-mix(in srgb, var(--color-success) 10%, var(--color-bg));
+  --el-color-success-dark-2: color-mix(in srgb, var(--color-success) 80%, var(--color-text));
+
+  --el-color-warning: var(--color-warning);
+  --el-color-warning-light-3: color-mix(in srgb, var(--color-warning) 70%, var(--color-bg));
+  --el-color-warning-light-5: color-mix(in srgb, var(--color-warning) 50%, var(--color-bg));
+  --el-color-warning-light-7: color-mix(in srgb, var(--color-warning) 30%, var(--color-bg));
+  --el-color-warning-light-8: color-mix(in srgb, var(--color-warning) 20%, var(--color-bg));
+  --el-color-warning-light-9: color-mix(in srgb, var(--color-warning) 10%, var(--color-bg));
+  --el-color-warning-dark-2: color-mix(in srgb, var(--color-warning) 80%, var(--color-text));
+
+  --el-color-danger: var(--color-danger);
+  --el-color-danger-light-3: color-mix(in srgb, var(--color-danger) 70%, var(--color-bg));
+  --el-color-danger-light-5: color-mix(in srgb, var(--color-danger) 50%, var(--color-bg));
+  --el-color-danger-light-7: color-mix(in srgb, var(--color-danger) 30%, var(--color-bg));
+  --el-color-danger-light-8: color-mix(in srgb, var(--color-danger) 20%, var(--color-bg));
+  --el-color-danger-light-9: color-mix(in srgb, var(--color-danger) 10%, var(--color-bg));
+  --el-color-danger-dark-2: color-mix(in srgb, var(--color-danger) 80%, var(--color-text));
+
+  --el-color-error: var(--color-danger);
+  --el-color-error-light-3: color-mix(in srgb, var(--color-danger) 70%, var(--color-bg));
+  --el-color-error-light-5: color-mix(in srgb, var(--color-danger) 50%, var(--color-bg));
+  --el-color-error-light-7: color-mix(in srgb, var(--color-danger) 30%, var(--color-bg));
+  --el-color-error-light-8: color-mix(in srgb, var(--color-danger) 20%, var(--color-bg));
+  --el-color-error-light-9: color-mix(in srgb, var(--color-danger) 10%, var(--color-bg));
+  --el-color-error-dark-2: color-mix(in srgb, var(--color-danger) 80%, var(--color-text));
+
+  --el-color-info: var(--color-info);
+  --el-color-info-light-3: color-mix(in srgb, var(--color-info) 70%, var(--color-bg));
+  --el-color-info-light-5: color-mix(in srgb, var(--color-info) 50%, var(--color-bg));
+  --el-color-info-light-7: color-mix(in srgb, var(--color-info) 30%, var(--color-bg));
+  --el-color-info-light-8: color-mix(in srgb, var(--color-info) 20%, var(--color-bg));
+  --el-color-info-light-9: color-mix(in srgb, var(--color-info) 10%, var(--color-bg));
+  --el-color-info-dark-2: color-mix(in srgb, var(--color-info) 80%, var(--color-text));
+
+  --el-disabled-bg-color:     color-mix(in srgb, var(--color-text-secondary) 8%, var(--color-bg));
+  --el-disabled-text-color:   color-mix(in srgb, var(--color-text-secondary) 50%, var(--color-bg));
+  --el-disabled-border-color: color-mix(in srgb, var(--color-border) 70%, var(--color-bg));
+
+  --el-overlay-color:          var(--color-overlay);
+  --el-overlay-color-lighter:  color-mix(in srgb, var(--color-overlay) 60%, transparent);
+  --el-overlay-color-light:    color-mix(in srgb, var(--color-overlay) 85%, transparent);
+  --el-overlay-color-dark:     var(--color-overlay);
+  --el-overlay-color-darker:   var(--color-overlay);
+
   /* Shadows — no vue-site token equivalent, keep dark-specific values */
   --el-box-shadow:       0 12px 32px 4px rgba(0, 0, 0, 0.5), 0 8px 20px rgba(0, 0, 0, 0.6);
   --el-box-shadow-light: 0 0 12px rgba(0, 0, 0, 0.6);
@@ -126,6 +250,6 @@ html.dark {
   --el-box-shadow-dark:  0 16px 48px 16px rgba(0, 0, 0, 0.7), 0 12px 32px rgba(0, 0, 0, 0.6);
 
   /* Masks */
-  --el-mask-color:             rgba(0, 0, 0, 0.8);
-  --el-mask-color-extra-light: rgba(0, 0, 0, 0.3);
+  --el-mask-color:             color-mix(in srgb, var(--color-surface-raised) 90%, transparent);
+  --el-mask-color-extra-light: color-mix(in srgb, var(--color-surface-raised) 30%, transparent);
 }

@@ -78,6 +78,21 @@ export default defineConfig({
   // fixed `light` palette, and skips localStorage persistence).
   theme: {
     default: 'light',
+    // Custom theme demo: define the global semantic tokens; Element Plus derives its own
+    // `--el-*` variables (brand tints, overlays, masks) from them automatically.
+    extraThemes: [
+      {
+        id: 'forest',
+        label: 'Forest',
+        icon: 'leaf',
+        basedOn: 'light',
+        palette: {
+          '--color-primary': '#2f855a',
+          '--color-surface-raised': '#f7faf8',
+          '--color-overlay': 'rgba(15, 40, 25, 0.5)',
+        },
+      },
+    ],
   },
   // `icons` is omitted here because the CLI auto-generates a Lucide icon registry from the icon
   // names used in nav, links, languages, and themes. Only direct `createSiteApp` usage needs it.

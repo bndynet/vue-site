@@ -265,6 +265,71 @@ Built-in themes are `light`, `dark`, plus the always-on extras `sepia` and `ocea
 | `palettes` | — | Partial overrides for built-in light/dark only |
 | `extraThemes` | — | Extra themes: `id`, `label`, `icon`, optional `basedOn`, `palette`; reuse a built-in id (`sepia`/`ocean`) to override it. Import `builtinThemePalettes` for full defaults |
 
+### Semantic color tokens
+
+Every theme is driven by semantic `--color-*` CSS variables. Element Plus variables are mapped to
+them in `element-plus-theme.css`, so all components (buttons, tags, switches, sliders, alerts,
+dialogs, overlays) follow the active theme without per-theme overrides. Built-in palettes define
+only a few seed colors; the rest are derived with `color-mix()` / `var()`, so values in
+`builtinThemePalettes` may be CSS expressions rather than literal colors.
+
+| Token | Purpose |
+|-------|---------|
+| `--color-primary` | Brand / primary (`--el-color-primary` and its tints) |
+| `--color-success` | Success |
+| `--color-warning` | Warning |
+| `--color-danger` | Danger / error (`--el-color-error` reuses it) |
+| `--color-info` | Info |
+| `--color-surface-raised` | Elevated surfaces: popovers, dropdowns, dialogs, masks |
+| `--color-overlay` | Modal / loading overlay |
+
+Define just these base colors in a custom theme; the framework derives Element Plus's
+`light-3/5/7/8/9` and `dark-2` shades with `color-mix()`:
+
+```typescript
+theme: {
+  extraThemes: [
+    {
+      id: 'forest',
+      label: 'Forest',
+      basedOn: 'light',
+      palette: {
+        '--color-primary': '#2f855a',
+        '--color-surface-raised': '#f7faf8',
+      },
+    },
+  ],
+}
+```
+
+### Overriding any token
+
+Every token can be overridden, not just the base colors. Overrides are applied in three levels,
+from lowest to highest precedence:
+
+1. `palettes.light` / `palettes.dark`, or an `extraThemes[].palette` — merged onto the built-in
+   palette for that theme.
+2. `colors` — applied globally after the active palette, so it wins across every theme.
+3. Runtime `document.documentElement.style.setProperty('--color-…', …)`.
+
+Overriding a **seed** color (e.g. `--color-border`) also updates the derived tokens that
+reference it (`--color-sidebar-border`, `--color-code-border`, `--color-table-border`,
+`--color-blockquote-border`). Overriding a **derived** token affects only that token. Prefer
+overriding seeds when the value should adapt across themes.
+
+```typescript
+theme: {
+  colors: {
+    '--color-theme-switch-hover': 'rgba(0, 0, 0, 0.08)',
+  },
+  palettes: {
+    light: {
+      '--color-sidebar-bg': '#f0f2f5',
+    },
+  },
+}
+```
+
 ## Shell actions (`shell.actions`)
 
 Use `shell.actions` to render app-specific Vue components in the active layout's global toolbar.

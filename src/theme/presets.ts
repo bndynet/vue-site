@@ -1,84 +1,97 @@
 import type { ThemeOption } from '../types'
 
-/** Built-in semantic tokens (same keys as former theme-light / theme-dark CSS). */
+/** Seed colors a theme supplies; every other token is derived from these. */
+type PaletteSeed = Record<string, string>
+
+/**
+ * Builds a full token map from a small set of seed colors.
+ *
+ * Derived tokens reference other custom properties (e.g. `var(--color-text)`), so they keep
+ * following any seed change — per-theme palettes, `theme.palettes`, `theme.colors`, and the
+ * Element Plus mappings all stay in sync automatically.
+ */
+function createPalette(seed: PaletteSeed): Record<string, string> {
+  return {
+    '--color-text-secondary': 'color-mix(in srgb, var(--color-text) 76%, var(--color-bg))',
+    '--color-link': 'var(--color-primary)',
+    '--color-link-hover': 'color-mix(in srgb, var(--color-primary) 85%, var(--color-text))',
+
+    '--color-sidebar-bg': 'color-mix(in srgb, var(--color-text) 4%, var(--color-bg))',
+    '--color-sidebar-text': 'var(--color-text-secondary)',
+    '--color-sidebar-title': 'var(--color-text)',
+    '--color-sidebar-item-hover': 'color-mix(in srgb, var(--color-text) 5%, transparent)',
+    '--color-sidebar-item-active': 'color-mix(in srgb, var(--color-text) 5%, transparent)',
+    '--color-sidebar-item-active-text': 'var(--color-primary)',
+    '--color-sidebar-border': 'color-mix(in srgb, var(--color-border) 70%, var(--color-bg))',
+
+    '--color-content-bg': 'var(--color-bg)',
+    '--color-border': 'color-mix(in srgb, var(--color-text) 15%, var(--color-bg))',
+    '--color-scrollbar': 'color-mix(in srgb, var(--color-text) 30%, var(--color-bg))',
+
+    '--color-code-bg': 'color-mix(in srgb, var(--color-text) 4%, var(--color-bg))',
+    '--color-code-text': 'var(--color-text)',
+    '--color-code-block-bg': 'var(--color-code-bg)',
+    '--color-code-border': 'var(--color-border)',
+
+    '--color-table-header-bg': 'color-mix(in srgb, var(--color-text) 4%, var(--color-bg))',
+    '--color-table-border': 'var(--color-border)',
+    '--color-table-row-hover': 'var(--color-table-header-bg)',
+
+    '--color-blockquote-border': 'var(--color-border)',
+    '--color-blockquote-bg': 'color-mix(in srgb, var(--color-text) 5%, transparent)',
+    '--color-blockquote-text': 'color-mix(in srgb, var(--color-text) 85%, var(--color-bg))',
+
+    '--color-theme-switch-bg': 'color-mix(in srgb, var(--color-text) 8%, var(--color-bg))',
+    '--color-theme-switch-text': 'var(--color-sidebar-text)',
+    '--color-theme-switch-hover': 'color-mix(in srgb, var(--color-text) 16%, var(--color-bg))',
+
+    '--color-success': '#67c23a',
+    '--color-warning': '#e6a23c',
+    '--color-danger': '#f56c6c',
+    '--color-info': '#909399',
+
+    ...seed,
+  }
+}
+
+/**
+ * Built-in semantic tokens. Each theme supplies only seed colors; `createPalette` derives the
+ * rest so themes stay small and follow seed overrides automatically. Values may therefore be
+ * CSS `color-mix()` / `var()` expressions rather than literal colors.
+ */
 export const builtinThemePalettes: {
   light: Record<string, string>
   dark: Record<string, string>
 } = {
   // Aligned with Infima `:root` (Docusaurus classic default).
-  light: {
+  light: createPalette({
     '--color-bg': '#ffffff',
     '--color-text': '#1c1e21',
     '--color-text-secondary': '#525860',
-    '--color-link': '#3578e5',
-    '--color-link-hover': '#306cce',
-
+    '--color-primary': '#3578e5',
     '--color-sidebar-bg': '#f5f6f7',
     '--color-sidebar-text': '#606770',
     '--color-sidebar-title': '#1c1e21',
-    '--color-sidebar-item-hover': 'rgba(0, 0, 0, 0.05)',
-    '--color-sidebar-item-active': 'rgba(0, 0, 0, 0.05)',
-    '--color-sidebar-item-active-text': '#3578e5',
-    '--color-sidebar-border': '#ebedf0',
-
-    '--color-content-bg': '#ffffff',
     '--color-border': '#dadde1',
-    '--color-scrollbar': '#bec3c9',
-
-    '--color-code-bg': '#f6f7f8',
-    '--color-code-text': '#1c1e21',
-    '--color-code-block-bg': '#f5f6f7',
-    '--color-code-border': '#ebedf0',
-
-    '--color-table-header-bg': '#f5f6f7',
-    '--color-table-border': '#dadde1',
-    '--color-table-row-hover': '#f5f6f7',
-
-    '--color-blockquote-border': '#dadde1',
-    '--color-blockquote-bg': 'transparent',
-    '--color-blockquote-text': '#444950',
-
-    '--color-theme-switch-bg': '#ebedf0',
-    '--color-theme-switch-text': '#606770',
-    '--color-theme-switch-hover': '#dadde1',
-  },
+    '--color-surface-raised': '#ffffff',
+    '--color-overlay': 'rgba(0, 0, 0, 0.5)',
+  }),
   // Aligned with Infima `html[data-theme='dark']` (Docusaurus classic default).
-  dark: {
+  dark: createPalette({
     '--color-bg': '#1b1b1d',
     '--color-text': '#e3e3e3',
     '--color-text-secondary': '#bec3c9',
-    '--color-link': '#3578e5',
-    '--color-link-hover': '#538ce9',
-
+    '--color-primary': '#3578e5',
     '--color-sidebar-bg': '#242526',
     '--color-sidebar-text': '#dadde1',
     '--color-sidebar-title': '#3578e5',
-    '--color-sidebar-item-hover': 'rgba(255, 255, 255, 0.05)',
-    '--color-sidebar-item-active': 'rgba(255, 255, 255, 0.05)',
-    '--color-sidebar-item-active-text': '#3578e5',
-    '--color-sidebar-border': '#444950',
-
-    '--color-content-bg': '#1b1b1d',
     '--color-border': '#444950',
-    '--color-scrollbar': '#686868',
-
     '--color-code-bg': 'rgba(255, 255, 255, 0.1)',
-    '--color-code-text': '#e3e3e3',
     '--color-code-block-bg': '#1c1e21',
-    '--color-code-border': '#444950',
-
     '--color-table-header-bg': 'rgba(255, 255, 255, 0.07)',
-    '--color-table-border': '#606770',
-    '--color-table-row-hover': 'rgba(255, 255, 255, 0.07)',
-
-    '--color-blockquote-border': '#606770',
-    '--color-blockquote-bg': 'rgba(255, 255, 255, 0.05)',
-    '--color-blockquote-text': '#ebedf0',
-
-    '--color-theme-switch-bg': '#444950',
-    '--color-theme-switch-text': '#dadde1',
-    '--color-theme-switch-hover': '#606770',
-  },
+    '--color-surface-raised': '#242526',
+    '--color-overlay': 'rgba(0, 0, 0, 0.8)',
+  }),
 }
 
 /**
@@ -96,31 +109,14 @@ export const builtinExtraThemes: ThemeOption[] = [
       '--color-bg': '#f4ecd8',
       '--color-text': '#433d32',
       '--color-text-secondary': '#6b6458',
-      '--color-link': '#a67c52',
-      '--color-link-hover': '#8b6239',
+      '--color-primary': '#a67c52',
       '--color-sidebar-bg': '#ebe4d6',
       '--color-sidebar-text': '#4a443b',
       '--color-sidebar-title': '#a67c52',
-      '--color-sidebar-item-hover': '#ddd4c4',
-      '--color-sidebar-item-active': '#e8dfd0',
-      '--color-sidebar-item-active-text': '#8b6239',
-      '--color-sidebar-border': '#d4cbb8',
-      '--color-content-bg': '#f4ecd8',
       '--color-border': '#d4cbb8',
-      '--color-scrollbar': '#c4b8a4',
-      '--color-code-bg': '#ebe4d6',
-      '--color-code-text': '#433d32',
-      '--color-code-block-bg': '#ebe4d6',
-      '--color-code-border': '#d4cbb8',
-      '--color-table-header-bg': '#ebe4d6',
-      '--color-table-border': '#d4cbb8',
-      '--color-table-row-hover': '#ebe4d6',
       '--color-blockquote-border': '#a67c52',
       '--color-blockquote-bg': '#ebe4d6',
-      '--color-blockquote-text': '#4a443b',
-      '--color-theme-switch-bg': '#ddd4c4',
-      '--color-theme-switch-text': '#4a443b',
-      '--color-theme-switch-hover': '#d4cbb8',
+      '--color-surface-raised': '#faf3e3',
     },
   },
   {
@@ -132,31 +128,16 @@ export const builtinExtraThemes: ThemeOption[] = [
       '--color-bg': '#0c1929',
       '--color-text': '#e0f2fe',
       '--color-text-secondary': '#7dd3fc',
-      '--color-link': '#22d3ee',
-      '--color-link-hover': '#67e8f9',
+      '--color-primary': '#22d3ee',
       '--color-sidebar-bg': '#0f2942',
       '--color-sidebar-text': '#bae6fd',
       '--color-sidebar-title': '#22d3ee',
-      '--color-sidebar-item-hover': '#164e63',
-      '--color-sidebar-item-active': '#155e75',
-      '--color-sidebar-item-active-text': '#a5f3fc',
-      '--color-sidebar-border': '#164e63',
-      '--color-content-bg': '#0c1929',
       '--color-border': '#164e63',
-      '--color-scrollbar': '#0e7490',
-      '--color-code-bg': '#0f2942',
-      '--color-code-text': '#e0f2fe',
-      '--color-code-block-bg': '#0f2942',
-      '--color-code-border': '#164e63',
-      '--color-table-header-bg': '#0f2942',
-      '--color-table-border': '#164e63',
-      '--color-table-row-hover': '#0f2942',
       '--color-blockquote-border': '#22d3ee',
-      '--color-blockquote-bg': '#0f2942',
-      '--color-blockquote-text': '#bae6fd',
-      '--color-theme-switch-bg': '#164e63',
-      '--color-theme-switch-text': '#e0f2fe',
-      '--color-theme-switch-hover': '#155e75',
+      '--color-code-bg': '#0f2942',
+      '--color-code-block-bg': '#0f2942',
+      '--color-table-header-bg': '#0f2942',
+      '--color-surface-raised': '#0f2942',
     },
   },
 ]
