@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, ref, useId } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, useId } from 'vue'
 import { useLocale } from '../composables/useLocale'
 import { useSiteConfig } from '../composables/useSiteConfig'
 import { useLocalize } from '../composables/useLocalize'
@@ -20,6 +20,19 @@ const props = withDefaults(
 
 const detailsRef = ref<HTMLDetailsElement | null>(null)
 const summaryRef = ref<HTMLElement | null>(null)
+
+function onDocumentPointerDown(event: PointerEvent) {
+  const details = detailsRef.value
+  if (details && !details.contains(event.target as Node)) details.open = false
+}
+
+onMounted(() => {
+  document.addEventListener('pointerdown', onDocumentPointerDown)
+})
+
+onBeforeUnmount(() => {
+  document.removeEventListener('pointerdown', onDocumentPointerDown)
+})
 
 const summaryTipOpen = ref(false)
 const summaryTipId = useId()
