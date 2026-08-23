@@ -267,15 +267,18 @@ Built-in themes are `light`, `dark`, plus the always-on extras `sepia` and `ocea
 
 ### Semantic color tokens
 
-Every theme is driven by semantic `--color-*` CSS variables. Element Plus variables are mapped to
-them in `element-plus-theme.css`, so all components (buttons, tags, switches, sliders, alerts,
-dialogs, overlays) follow the active theme without per-theme overrides. Built-in palettes define
-only a few seed colors; the rest are derived with `color-mix()` / `var()`, so values in
-`builtinThemePalettes` may be CSS expressions rather than literal colors.
+Every theme is driven by semantic `--color-*` CSS variables. Shared Element Plus variables are
+mapped to them in `element-plus-theme.css`, so common controls and surfaces follow the active theme.
+Some components also have component-specific variables; those may need additional mapping when
+adding new Element Plus components. Built-in palettes define seed colors and derive related values
+with `color-mix()` / `var()`, so `builtinThemePalettes` may contain CSS expressions rather than
+literal colors.
 
 | Token | Purpose |
 |-------|---------|
 | `--color-primary` | Brand / primary (`--el-color-primary` and its tints) |
+| `--color-primary-contrast` | Text color on filled primary controls; defaults to the theme background |
+| `--color-primary-hover` | Hover color for filled primary controls; derived from primary and text colors |
 | `--color-success` | Success |
 | `--color-warning` | Warning |
 | `--color-danger` | Danger / error (`--el-color-error` reuses it) |
@@ -301,6 +304,9 @@ theme: {
   ],
 }
 ```
+
+If a custom primary/background pair has low contrast, set `--color-primary-contrast` explicitly.
+It is used for text on filled primary buttons, tags, and selected button groups.
 
 ### Overriding any token
 

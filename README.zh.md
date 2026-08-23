@@ -235,15 +235,17 @@ export default defineConfig({
 
 ### 语义化颜色变量
 
-每个主题都由语义化的 `--color-*` CSS 变量驱动。Element Plus 的变量在
-`element-plus-theme.css` 中映射到这些变量，因此所有组件（按钮、标签、开关、滑块、提示、
-对话框、遮罩）都会自动跟随当前主题，无需为每个主题单独覆盖。内置调色板只定义少量种子色，
-其余通过 `color-mix()` / `var()` 派生，因此 `builtinThemePalettes` 中的值可能是 CSS 表达式
-而不是字面色值。
+每个主题都由语义化的 `--color-*` CSS 变量驱动。Element Plus 的通用变量在
+`element-plus-theme.css` 中映射到这些变量，因此常见控件和表面会跟随当前主题。部分组件
+还有专属变量；新增 Element Plus 组件时，可能需要补充对应映射。内置调色板定义种子色，
+其余值通过 `color-mix()` / `var()` 派生，因此 `builtinThemePalettes` 中可能包含 CSS 表达式，
+而不只是字面色值。
 
 | 变量 | 用途 |
 |------|------|
 | `--color-primary` | 品牌/主色（映射到 `--el-color-primary` 及其色阶） |
+| `--color-primary-contrast` | 主色填充控件上的文字色，默认取当前主题背景色 |
+| `--color-primary-hover` | 主色填充控件的悬停色，由主色和文字色派生 |
 | `--color-success` | 成功 |
 | `--color-warning` | 警告 |
 | `--color-danger` | 危险/错误（`--el-color-error` 复用该值） |
@@ -269,6 +271,9 @@ theme: {
   ],
 }
 ```
+
+如果自定义主色与背景的对比度不足，可以显式设置 `--color-primary-contrast`。它用于主色按钮、
+深色标签和选中按钮组等填充控件上的文字。
 
 ### 覆盖任意 token
 

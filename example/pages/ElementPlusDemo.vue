@@ -12,9 +12,37 @@ const selectVal = ref('')
 const switchVal = ref(true)
 const sliderVal = ref(30)
 const dateVal = ref('')
+const dateRangeVal = ref<Date[] | null>(null)
+const timeVal = ref('')
+const inputNumberVal = ref(3)
+const colorVal = ref('#409eff')
 const radioVal = ref('option1')
 const checkboxGroup = ref(['A'])
+const buttonRadioVal = ref('Day')
+const buttonCheckboxGroup = ref(['Vue'])
 const rateVal = ref(3.5)
+const activeMenu = ref('overview')
+const activeStep = ref(1)
+const currentPage = ref(1)
+const segmentedVal = ref('Overview')
+const calendarDate = ref(new Date())
+
+const treeData = [
+  {
+    label: 'Documentation',
+    children: [
+      { label: 'Getting started' },
+      { label: 'Theme tokens' },
+    ],
+  },
+  {
+    label: 'Components',
+    children: [
+      { label: 'Forms' },
+      { label: 'Data display' },
+    ],
+  },
+]
 
 const tableData = [
   { name: 'Tom', age: 28, role: 'Developer', status: 'Active' },
@@ -103,6 +131,21 @@ function handleLoadingClick() {
           <el-button type="primary" disabled>Disabled</el-button>
         </div>
 
+        <h3 style="margin-top: 24px">{{ localize({ en: 'Selected states', zh: '选中状态' }) }}</h3>
+        <div class="ep-button-row">
+          <el-radio-group v-model="buttonRadioVal">
+            <el-radio-button label="Day" value="Day" />
+            <el-radio-button label="Week" value="Week" />
+            <el-radio-button label="Month" value="Month" />
+          </el-radio-group>
+          <el-checkbox-group v-model="buttonCheckboxGroup">
+            <el-checkbox-button label="Vue" value="Vue" />
+            <el-checkbox-button label="TypeScript" value="TypeScript" />
+            <el-checkbox-button label="CSS" value="CSS" />
+          </el-checkbox-group>
+          <el-segmented v-model="segmentedVal" :options="['Overview', 'Activity', 'Settings']" />
+        </div>
+
         <h3 style="margin-top: 24px">{{ localize({ en: 'Tags', zh: '标签' }) }}</h3>
         <el-space wrap>
           <el-tag>Default</el-tag>
@@ -127,6 +170,9 @@ function handleLoadingClick() {
           </el-badge>
           <el-badge value="new" type="success">
             <el-button>New</el-button>
+          </el-badge>
+          <el-badge :value="8" type="primary">
+            <el-button>Primary</el-button>
           </el-badge>
           <el-badge is-dot>
             <el-button>Dot</el-button>
@@ -160,6 +206,38 @@ function handleLoadingClick() {
             <el-date-picker v-model="dateVal" type="date" :placeholder="localize({ en: 'Pick a date', zh: '选择日期' })" style="width: 100%" />
           </el-form-item>
 
+          <el-form-item :label="localize({ en: 'Date Range', zh: '日期范围' })">
+            <el-date-picker
+              v-model="dateRangeVal"
+              type="daterange"
+              range-separator="To"
+              start-placeholder="Start date"
+              end-placeholder="End date"
+              style="width: 100%"
+            />
+          </el-form-item>
+
+          <el-form-item :label="localize({ en: 'Time Picker', zh: '时间选择' })">
+            <el-time-picker v-model="timeVal" :placeholder="localize({ en: 'Pick a time', zh: '选择时间' })" style="width: 100%" />
+          </el-form-item>
+
+          <el-form-item :label="localize({ en: 'Number', zh: '数字输入' })">
+            <el-input-number v-model="inputNumberVal" :min="0" :max="10" />
+          </el-form-item>
+
+          <el-form-item :label="localize({ en: 'Color Picker', zh: '颜色选择器' })">
+            <el-color-picker v-model="colorVal" show-alpha />
+          </el-form-item>
+
+          <el-form-item :label="localize({ en: 'Textarea', zh: '多行文本' })">
+            <el-input
+              v-model="formData.description"
+              type="textarea"
+              :rows="3"
+              :placeholder="localize({ en: 'Write a short note...', zh: '写一段简短说明…' })"
+            />
+          </el-form-item>
+
           <el-form-item :label="localize({ en: 'Radio', zh: '单选' })">
             <el-radio-group v-model="radioVal">
               <el-radio value="option1">Option 1</el-radio>
@@ -186,6 +264,19 @@ function handleLoadingClick() {
 
           <el-form-item :label="localize({ en: 'Rate', zh: '评分' })">
             <el-rate v-model="rateVal" allow-half show-score />
+          </el-form-item>
+
+          <el-form-item :label="localize({ en: 'Upload', zh: '文件上传' })">
+            <el-upload drag action="#" :auto-upload="false" :limit="3">
+              <el-icon class="el-icon--upload"><UploadFilled /></el-icon>
+              <div class="el-upload__text">
+                {{ localize({ en: 'Drop a file here or', zh: '拖放文件到这里，或' }) }}
+                <em>{{ localize({ en: 'browse', zh: '点击选择' }) }}</em>
+              </div>
+              <template #tip>
+                <div class="el-upload__tip">{{ localize({ en: 'Files stay local in this demo.', zh: '此演示不会上传文件。' }) }}</div>
+              </template>
+            </el-upload>
           </el-form-item>
         </el-form>
       </el-tab-pane>
@@ -220,6 +311,42 @@ function handleLoadingClick() {
         </el-table>
       </el-tab-pane>
 
+      <!-- Navigation & Layout -->
+      <el-tab-pane :label="localize({ en: 'Navigation & Layout', zh: '导航与布局' })" name="navigation">
+        <h3>{{ localize({ en: 'Breadcrumb & Pagination', zh: '面包屑与分页' }) }}</h3>
+        <div class="ep-component-row">
+          <el-breadcrumb separator="/">
+            <el-breadcrumb-item>{{ localize({ en: 'Home', zh: '首页' }) }}</el-breadcrumb-item>
+            <el-breadcrumb-item>{{ localize({ en: 'Components', zh: '组件' }) }}</el-breadcrumb-item>
+            <el-breadcrumb-item>{{ localize({ en: 'Navigation', zh: '导航' }) }}</el-breadcrumb-item>
+          </el-breadcrumb>
+          <el-pagination
+            v-model:current-page="currentPage"
+            background
+            layout="prev, pager, next, total"
+            :total="80"
+            :page-size="10"
+          />
+        </div>
+
+        <h3 style="margin-top: 24px">{{ localize({ en: 'Menu', zh: '菜单' }) }}</h3>
+        <el-menu :default-active="activeMenu" class="ep-demo-menu" mode="horizontal">
+          <el-menu-item index="overview">{{ localize({ en: 'Overview', zh: '概览' }) }}</el-menu-item>
+          <el-menu-item index="activity">{{ localize({ en: 'Activity', zh: '动态' }) }}</el-menu-item>
+          <el-menu-item index="settings">{{ localize({ en: 'Settings', zh: '设置' }) }}</el-menu-item>
+        </el-menu>
+
+        <h3 style="margin-top: 24px">{{ localize({ en: 'Steps', zh: '步骤条' }) }}</h3>
+        <el-steps :active="activeStep" finish-status="success" align-center>
+          <el-step :title="localize({ en: 'Account', zh: '账户' })" :description="localize({ en: 'Create account', zh: '创建账户' })" />
+          <el-step :title="localize({ en: 'Profile', zh: '资料' })" :description="localize({ en: 'Complete profile', zh: '完善资料' })" />
+          <el-step :title="localize({ en: 'Done', zh: '完成' })" :description="localize({ en: 'Ready to use', zh: '开始使用' })" />
+        </el-steps>
+        <el-button class="ep-step-button" @click="activeStep = (activeStep + 1) % 3">
+          {{ localize({ en: 'Advance step', zh: '下一步' }) }}
+        </el-button>
+      </el-tab-pane>
+
       <!-- Feedback -->
       <el-tab-pane :label="localize({ en: 'Feedback', zh: '反馈' })" name="feedback">
         <h3>{{ localize({ en: 'Alerts', zh: '提示' }) }}</h3>
@@ -245,6 +372,46 @@ function handleLoadingClick() {
           <el-button type="info" @click="dialogVisible = true">{{ localize({ en: 'Open Dialog', zh: '打开对话框' }) }}</el-button>
           <el-button @click="drawerVisible = true">{{ localize({ en: 'Open Drawer', zh: '打开抽屉' }) }}</el-button>
         </div>
+
+        <h3 style="margin-top: 24px">{{ localize({ en: 'Tooltips & Popovers', zh: '文字提示与弹出框' }) }}</h3>
+        <div class="ep-button-row">
+          <el-tooltip :content="localize({ en: 'Tooltip follows the active theme', zh: '文字提示会跟随当前主题' })" placement="top">
+            <el-button>{{ localize({ en: 'Hover for tooltip', zh: '悬停查看提示' }) }}</el-button>
+          </el-tooltip>
+          <el-popover :title="localize({ en: 'Popover', zh: '弹出框' })" :width="240" trigger="click">
+            <p>{{ localize({ en: 'Popover content with themed text and surface.', zh: '弹出框内容会适配主题文字和背景。' }) }}</p>
+            <template #reference>
+              <el-button type="primary" plain>{{ localize({ en: 'Click for popover', zh: '点击查看弹出框' }) }}</el-button>
+            </template>
+          </el-popover>
+          <el-dropdown>
+            <el-button>{{ localize({ en: 'Dropdown', zh: '下拉菜单' }) }}<el-icon class="el-icon--right"><ArrowDown /></el-icon></el-button>
+            <template #dropdown>
+              <el-dropdown-menu>
+                <el-dropdown-item>{{ localize({ en: 'Action one', zh: '操作一' }) }}</el-dropdown-item>
+                <el-dropdown-item>{{ localize({ en: 'Action two', zh: '操作二' }) }}</el-dropdown-item>
+                <el-dropdown-item disabled>{{ localize({ en: 'Disabled action', zh: '禁用操作' }) }}</el-dropdown-item>
+              </el-dropdown-menu>
+            </template>
+          </el-dropdown>
+          <el-popconfirm :title="localize({ en: 'Delete this item?', zh: '确定删除此项吗？' })">
+            <template #reference>
+              <el-button type="danger" plain>{{ localize({ en: 'Popconfirm', zh: '气泡确认' }) }}</el-button>
+            </template>
+          </el-popconfirm>
+        </div>
+
+        <h3 style="margin-top: 24px">{{ localize({ en: 'Result States', zh: '结果状态' }) }}</h3>
+        <el-result
+          icon="success"
+          :title="localize({ en: 'Success', zh: '成功' })"
+          :sub-title="localize({ en: 'Your changes have been saved.', zh: '更改已保存。' })"
+        >
+          <template #extra>
+            <el-button type="primary">{{ localize({ en: 'Continue', zh: '继续' }) }}</el-button>
+            <el-button>{{ localize({ en: 'Back', zh: '返回' }) }}</el-button>
+          </template>
+        </el-result>
 
         <el-dialog v-model="dialogVisible" :title="localize({ en: 'Dialog Example', zh: '对话框示例' })" width="480">
           <p>{{ localize({ en: 'This is a dialog content. It should respect the current theme.', zh: '这是对话框内容，应当遵循当前主题。' }) }}</p>
@@ -297,6 +464,31 @@ function handleLoadingClick() {
 
       <!-- Data Display -->
       <el-tab-pane :label="localize({ en: 'Data Display', zh: '数据展示' })" name="data">
+        <h3>{{ localize({ en: 'Avatar & Statistics', zh: '头像与统计数值' }) }}</h3>
+        <div class="ep-component-row ep-stat-row">
+          <el-avatar :size="48">JD</el-avatar>
+          <el-avatar :size="48" shape="square">EP</el-avatar>
+          <el-badge is-dot type="success"><el-avatar :size="48">{{ localize({ en: 'Online', zh: '在线' }) }}</el-avatar></el-badge>
+          <el-statistic :title="localize({ en: 'Active users', zh: '活跃用户' })" :value="2688" />
+          <el-statistic :title="localize({ en: 'Growth', zh: '增长率' })" :value="12.6" suffix="%" />
+        </div>
+
+        <h3 style="margin-top: 24px">{{ localize({ en: 'Tree', zh: '树形控件' }) }}</h3>
+        <el-tree :data="treeData" node-key="label" default-expand-all highlight-current class="ep-demo-tree" />
+
+        <h3 style="margin-top: 24px">{{ localize({ en: 'Calendar', zh: '日历' }) }}</h3>
+        <el-calendar v-model="calendarDate" class="ep-demo-calendar" />
+
+        <h3 style="margin-top: 24px">{{ localize({ en: 'Empty & Skeleton', zh: '空状态与骨架屏' }) }}</h3>
+        <el-row :gutter="16">
+          <el-col :xs="24" :md="12">
+            <el-empty :description="localize({ en: 'No data yet', zh: '暂无数据' })" />
+          </el-col>
+          <el-col :xs="24" :md="12">
+            <el-skeleton :rows="4" animated />
+          </el-col>
+        </el-row>
+
         <h3>{{ localize({ en: 'Descriptions', zh: '描述列表' }) }}</h3>
         <el-descriptions :title="localize({ en: 'User Info', zh: '用户信息' })" :column="2" border>
           <el-descriptions-item :label="localize({ en: 'Name', zh: '姓名' })">Tom</el-descriptions-item>
@@ -346,7 +538,8 @@ function handleLoadingClick() {
 }
 
 .ep-button-row,
-.ep-badge-row {
+.ep-badge-row,
+.ep-component-row {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
@@ -360,6 +553,42 @@ function handleLoadingClick() {
 
 .ep-badge-row {
   gap: 18px 30px;
+}
+
+.ep-component-row {
+  justify-content: space-between;
+}
+
+.ep-demo-menu {
+  border-bottom: 1px solid var(--color-border);
+  background-color: var(--color-content-bg);
+}
+
+.ep-step-button {
+  margin-top: 16px;
+}
+
+.ep-demo-tree {
+  max-width: 420px;
+  padding: 12px;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  background-color: var(--color-content-bg);
+}
+
+.ep-demo-calendar {
+  --el-calendar-selected-bg-color: var(--color-table-row-hover);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.ep-stat-row :deep(.el-statistic) {
+  min-width: 120px;
+}
+
+.ep-demo :deep(.el-result) {
+  padding: 24px 0;
 }
 
 .ep-button-row :deep(.el-button),

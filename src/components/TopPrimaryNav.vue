@@ -85,7 +85,7 @@ const links = computed(() =>
 
 .site-primary-nav-link--active {
   background: var(--color-sidebar-item-active);
-  color: var(--color-sidebar-item-active-text);
+  color: var(--color-link);
 }
 
 .site-primary-nav-link-label {
