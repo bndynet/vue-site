@@ -9,8 +9,10 @@ import DynamicIcon from './DynamicIcon.vue'
 const props = withDefaults(defineProps<{
   item: ResolvedNavItem
   indent?: boolean
+  collapsed?: boolean
 }>(), {
   indent: false,
+  collapsed: false,
 })
 
 const route = useRoute()
@@ -26,20 +28,24 @@ const isActive = computed(() => !isExternal.value && route.path === target.value
     v-if="isExternal"
     :href="item.link"
     class="nav-item"
-    :class="{ 'nav-item--indent': indent }"
+    :class="{ 'nav-item--indent': indent, 'nav-item--collapsed': collapsed }"
+    :title="collapsed ? localize(item.label) : undefined"
     target="_blank"
     rel="noopener noreferrer"
   >
     <DynamicIcon v-if="item.icon" :name="item.icon" :size="18" />
+    <span v-else-if="collapsed" class="nav-item-fallback" aria-hidden="true">{{ localize(item.label).slice(0, 1) }}</span>
     <span class="nav-item-label">{{ localize(item.label) }}</span>
   </a>
   <router-link
     v-else
     :to="target"
     class="nav-item"
-    :class="{ 'nav-item--active': isActive, 'nav-item--indent': indent }"
+    :class="{ 'nav-item--active': isActive, 'nav-item--indent': indent, 'nav-item--collapsed': collapsed }"
+    :title="collapsed ? localize(item.label) : undefined"
   >
     <DynamicIcon v-if="item.icon" :name="item.icon" :size="18" />
+    <span v-else-if="collapsed" class="nav-item-fallback" aria-hidden="true">{{ localize(item.label).slice(0, 1) }}</span>
     <span class="nav-item-label">{{ localize(item.label) }}</span>
   </router-link>
 </template>
@@ -78,5 +84,25 @@ const isActive = computed(() => !isExternal.value && route.path === target.value
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.nav-item--collapsed {
+  justify-content: center;
+  gap: 0;
+  padding: 10px 0;
+}
+
+.nav-item--collapsed .nav-item-label {
+  display: none;
+}
+
+.nav-item-fallback {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  font-size: 0.8rem;
+  font-weight: 700;
 }
 </style>

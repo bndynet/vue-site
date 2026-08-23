@@ -19,6 +19,7 @@ const { localize } = useLocalize()
 const route = useRoute()
 const isMobileViewport = ref(false)
 const mobileMenuOpen = ref(false)
+const sidebarCollapsed = ref(false)
 const menuButton = ref<HTMLButtonElement | null>(null)
 const drawerCloseButton = ref<HTMLButtonElement | null>(null)
 const mobileDrawer = ref<HTMLElement | null>(null)
@@ -122,6 +123,7 @@ watchEffect(() => {
       'site-layout--tiered-no-sidebar': tieredNav && !showSidebar,
       'site-layout--blank': standalone,
       'site-layout--mobile-menu-open': mobileMenuOpen,
+      'site-layout--sidebar-collapsed': sidebarCollapsed && !isMobileViewport && showSidebar,
     }"
   >
     <header v-if="!standalone" class="site-mobile-header">
@@ -216,7 +218,11 @@ watchEffect(() => {
           </svg>
         </button>
       </div>
-      <SideNav :items="isMobileViewport && !standalone ? resolvedNav : undefined" />
+      <SideNav
+        :items="isMobileViewport && !standalone ? resolvedNav : undefined"
+        :collapsed="sidebarCollapsed && !isMobileViewport"
+        @toggle-collapse="sidebarCollapsed = !sidebarCollapsed"
+      />
       <div
         v-if="!tieredNav || siteFooter || isMobileViewport"
         class="site-sidebar-footer"
