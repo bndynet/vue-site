@@ -675,7 +675,7 @@ Notes:
 | Property | Description |
 |----------|-------------|
 | `port` | Dev server port |
-| `outDir` | Build output (relative to site root; default `{folder}-dist`) |
+| `outDir` | Build output (relative to site root; default `dist`) |
 | `customElements` | Tag prefixes for custom elements (e.g. `['chat-', 'i-']`) |
 | `watchPackages` | Local packages — see [env.watchPackages](#envwatchpackages) |
 | `vite` | Vite overrides (not `root`); framework merges aliases, `server.fs.allow`, `build.outDir`, etc. |
@@ -783,7 +783,7 @@ npm update @bndynet/vue-site
 git clone https://github.com/bndynet/vue-site.git && cd vue-site
 npm install
 npm run dev    # watch-build lib + example site
-npm run build  # `dist/` + `example/example-dist`
+npm run build  # `dist/` + `example/dist`
 ```
 
 ### Using a local build in another project

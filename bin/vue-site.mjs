@@ -1057,7 +1057,7 @@ async function buildViteConfig(options = {}) {
       },
     },
     build: {
-      outDir: resolve(cwd, outDir || `${basename(cwd)}-dist`),
+      outDir: resolve(cwd, outDir || 'dist'),
       emptyOutDir: true,
     },
     ...(cliBase != null && { base: cliBase }),

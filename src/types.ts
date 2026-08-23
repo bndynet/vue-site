@@ -303,7 +303,7 @@ export type SiteViteConfig = Partial<Omit<ViteUserConfig, 'root'>> & {
 export interface SiteEnvConfig {
   /** Dev server port (default: Vite auto-selects) */
   port?: number
-  /** Build output directory relative to site root (CLI default: `{basename}-dist`, e.g. `example-dist`) */
+  /** Build output directory relative to site root (CLI default: `dist`) */
   outDir?: string
   /** Tag prefixes treated as native custom elements (e.g. ['chat-', 'i-']) */
   customElements?: string[]
