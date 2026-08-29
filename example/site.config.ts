@@ -198,11 +198,18 @@ export default defineConfig({
     // Login page for the `auth` demo above. Left without an `auth` rule so it is always reachable.
     { path: '/login', page: () => import('./pages/Login.vue') },
   ],
-  // env: {
-  //   customElements: ['chat-', 'i-'],
-  //   watchPackages: [
-  //     '@bndynet/mono-package',
-  //     { name: '@bndynet/my-lib', entryPath: '../my-lib/src/index.ts' },
-  //   ],
-  // },
+  env: {
+    // This demo is also exposed through a reverse proxy at https://vs.bndy.net.
+    // Vite rejects unknown Host headers (DNS-rebinding protection), so allow that
+    // hostname explicitly for both the dev server and `vue-site preview`.
+    vite: {
+      server: { allowedHosts: ['vs.bndy.net'] },
+      preview: { allowedHosts: ['vs.bndy.net'] },
+    },
+    // customElements: ['chat-', 'i-'],
+    // watchPackages: [
+    //   '@bndynet/mono-package',
+    //   { name: '@bndynet/my-lib', entryPath: '../my-lib/src/index.ts' },
+    // ],
+  },
 })
