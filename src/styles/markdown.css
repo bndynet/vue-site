@@ -115,6 +115,22 @@
   .markdown-body td {
     white-space: nowrap;
   }
+
+  .markdown-body h1 {
+    font-size: 1.75rem;
+  }
+
+  .markdown-body h2 {
+    font-size: 1.35rem;
+  }
+
+  .markdown-body h3 {
+    font-size: 1.15rem;
+  }
+
+  .markdown-body pre code {
+    padding: 14px 16px;
+  }
 }
 
 .markdown-body th {
@@ -157,4 +173,18 @@
 
 .markdown-body strong {
   color: var(--color-text);
+}
+
+@media (max-width: 380px) {
+  .markdown-body h1 {
+    font-size: 1.6rem;
+  }
+
+  .markdown-body h2 {
+    font-size: 1.25rem;
+  }
+
+  .markdown-body pre code {
+    padding: 12px 14px;
+  }
 }
