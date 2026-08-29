@@ -25,6 +25,9 @@ const drawerCloseButton = ref<HTMLButtonElement | null>(null)
 const mobileDrawer = ref<HTMLElement | null>(null)
 let mobileMediaQuery: MediaQueryList | undefined
 let previousBodyOverflow = ''
+let previousBodyPosition = ''
+let previousScrollY = 0
+let scrollLocked = false
 
 provideMobileViewport(isMobileViewport)
 
@@ -34,6 +37,35 @@ function updateMobileViewport() {
 
 function closeMobileMenu() {
   mobileMenuOpen.value = false
+}
+
+// Locking the body via `position: fixed` (rather than just `overflow: hidden`) is the only
+// reliable way to stop background scrolling on iOS Safari, which ignores `overflow: hidden`
+// on the body. The recorded scroll offset keeps the page from jumping to the top.
+function lockBodyScroll() {
+  if (scrollLocked) return
+  scrollLocked = true
+  previousBodyOverflow = document.body.style.overflow
+  previousBodyPosition = document.body.style.position
+  previousScrollY = window.scrollY
+  document.body.style.overflow = 'hidden'
+  document.body.style.position = 'fixed'
+  document.body.style.top = `-${previousScrollY}px`
+  document.body.style.left = '0'
+  document.body.style.right = '0'
+  document.body.style.width = '100%'
+}
+
+function unlockBodyScroll() {
+  if (!scrollLocked) return
+  scrollLocked = false
+  document.body.style.overflow = previousBodyOverflow
+  document.body.style.position = previousBodyPosition
+  document.body.style.top = ''
+  document.body.style.left = ''
+  document.body.style.right = ''
+  document.body.style.width = ''
+  window.scrollTo(0, previousScrollY)
 }
 
 function handleKeydown(event: KeyboardEvent) {
@@ -76,7 +108,7 @@ onMounted(() => {
 onBeforeUnmount(() => {
   mobileMediaQuery?.removeEventListener('change', updateMobileViewport)
   window.removeEventListener('keydown', handleKeydown)
-  document.body.style.overflow = previousBodyOverflow
+  unlockBodyScroll()
 })
 
 watch(isMobileViewport, (isMobile) => {
@@ -85,12 +117,11 @@ watch(isMobileViewport, (isMobile) => {
 
 watch(mobileMenuOpen, async (open) => {
   if (open) {
-    previousBodyOverflow = document.body.style.overflow
-    document.body.style.overflow = 'hidden'
+    lockBodyScroll()
     await nextTick()
     drawerCloseButton.value?.focus()
   } else {
-    document.body.style.overflow = previousBodyOverflow
+    unlockBodyScroll()
     await nextTick()
     if (isMobileViewport.value) menuButton.value?.focus()
   }

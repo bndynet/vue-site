@@ -287,6 +287,8 @@
   overflow-x: hidden;
   overflow-y: auto;
   padding: 0 8px;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
 }
 
 .site-sidebar-footer {
