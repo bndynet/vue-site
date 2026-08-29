@@ -222,6 +222,20 @@ export default defineConfig({
 })
 ```
 
+### 响应式辅助
+
+宽内容——例如 Element Plus 的 `el-table` 或多列 `el-form`——在小屏幕上可能溢出。把它包进一个
+`.site-responsive-scroll` 容器，即可获得横向滚动条（触屏惯性滚动 + 可见的滚动条提示），而不是
+溢出页面：
+
+```vue
+<template>
+  <div class="site-responsive-scroll">
+    <el-table :data="rows">…</el-table>
+  </div>
+</template>
+```
+
 ### `ThemeConfig`
 
 内置主题为 `light`、`dark`，外加始终可用的额外主题 `sepia` 和 `ocean`（在每个站点的切换器中都会显示）。在 `SiteConfig` 上设置 `theme: false` 可完全禁用主题。
