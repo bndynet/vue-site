@@ -233,6 +233,20 @@ export default defineConfig({
 })
 ```
 
+### Responsive helpers
+
+Wide content — such as an Element Plus `el-table` or a multi-column `el-form` — can overflow on
+small screens. Wrap it in a `.site-responsive-scroll` container to give it a horizontal scrollbar
+(with momentum scrolling on touch and a visible scrollbar hint) instead of overflowing the page:
+
+```vue
+<template>
+  <div class="site-responsive-scroll">
+    <el-table :data="rows">…</el-table>
+  </div>
+</template>
+```
+
 ### Icon registry
 
 The CLI scans configured Lucide icon names in `nav`, `links`, `i18n.locales`, and `theme.extraThemes`

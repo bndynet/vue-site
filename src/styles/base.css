@@ -35,3 +35,26 @@ img {
   height: auto;
 }
 
+/* Horizontal-scroll wrapper for wide content (e.g. Element Plus tables/forms) on small
+   screens. Wrap a wide component so it scrolls instead of overflowing the page. */
+.site-responsive-scroll {
+  max-width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-border) transparent;
+}
+
+.site-responsive-scroll::-webkit-scrollbar {
+  height: 8px;
+}
+
+.site-responsive-scroll::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 4px;
+}
+
+.site-responsive-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
