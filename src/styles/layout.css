@@ -531,6 +531,18 @@
   }
 }
 
+/* Tablet refinement: between the mobile and desktop layouts, narrow the sidebar and
+   trim the generous desktop gutters so mid-size screens keep a comfortable reading area. */
+@media (min-width: 841px) and (max-width: 1080px) {
+  :root {
+    --site-sidebar-width: 180px;
+  }
+
+  .site-content-inner {
+    padding: 40px 32px;
+  }
+}
+
 @media (max-width: 380px) {
   .site-content-inner {
     padding: 24px max(16px, env(safe-area-inset-right, 0px)) 24px max(16px, env(safe-area-inset-left, 0px));
