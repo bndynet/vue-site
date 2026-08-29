@@ -157,4 +157,21 @@ watch(actionComponents, async () => {
   height: 1px;
   margin: 0 calc(var(--site-sidebar-footer-inline-padding, 12px) * -1) 4px;
 }
+
+/* In the mobile header, a long action cluster must not squeeze the brand name out.
+   Cap its width and let it scroll horizontally instead of overflowing the header. */
+@media (max-width: 840px) {
+  .site-shell-actions--top {
+    flex-shrink: 1;
+    min-width: 0;
+    max-width: 60%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  .site-shell-actions--top::-webkit-scrollbar {
+    display: none;
+  }
+}
 </style>
