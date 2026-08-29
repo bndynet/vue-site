@@ -346,6 +346,7 @@
   padding: 0;
 }
 
+/* Mobile breakpoint — keep in sync with MOBILE_BREAKPOINT_PX (src/composables/useMobileViewport.ts). */
 @media (max-width: 840px) {
   .site-layout {
     min-height: 100vh;

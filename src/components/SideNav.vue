@@ -82,6 +82,7 @@ const navItems = computed(() => props.items ?? sidebarNav.value)
   outline-offset: 2px;
 }
 
+/* Mobile breakpoint — keep in sync with MOBILE_BREAKPOINT_PX (src/composables/useMobileViewport.ts). */
 @media (max-width: 840px) {
   .site-sidebar-collapse-toggle {
     display: none;

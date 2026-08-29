@@ -160,6 +160,7 @@ watch(actionComponents, async () => {
 
 /* In the mobile header, a long action cluster must not squeeze the brand name out.
    Cap its width and let it scroll horizontally instead of overflowing the header. */
+/* Mobile breakpoint — keep in sync with MOBILE_BREAKPOINT_PX (src/composables/useMobileViewport.ts). */
 @media (max-width: 840px) {
   .site-shell-actions--top {
     flex-shrink: 1;

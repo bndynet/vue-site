@@ -102,6 +102,7 @@
   border: 1px solid var(--color-table-border);
 }
 
+/* Mobile breakpoint — keep in sync with MOBILE_BREAKPOINT_PX (src/composables/useMobileViewport.ts). */
 @media (max-width: 840px) {
   .markdown-body table {
     display: block;

@@ -4,7 +4,7 @@ import { useRoute } from 'vue-router'
 import { useSiteConfig } from '../composables/useSiteConfig'
 import { useNavLayout } from '../composables/useNavLayout'
 import { useLocalize } from '../composables/useLocalize'
-import { provideMobileViewport } from '../composables/useMobileViewport'
+import { MOBILE_BREAKPOINT_PX, provideMobileViewport } from '../composables/useMobileViewport'
 import type { PageLayout } from '../types'
 import SideNav from './SideNav.vue'
 import SiteExternalLinks from './SiteExternalLinks.vue'
@@ -99,7 +99,7 @@ function handleKeydown(event: KeyboardEvent) {
 }
 
 onMounted(() => {
-  mobileMediaQuery = window.matchMedia('(max-width: 840px)')
+  mobileMediaQuery = window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT_PX}px)`)
   updateMobileViewport()
   mobileMediaQuery.addEventListener('change', updateMobileViewport)
   window.addEventListener('keydown', handleKeydown)
