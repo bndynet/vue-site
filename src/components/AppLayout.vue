@@ -160,7 +160,6 @@ watchEffect(() => {
       'site-layout--tiered-nav': tieredNav,
       'site-layout--tiered-no-sidebar': tieredNav && !showSidebar,
       'site-layout--blank': standalone,
-      'site-layout--mobile-menu-open': mobileMenuOpen,
       'site-layout--sidebar-collapsed': sidebarCollapsed && !isMobileViewport && showSidebar,
     }"
   >
