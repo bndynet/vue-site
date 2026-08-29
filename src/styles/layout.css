@@ -358,7 +358,7 @@
     align-items: center;
     gap: 10px;
     height: calc(var(--site-mobile-header-height) + env(safe-area-inset-top, 0px));
-    padding: env(safe-area-inset-top, 0px) 12px 0;
+    padding: env(safe-area-inset-top, 0px) max(12px, env(safe-area-inset-right, 0px)) 0 max(12px, env(safe-area-inset-left, 0px));
     border-bottom: 1px solid var(--color-sidebar-border);
     background: var(--color-sidebar-bg);
     box-sizing: border-box;
@@ -457,7 +457,7 @@
     justify-content: space-between;
     gap: 12px;
     min-height: 60px;
-    padding: 10px 12px 10px 16px;
+    padding: 10px 12px 10px max(16px, env(safe-area-inset-left, 0px));
     border-bottom: 1px solid var(--color-sidebar-border);
   }
 
@@ -489,7 +489,7 @@
   }
 
   .site-sidebar-nav {
-    padding: 8px;
+    padding: 8px 8px 8px max(8px, env(safe-area-inset-left, 0px));
   }
 
   .site-sidebar-nav .nav-item,
@@ -516,7 +516,7 @@
   }
 
   .site-content-inner {
-    padding: 28px 18px;
+    padding: 28px max(18px, env(safe-area-inset-right, 0px)) 28px max(18px, env(safe-area-inset-left, 0px));
   }
 
   .site-content-inner--full {
@@ -530,7 +530,7 @@
 
 @media (max-width: 380px) {
   .site-content-inner {
-    padding: 24px 16px;
+    padding: 24px max(16px, env(safe-area-inset-right, 0px)) 24px max(16px, env(safe-area-inset-left, 0px));
   }
 
   .site-content-inner--full {
