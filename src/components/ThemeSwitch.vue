@@ -21,6 +21,7 @@ const props = withDefaults(
 
 const detailsRef = ref<HTMLDetailsElement | null>(null)
 const summaryRef = ref<HTMLElement | null>(null)
+const menuRef = ref<HTMLDivElement | null>(null)
 
 function onDocumentPointerDown(event: PointerEvent) {
   const details = detailsRef.value
@@ -91,6 +92,25 @@ function pick(id: string) {
     detailsRef.value.open = false
   }
 }
+
+// The menu is centered on its trigger via CSS; when that would push it past a
+// viewport edge, nudge it back inside (mirrors TooltipOverlay's edge clamping).
+function clampMenuToViewport() {
+  if (!detailsRef.value?.open || !menuRef.value) return
+  requestAnimationFrame(() => {
+    const menu = menuRef.value
+    if (!menu) return
+    menu.style.left = ''
+    menu.style.transform = ''
+    const rect = menu.getBoundingClientRect()
+    const pad = 8
+    const vw = window.innerWidth
+    let dx = 0
+    if (rect.left < pad) dx = pad - rect.left
+    else if (rect.right > vw - pad) dx = vw - pad - rect.right
+    if (dx !== 0) menu.style.transform = `translateX(calc(-50% + ${dx}px))`
+  })
+}
 </script>
 
 <template>
@@ -98,6 +118,7 @@ function pick(id: string) {
     ref="detailsRef"
     class="theme-switch"
     :class="{ 'theme-switch--compact': props.compact }"
+    @toggle="clampMenuToViewport"
   >
     <summary
       ref="summaryRef"
@@ -111,7 +132,7 @@ function pick(id: string) {
         <DynamicIcon :name="currentIcon" :size="iconSize" />
       </span>
     </summary>
-    <div class="theme-switch-menu" role="group" :aria-label="t('theme.options')">
+    <div ref="menuRef" class="theme-switch-menu" role="group" :aria-label="t('theme.options')">
       <UiTooltip
         v-for="opt in themeChoices"
         :key="opt.id"
@@ -213,6 +234,9 @@ function pick(id: string) {
   align-items: center;
   gap: 4px;
   min-width: 40px;
+  max-width: calc(100vw - 16px);
+  max-height: calc(100vh - 16px);
+  overflow-y: auto;
   padding: 6px;
   border-radius: 12px;
   background: var(--color-sidebar-bg);

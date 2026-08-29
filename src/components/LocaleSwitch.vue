@@ -20,6 +20,7 @@ const props = withDefaults(
 
 const detailsRef = ref<HTMLDetailsElement | null>(null)
 const summaryRef = ref<HTMLElement | null>(null)
+const menuRef = ref<HTMLDivElement | null>(null)
 
 function onDocumentPointerDown(event: PointerEvent) {
   const details = detailsRef.value
@@ -74,6 +75,24 @@ function pick(code: string) {
     detailsRef.value.open = false
   }
 }
+
+// Keep the centered menu inside the viewport (mirrors TooltipOverlay's edge clamping).
+function clampMenuToViewport() {
+  if (!detailsRef.value?.open || !menuRef.value) return
+  requestAnimationFrame(() => {
+    const menu = menuRef.value
+    if (!menu) return
+    menu.style.left = ''
+    menu.style.transform = ''
+    const rect = menu.getBoundingClientRect()
+    const pad = 8
+    const vw = window.innerWidth
+    let dx = 0
+    if (rect.left < pad) dx = pad - rect.left
+    else if (rect.right > vw - pad) dx = vw - pad - rect.right
+    if (dx !== 0) menu.style.transform = `translateX(calc(-50% + ${dx}px))`
+  })
+}
 </script>
 
 <template>
@@ -81,6 +100,7 @@ function pick(code: string) {
     ref="detailsRef"
     class="locale-switch"
     :class="{ 'locale-switch--compact': props.compact }"
+    @toggle="clampMenuToViewport"
   >
     <summary
       ref="summaryRef"
@@ -94,7 +114,7 @@ function pick(code: string) {
         <DynamicIcon :name="triggerIcon" :size="iconSize" />
       </span>
     </summary>
-    <div class="locale-switch-menu" role="group" :aria-label="t('locale.options')">
+    <div ref="menuRef" class="locale-switch-menu" role="group" :aria-label="t('locale.options')">
       <button
         v-for="opt in choices"
         :key="opt.code"
@@ -190,6 +210,9 @@ function pick(code: string) {
   align-items: stretch;
   gap: 2px;
   min-width: 140px;
+  max-width: calc(100vw - 16px);
+  max-height: calc(100vh - 16px);
+  overflow-y: auto;
   padding: 6px;
   border-radius: 12px;
   background: var(--color-sidebar-bg);
