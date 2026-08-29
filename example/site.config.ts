@@ -16,6 +16,9 @@ export default defineConfig({
   },
   // `tk('site.title')` references a key from the auto-loaded catalog instead of inlining text.
   // (You can still pass a plain string or an inline `{ en, zh }` map if you prefer.)
+  // `title` is the browser-tab title; `name` is the brand text shown next to the logo. Both are
+  // optional — omit either (or leave it empty) and nothing is rendered for it.
+  name: tk('site.name'),
   title: tk('site.title'),
   // Browser tab icon. Use a public asset path, remote URL, or imported asset URL.
   favicon: 'https://static.bndy.net/images/logo.png',

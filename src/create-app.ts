@@ -161,7 +161,11 @@ export async function createSiteApp(config: SiteConfig) {
   }
 
   // Initial document title for the resolved locale; AppLayout keeps it in sync on locale change.
-  document.title = resolveField(config.title, localeRef.value, defaultLocale, catalog)
+  // Only set when a non-empty title is configured, so an omitted/empty title leaves the tab alone.
+  const initialTitle = resolveField(config.title, localeRef.value, defaultLocale, catalog).trim()
+  if (initialTitle) {
+    document.title = initialTitle
+  }
   applyFavicon(config)
 
   const app = createApp(AppLayout)

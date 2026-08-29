@@ -1,5 +1,6 @@
 {
   "site": {
+    "name": "vue-site",
     "title": "我的站点",
     "footer": "版权所有 © 2026 BNDY.NET"
   },

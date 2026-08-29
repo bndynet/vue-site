@@ -38,6 +38,7 @@ You can also create the configuration manually:
 import { defineConfig } from '@bndynet/vue-site'
 
 export default defineConfig({
+  name: 'My Project',
   title: 'My Project',
   favicon: '/favicon.ico',
   nav: [
@@ -100,7 +101,8 @@ Add `"dev": "vue-site dev"` (or `vs dev`) in `package.json` scripts if you like.
 
 | Property | Description |
 |----------|-------------|
-| `title` | Site title (sidebar + tab). `LocalizedString` |
+| `name` | Brand name shown next to the logo (header + sidebar). `LocalizedString`. Optional — omitted or empty means no brand text is rendered |
+| `title` | Browser tab title. `LocalizedString`. Optional — omitted or empty means the document title is left unchanged |
 | `nav` | `NavItem[]` |
 | `navPosition` | Optional navigation placement: `'top'` forces the top/tiered layout, `'sidebar'` forces the full nav tree into the sidebar. Omit to keep automatic behavior based on nav depth |
 | `defaultPath` | Path the site opens at; `/` and unknown paths redirect here. Must match a registered route (a `nav` item's resolved path or a `pages` entry's `path`). Defaults to the first registered page in navigation order, then the first visible standalone page |
@@ -378,8 +380,8 @@ Set `align` to `'left'`, `'center'`, or `'right'` for sidebar-footer placement; 
 ## Internationalization (`i18n`)
 
 Set `i18n` to enable multi-language support. The framework adds a locale switcher to the header,
-resolves every `LocalizedString` field (`title`, `nav[].label`, `footer`, `links[].title`) against
-the active locale, and exposes the current locale via `useLocale()` / `useLocalize()`.
+resolves every `LocalizedString` field (`name`, `title`, `nav[].label`, `footer`, `links[].title`)
+against the active locale, and exposes the current locale via `useLocale()` / `useLocalize()`.
 
 ```typescript
 import { defineConfig } from '@bndynet/vue-site'
@@ -392,7 +394,8 @@ export default defineConfig({
     ],
     defaultLocale: 'en',
   },
-  title: { en: 'My Site', zh: '我的站点' }, // a LocalizedString
+  name: { en: 'My Site', zh: '我的站点' }, // brand text next to the logo
+  title: { en: 'My Site', zh: '我的站点' }, // browser-tab title
   footer: { en: '© 2026', zh: '© 2026 版权所有' },
   nav: [
     { label: { en: 'Home', zh: '首页' }, icon: 'home', page: '../README.md' },
@@ -510,7 +513,7 @@ no `messages` field) and you don't even have to list the languages.
 ```jsonc
 // locales/en.json — nested groups (recommended), flattened to dotted ids
 {
-  "site": { "title": "My Site" },
+  "site": { "name": "My Site", "title": "My Site" },
   "nav": { "home": "Home", "guide": "Guide" }
 }
 ```
@@ -518,7 +521,7 @@ no `messages` field) and you don't even have to list the languages.
 ```jsonc
 // locales/zh.json
 {
-  "site": { "title": "我的站点" },
+  "site": { "name": "我的站点", "title": "我的站点" },
   "nav": { "home": "首页", "guide": "指南" }
 }
 ```
@@ -540,6 +543,7 @@ export default defineConfig({
     ],
     defaultLocale: 'en',
   },
+  name: tk('site.name'),
   title: tk('site.title'),
   nav: [
     { label: tk('nav.home'), icon: 'home', page: '../README.md' },

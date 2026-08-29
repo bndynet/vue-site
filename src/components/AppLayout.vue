@@ -100,7 +100,12 @@ watch(() => route.fullPath, closeMobileMenu)
 
 const themeEnabled = computed(() => config.theme !== false)
 const localeEnabled = computed(() => (config.i18n?.locales?.length ?? 0) > 1)
-const siteTitle = computed(() => localize(config.title))
+const siteName = computed(() => localize(config.name).trim())
+const siteTitle = computed(() => localize(config.title).trim())
+const logoAlt = computed(() => {
+  const brand = siteName.value || siteTitle.value
+  return brand ? `${brand} logo` : 'logo'
+})
 const siteFooter = computed(() => localize(config.footer))
 const pageLayout = computed<PageLayout>(() => {
   const navItem = route.meta.navItem as { layout?: PageLayout } | undefined
@@ -111,7 +116,9 @@ const pageLayout = computed<PageLayout>(() => {
 })
 
 watchEffect(() => {
-  document.title = siteTitle.value
+  if (siteTitle.value) {
+    document.title = siteTitle.value
+  }
 })
 </script>
 
@@ -147,10 +154,10 @@ watchEffect(() => {
           v-if="config.logo"
           class="site-mobile-logo"
           :src="config.logo"
-          :alt="`${siteTitle} logo`"
+          :alt="logoAlt"
           decoding="async"
         />
-        <span class="site-mobile-title">{{ siteTitle }}</span>
+        <span v-if="siteName" class="site-mobile-title">{{ siteName }}</span>
       </router-link>
       <ShellActions v-if="isMobileViewport" />
     </header>
@@ -160,10 +167,10 @@ watchEffect(() => {
           v-if="config.logo"
           class="site-primary-nav-logo"
           :src="config.logo"
-          :alt="`${siteTitle} logo`"
+          :alt="logoAlt"
           decoding="async"
         />
-        <span class="site-primary-nav-title">{{ siteTitle }}</span>
+        <span v-if="siteName" class="site-primary-nav-title">{{ siteName }}</span>
       </router-link>
       <TopPrimaryNav />
       <div class="site-primary-nav-end">
@@ -200,10 +207,10 @@ watchEffect(() => {
             v-if="config.logo"
             class="site-sidebar-logo"
             :src="config.logo"
-            :alt="`${siteTitle} logo`"
+            :alt="logoAlt"
             decoding="async"
           />
-          <div class="site-sidebar-title">{{ siteTitle }}</div>
+          <div v-if="siteName" class="site-sidebar-title">{{ siteName }}</div>
         </div>
         <button
           v-if="isMobileViewport"

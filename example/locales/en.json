@@ -1,5 +1,6 @@
 {
   "site": {
+    "name": "vue-site",
     "title": "My Site",
     "footer": "Copyright © 2026 BNDY.NET"
   },

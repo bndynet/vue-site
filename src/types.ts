@@ -368,8 +368,17 @@ export interface SiteCustomConfig {
 }
 
 export interface SiteConfig {
-  /** Site title (browser tab + header). Accepts a `LocalizedString` for multi-language sites. */
-  title: LocalizedString
+  /**
+   * Brand name shown next to the logo in the header and sidebar. Accepts a `LocalizedString` for
+   * multi-language sites. When omitted or resolving to an empty/whitespace-only string, no brand
+   * text is rendered next to the logo.
+   */
+  name?: LocalizedString
+  /**
+   * Browser tab title. Accepts a `LocalizedString` for multi-language sites. When omitted or
+   * resolving to an empty/whitespace-only string, the document title is left unchanged.
+   */
+  title?: LocalizedString
   /**
    * Browser tab icon URL. Pass an absolute URL, a public asset path, or an imported asset URL.
    * In CLI mode this is also emitted as a `<link rel="icon">` in the generated HTML when the

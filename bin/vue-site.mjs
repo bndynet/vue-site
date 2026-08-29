@@ -129,6 +129,7 @@ const configCandidates = [
 const initSiteConfig = `import { defineConfig } from '@bndynet/vue-site'
 
 export default defineConfig({
+  name: 'My Site',
   title: 'My Site',
   // Public client configuration. Never place secrets here.
   custom: {
@@ -227,6 +228,7 @@ function resolveSiteConfig(cliConfig) {
       'Run `npx vue-site init` to create starter files, or create site.config.ts manually:\n\n' +
       '  import type { SiteConfig } from \'@bndynet/vue-site\'\n\n' +
       '  export default {\n' +
+      '    name: \'My Site\',\n' +
       '    title: \'My Site\',\n' +
       '    nav: [\n' +
       '      { label: \'Home\', icon: \'home\', page: () => import(\'./README.md?raw\') },\n' +
