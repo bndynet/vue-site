@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, useId, watch } from 'vue'
+import { onBeforeUnmount, onMounted, ref, useId, watch } from 'vue'
 import TooltipOverlay from './TooltipOverlay.vue'
 
 const props = withDefaults(
@@ -31,6 +31,26 @@ function hide() {
   open.value = false
 }
 
+// Touch has no hover, so a tap reveals the tooltip immediately instead of waiting
+// for the hover delay; tapping anywhere outside the trigger dismisses it.
+function showNow() {
+  if (!props.label.trim()) return
+  clearTimeout(showTimer)
+  open.value = true
+}
+
+function onDocumentPointerDown(event: PointerEvent) {
+  if (root.value && !root.value.contains(event.target as Node)) hide()
+}
+
+onMounted(() => {
+  document.addEventListener('pointerdown', onDocumentPointerDown)
+})
+
+onBeforeUnmount(() => {
+  document.removeEventListener('pointerdown', onDocumentPointerDown)
+})
+
 watch(
   () => props.label,
   () => {
@@ -49,6 +69,7 @@ defineExpose({ open })
     @mouseleave="hide"
     @focusin="show"
     @focusout="hide"
+    @pointerdown="showNow"
   >
     <slot :describedBy="open && label.trim() ? tipId : undefined" />
     <TooltipOverlay
