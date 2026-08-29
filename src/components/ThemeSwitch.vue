@@ -276,6 +276,17 @@ function pick(id: string) {
   height: 30px;
 }
 
+/* Touch devices get the recommended ≥44px hit target regardless of viewport width. */
+@media (pointer: coarse) {
+  .theme-switch-trigger,
+  .theme-switch-option,
+  .theme-switch--compact .theme-switch-trigger,
+  .theme-switch--compact .theme-switch-option {
+    width: 44px;
+    height: 44px;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .theme-switch-trigger {
     transition: none;

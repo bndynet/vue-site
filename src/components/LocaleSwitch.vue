@@ -254,6 +254,19 @@ function pick(code: string) {
     0 -8px 24px rgba(0, 0, 0, 0.08);
 }
 
+/* Touch devices get the recommended ≥44px hit target regardless of viewport width. */
+@media (pointer: coarse) {
+  .locale-switch-trigger,
+  .locale-switch--compact .locale-switch-trigger {
+    width: 44px;
+    height: 44px;
+  }
+
+  .locale-switch-option {
+    min-height: 44px;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .locale-switch-trigger {
     transition: none;

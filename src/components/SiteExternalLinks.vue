@@ -116,4 +116,13 @@ const items = computed(() => {
   width: 28px;
   height: 28px;
 }
+
+/* Touch devices get the recommended ≥44px hit target regardless of viewport width. */
+@media (pointer: coarse) {
+  .site-external-link,
+  .site-external-links--compact .site-external-link {
+    width: 44px;
+    height: 44px;
+  }
+}
 </style>
