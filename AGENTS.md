@@ -116,7 +116,7 @@ These encode subtle, intentional behavior — don't regress them:
 npm install
 npm run dev          # watch-build lib + run the example site (HMR)
 npm run build:lib    # build dist/ (run after changing src/ before consumers see updates)
-npm run build        # dist/ + example/example-dist
+npm run build        # dist/ + example/dist
 npm run preview      # full build + preview the example
 ```
 

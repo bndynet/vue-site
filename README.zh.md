@@ -738,7 +738,7 @@ npm update @bndynet/vue-site
 git clone https://github.com/bndynet/vue-site.git && cd vue-site
 npm install
 npm run dev    # 监听构建 lib + 示例站点
-npm run build  # `dist/` + `example/example-dist`
+npm run build  # `dist/` + `example/dist`
 ```
 
 ### 在其他项目中使用本地构建

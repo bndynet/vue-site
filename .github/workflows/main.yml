@@ -32,6 +32,6 @@ jobs:
       publish-enabled: ${{ github.event_name == 'release' || inputs.publish_enabled }} 
       publish-version: ${{ inputs['publish-version'] }}
       publish-auth-method: 'token'                                # default: token (or oidc)                         
-      deploy-folder: './example/example-dist'
+      deploy-folder: './example/dist'
     secrets:
       NPM_TOKEN: ${{ secrets.NPM_TOKEN }}                          # when publish-enabled=true and publish-auth-method=token
