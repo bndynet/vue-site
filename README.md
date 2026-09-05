@@ -7,7 +7,7 @@ Configurable Vue 3 site framework: one package, `site.config.ts`, and Markdown p
 - Config-driven nav (Lucide icon names)
 - Permission-gated nav via a `visible` predicate (sync or async; hides item and skips its route)
 - Per-page authorization via `auth` + a central `authorize` policy (navigation guard + login redirect)
-- Hash or HTML5 (`web`) router history, configurable in `site.config.ts`
+- Hash or HTML5 (`history`) router history, configurable in `site.config.ts`
 - Markdown (`?raw`) or Vue pages
 - highlight.js, light/dark theme + localStorage
 - Custom shell actions for avatars, notifications, help menus, and other app controls
@@ -117,7 +117,7 @@ Add `"dev": "vue-site dev"` (or `vs dev`) in `package.json` scripts if you like.
 | `icons` | Lucide icon registry. Generated automatically by the CLI; provide manually only when calling `createSiteApp` without the CLI |
 | `pages` | `StandalonePage[]` — full-screen routes outside the `nav` tree (no top bar/sidebar/footer) |
 | `auth` | Central authorization policy (`AuthConfig`) — see [Per-page authorization](#per-page-authorization-auth) |
-| `router` | History mode (`RouterConfig`) — `hash` (default) or HTML5 `web`; see [Router history](#router-history-router) |
+| `router` | History mode (`RouterConfig`) — `hash` (default) or HTML5 `history`; see [Router history](#router-history-router) |
 | `packageRepository` | Usually set by CLI from `package.json`; omit when using `createSiteApp` alone |
 | `custom` | Public application-specific values, available from `useSiteConfig().config.custom` in components or `getSiteConfig().custom` elsewhere; see [Custom client configuration](#custom-client-configuration-custom) |
 | `env` | Dev/build options — see below |
@@ -677,7 +677,7 @@ By default routes use **hash** history (`#/path`), which works on any static hos
 ```typescript
 export default defineConfig({
   title: 'My Site',
-  router: { mode: 'web' }, // /app/admin instead of /app/#/admin
+  router: { mode: 'history' }, // /app/admin instead of /app/#/admin
   nav: [/* ... */],
 })
 ```
@@ -686,13 +686,13 @@ export default defineConfig({
 
 | Property | Default | Description |
 |----------|---------|-------------|
-| `mode` | `hash` | `hash` (`#/path`, no server config) or `web` (HTML5 clean URLs) |
-| `base` | `import.meta.env.BASE_URL` | Base path for `web` mode. The CLI sets this from `--base` / `env.vite.base` automatically; override only when calling `createSiteApp` from a custom entry. |
+| `mode` | `hash` | `hash` (`#/path`, no server config) or `history` (HTML5 clean URLs); `web` is a deprecated alias for `history` |
+| `base` | `import.meta.env.BASE_URL` | Base path for `history` mode. The CLI sets this from `--base` / `env.vite.base` automatically; override only when calling `createSiteApp` from a custom entry. |
 
 Notes:
 
-- **`web` mode requires SPA fallback**: configure your host to serve `index.html` for unknown paths, otherwise deep links / refreshes 404. Hash mode needs nothing.
-- **Subpath deploys**: with the CLI, `--base=/app/` is picked up automatically as the history base in `web` mode. In [library mode](#library-mode), pass `router: { mode: 'web', base: import.meta.env.BASE_URL }` from your own entry.
+- **`history` mode requires SPA fallback**: configure your host to serve `index.html` for unknown paths, otherwise deep links / refreshes 404. Hash mode needs nothing.
+- **Subpath deploys**: with the CLI, `--base=/app/` is picked up automatically as the history base in `history` mode. In [library mode](#library-mode), pass `router: { mode: 'history', base: import.meta.env.BASE_URL }` from your own entry.
 
 ## `env` (`SiteEnvConfig`)
 

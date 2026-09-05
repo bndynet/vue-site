@@ -7,7 +7,7 @@
 - 配置驱动的导航（使用 Lucide 图标名）
 - 通过 `visible` 断言进行权限控制的导航（同步或异步；隐藏条目并跳过其路由）
 - 通过 `auth` + 中心化的 `authorize` 策略实现按页面授权（导航守卫 + 登录重定向）
-- Hash 或 HTML5（`web`）路由历史模式，可在 `site.config.ts` 中配置
+- Hash 或 HTML5（`history`）路由历史模式，可在 `site.config.ts` 中配置
 - 支持 Markdown（`?raw`）或 Vue 页面
 - highlight.js、亮色/暗色主题 + localStorage 持久化
 - 内置多语言支持（语言切换器、`LocalizedString` 配置、按语言区分的页面）—— 参见[国际化](#国际化-i18n)
@@ -110,7 +110,7 @@ npx vue-site build --base /app/
 | `links` | 头部链接：Lucide `icon` + `link`，可选的 `title`（`LocalizedString`） |
 | `pages` | `StandalonePage[]` —— 位于 `nav` 树之外的全屏路由（无顶部栏/侧边栏/页脚） |
 | `auth` | 中心化的授权策略（`AuthConfig`）—— 参见[按页面授权](#按页面授权-auth) |
-| `router` | 历史模式（`RouterConfig`）—— `hash`（默认）或 HTML5 `web`；参见[路由历史](#路由历史-router) |
+| `router` | 历史模式（`RouterConfig`）—— `hash`（默认）或 HTML5 `history`；参见[路由历史](#路由历史-router) |
 | `packageRepository` | 通常由 CLI 从 `package.json` 设置；单独使用 `createSiteApp` 时可省略 |
 | `custom` | 公开的业务自定义配置；组件内通过 `useSiteConfig().config.custom` 读取，其他代码通过 `getSiteConfig().custom` 读取；参见[自定义客户端配置](#自定义客户端配置-custom) |
 | `env` | 开发/构建选项 —— 见下文 |
@@ -591,7 +591,7 @@ export default defineConfig({
 ```typescript
 export default defineConfig({
   title: 'My Site',
-  router: { mode: 'web' }, // /app/admin 而不是 /app/#/admin
+  router: { mode: 'history' }, // /app/admin 而不是 /app/#/admin
   nav: [/* ... */],
 })
 ```
@@ -600,15 +600,15 @@ export default defineConfig({
 
 | 属性 | 默认值 | 说明 |
 |----------|---------|-------------|
-| `mode` | `hash` | `hash`（`#/path`，无需服务器配置）或 `web`（HTML5 干净 URL） |
-| `base` | `import.meta.env.BASE_URL` | `web` 模式的 base 路径。CLI 会自动从 `--base` / `env.vite.base` 设置它；仅当从自定义入口调用 `createSiteApp` 时才需要覆盖。 |
+| `mode` | `hash` | `hash`（`#/path`，无需服务器配置）或 `history`（HTML5 干净 URL）；`web` 是 `history` 的已弃用别名 |
+| `base` | `import.meta.env.BASE_URL` | `history` 模式的 base 路径。CLI 会自动从 `--base` / `env.vite.base` 设置它；仅当从自定义入口调用 `createSiteApp` 时才需要覆盖。 |
 
 注意：
 
-- **`web` 模式需要 SPA 回退**：请配置你的主机为未知路径提供 `index.html`，否则深链接 / 刷新会 404。
+- **`history` 模式需要 SPA 回退**：请配置你的主机为未知路径提供 `index.html`，否则深链接 / 刷新会 404。
   Hash 模式无需任何配置。
-- **子路径部署**：使用 CLI 时，`--base=/app/` 会在 `web` 模式下被自动用作历史 base。
-  在[库模式](#库模式)下，请从你自己的入口传入 `router: { mode: 'web', base: import.meta.env.BASE_URL }`。
+- **子路径部署**：使用 CLI 时，`--base=/app/` 会在 `history` 模式下被自动用作历史 base。
+  在[库模式](#库模式)下，请从你自己的入口传入 `router: { mode: 'history', base: import.meta.env.BASE_URL }`。
 
 ## `env`（`SiteEnvConfig`）
 

@@ -282,13 +282,14 @@ export interface RouterConfig {
    * History mode:
    * - `'hash'` (default) — URLs use a `#` fragment (e.g. `/app/#/admin`). Works on any static host
    *   with no server config; route paths are independent of the public base.
-   * - `'web'` — HTML5 history with clean URLs (e.g. `/app/admin`). Requires the host to serve
+   * - `'history'` — HTML5 history with clean URLs (e.g. `/app/admin`). Requires the host to serve
    *   `index.html` for unknown paths (SPA fallback).
+   * - `'web'` — deprecated alias for `'history'`, kept for backward compatibility.
    * @default 'hash'
    */
-  mode?: 'hash' | 'web'
+  mode?: 'hash' | 'web' | 'history'
   /**
-   * Base path for `'web'` mode (ignored for `'hash'`). Defaults to the app's public base
+   * Base path for `'history'` mode (ignored for `'hash'`). Defaults to the app's public base
    * (`import.meta.env.BASE_URL`, set by the CLI's `--base` / `env.vite.base`). Set this only to
    * override that default (e.g. when calling `createSiteApp` from a custom entry).
    */
@@ -447,7 +448,7 @@ export interface SiteConfig {
   packageRepository?: string | null
   /**
    * App public base path. Injected by the `vue-site` CLI from `import.meta.env.BASE_URL` (the
-   * resolved Vite `base`) and used as the default base for `'web'` history mode. Prefer setting
+   * resolved Vite `base`) and used as the default base for `'history'` mode. Prefer setting
    * `router.base` to override; omit when calling `createSiteApp` manually.
    */
   baseUrl?: string

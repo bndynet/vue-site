@@ -38,9 +38,10 @@ export default defineConfig({
     )
   },
   // Router history mode. Default is 'hash' (#/path, works on any static host). Switch to HTML5
-  // clean URLs with `mode: 'web'`; the base defaults to the CLI `--base` value. HTML5 mode needs
-  // the host to serve index.html for unknown paths (SPA fallback).
-  // router: { mode: 'web' },
+  // clean URLs with `mode: 'history'`; the base defaults to the CLI `--base` value. HTML5 mode
+  // needs the host to serve index.html for unknown paths (SPA fallback). (`'web'` still works as
+  // a deprecated alias.)
+  // router: { mode: 'history' },
   // Public application-specific values are available from `useSiteConfig().config.custom` inside
   // components and `getSiteConfig().custom` in ordinary runtime modules.
   // They are bundled into client code, so never place secrets here.
