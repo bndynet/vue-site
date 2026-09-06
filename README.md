@@ -284,11 +284,12 @@ Built-in themes are `light`, `dark`, plus the always-on extras `sepia` and `ocea
 ### Semantic color tokens
 
 Every theme is driven by semantic `--color-*` CSS variables. Shared Element Plus variables are
-mapped to them in `element-plus-theme.css`, so common controls and surfaces follow the active theme.
-Some components also have component-specific variables; those may need additional mapping when
-adding new Element Plus components. Built-in palettes define seed colors and derive related values
-with `color-mix()` / `var()`, so `builtinThemePalettes` may contain CSS expressions rather than
-literal colors.
+mapped to them in `element-plus-theme.css` at both the theme root and component scope, so controls,
+tables, dialogs and overlays follow the active theme — including tinted themes such as `sepia`.
+Element Plus declares some variables on the component root itself (e.g. `.el-table`), which is why
+those are re-mapped at the component selector too. Built-in palettes define seed colors and derive related
+values with `color-mix()` / `var()`, so `builtinThemePalettes` may contain CSS expressions rather
+than literal colors.
 
 | Token | Purpose |
 |-------|---------|
@@ -299,7 +300,10 @@ literal colors.
 | `--color-warning` | Warning |
 | `--color-danger` | Danger / error (`--el-color-error` reuses it) |
 | `--color-info` | Info |
-| `--color-surface-raised` | Elevated surfaces: popovers, dropdowns, dialogs, masks |
+| `--color-surface-raised` | Elevated surfaces: inputs, cards, table bodies, popovers, dropdowns, dialogs, masks |
+| `--color-table-bg` | Table body surface; defaults to `--color-surface-raised` |
+| `--color-table-stripe-bg` | Striped table row surface; derived from the text and table background colors |
+| `--color-table-current-row-bg` | Current/active table row surface; derived from the primary and table background colors |
 | `--color-overlay` | Modal / loading overlay |
 
 Define just these base colors in a custom theme; the framework derives Element Plus's

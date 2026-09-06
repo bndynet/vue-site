@@ -38,6 +38,9 @@ function createPalette(seed: PaletteSeed): Record<string, string> {
     '--color-table-header-bg': 'color-mix(in srgb, var(--color-text) 4%, var(--color-bg))',
     '--color-table-border': 'var(--color-border)',
     '--color-table-row-hover': 'var(--color-table-header-bg)',
+    '--color-table-bg': 'var(--color-surface-raised)',
+    '--color-table-stripe-bg': 'color-mix(in srgb, var(--color-text) 7%, var(--color-table-bg))',
+    '--color-table-current-row-bg': 'color-mix(in srgb, var(--color-primary) 12%, var(--color-table-bg))',
 
     '--color-blockquote-border': 'var(--color-border)',
     '--color-blockquote-bg': 'color-mix(in srgb, var(--color-text) 5%, transparent)',
@@ -125,6 +128,7 @@ export const builtinExtraThemes: ThemeOption[] = [
       '--color-blockquote-border': '#a67c52',
       '--color-blockquote-bg': '#ebe4d6',
       '--color-surface-raised': '#faf3e3',
+      '--color-overlay': 'rgba(67, 61, 50, 0.55)',
     },
   },
   {
@@ -146,7 +150,7 @@ export const builtinExtraThemes: ThemeOption[] = [
       '--color-blockquote-border': '#22d3ee',
       '--color-code-bg': '#0f2942',
       '--color-code-block-bg': '#0f2942',
-      '--color-table-header-bg': '#0f2942',
+      '--color-table-header-bg': '#15344f',
       '--color-surface-raised': '#0f2942',
     },
   },

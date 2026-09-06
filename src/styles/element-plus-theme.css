@@ -10,20 +10,33 @@
  *   1. Element Plus component styles imported on demand
  *   2. element-plus/theme-chalk/dark/css-vars.css → EP dark  (html.dark)
  *   3. dist/style.css  (this file)                → our overrides, wins by source-order
+ *
+ * Two layers are needed because Element Plus declares some variables twice:
+ *   • Global tokens (:root) — surfaces, text, borders, fills, status scales, overlays.
+ *   • Component-scoped tokens — EP re-declares table/input/dialog/etc. variables on the
+ *     component root (e.g. `.el-table { --el-table-header-bg-color: … }`).  A custom
+ *     property declared on an element wins over the inherited :root value regardless of
+ *     specificity, so those need an explicit component-level override.
  */
 
 /* ─── Shared token mapping ────────────────────────────────────────────────────
  *
- * A single :root block is sufficient for both light AND dark mode because
- * --color-* inline vars are updated by JS on every theme switch. No separate
- * html.dark block is needed for mapped vars — var() resolves at use-time.
+ * --color-* inline vars are updated by JS on every theme switch, so a single
+ * block works for light and dark mode.  `html[data-theme]` is listed to raise
+ * specificity above EP's own `:root` declarations: Element Plus component CSS
+ * (menu, dialog, base, …) also declares some of these variables at `:root` and
+ * may be loaded lazily *after* this stylesheet.  `html.dark[data-theme]` wins
+ * over EP's `html.dark` block too, regardless of load order.
  *
  * For EP scale variants (light / lighter / extra-light / dark / darker) that
  * have no direct vue-site equivalent, color-mix() blends the base token with
- * the page background (for lighter shades) or darkens it (for darker shades).
- * This keeps scale colours relative, so they look correct in every theme.
+ * the page background (for lighter shades) or the text/border colors (for
+ * darker shades).  This keeps scale colours relative, so they look correct in
+ * every theme.
  * ─────────────────────────────────────────────────────────────────────────── */
-:root {
+:root,
+html[data-theme],
+html.dark[data-theme] {
   /* Backgrounds */
   --el-bg-color-page:    var(--color-bg);
   --el-bg-color:         var(--color-content-bg);
@@ -31,13 +44,14 @@
 
   /* Text */
   --el-text-color-primary:     var(--color-text);
-  --el-text-color-regular:     var(--color-sidebar-text);
+  --el-text-color-regular:     var(--color-text);
   --el-text-color-secondary:   var(--color-text-secondary);
   --el-text-color-placeholder: color-mix(in srgb, var(--color-text-secondary) 70%, var(--color-bg));
   --el-text-color-disabled:    color-mix(in srgb, var(--color-text-secondary) 50%, var(--color-bg));
 
   /* Borders — scale derived from --color-border */
   --el-border-color:             var(--color-border);
+  --el-border-color-hover:       color-mix(in srgb, var(--color-border) 55%, var(--color-text));
   --el-border-color-light:       color-mix(in srgb, var(--color-border) 70%, var(--color-bg));
   --el-border-color-lighter:     color-mix(in srgb, var(--color-border) 50%, var(--color-bg));
   --el-border-color-extra-light: color-mix(in srgb, var(--color-border) 30%, var(--color-bg));
@@ -49,25 +63,30 @@
   --el-fill-color-light:       color-mix(in srgb, var(--color-table-header-bg) 80%, var(--color-bg));
   --el-fill-color-lighter:     color-mix(in srgb, var(--color-table-header-bg) 50%, var(--color-bg));
   --el-fill-color-extra-light: color-mix(in srgb, var(--color-table-header-bg) 30%, var(--color-bg));
-  --el-fill-color-dark:        color-mix(in srgb, var(--color-table-header-bg) 120%, var(--color-border));
-  --el-fill-color-darker:      color-mix(in srgb, var(--color-table-header-bg) 80%, var(--color-border));
-  --el-fill-color-blank:       var(--color-bg);
+  --el-fill-color-dark:        color-mix(in srgb, var(--color-table-header-bg) 60%, var(--color-border));
+  --el-fill-color-darker:      color-mix(in srgb, var(--color-table-header-bg) 40%, var(--color-border));
+  /* "blank" is EP's default surface for controls, cards, tables and tags.  Mapping it
+   * to the raised surface keeps those elements distinguishable from the page in tinted
+   * themes (sepia/ocean/custom) while staying identical in the plain light theme. */
+  --el-fill-color-blank:       var(--color-surface-raised);
 
-  /* Table */
+  /* Table (component roots re-declare these; see the component section below) */
+  --el-table-bg-color:               var(--color-table-bg);
+  --el-table-tr-bg-color:            var(--color-table-bg);
   --el-table-header-bg-color:        var(--color-table-header-bg);
-  --el-table-tr-bg-color:            var(--color-bg);
-  --el-table-expanded-cell-bg-color: color-mix(in srgb, var(--color-table-header-bg) 50%, var(--color-bg));
+  --el-table-header-text-color:      var(--color-text-secondary);
+  --el-table-text-color:             var(--color-text);
+  --el-table-border-color:           var(--color-table-border);
+  --el-table-border:                 1px solid var(--color-table-border);
   --el-table-row-hover-bg-color:     var(--color-table-row-hover);
+  --el-table-current-row-bg-color:   var(--color-table-current-row-bg);
+  --el-table-expanded-cell-bg-color: color-mix(in srgb, var(--color-table-header-bg) 35%, var(--color-table-bg));
 
   /* Menu */
   --el-menu-bg-color:       var(--color-sidebar-bg);
   --el-menu-text-color:     var(--color-sidebar-text);
   --el-menu-active-color:   var(--color-link);
   --el-menu-hover-bg-color: var(--color-sidebar-item-hover);
-
-  /* Dropdown */
-  --el-dropdown-menuItem-hover-fill:  var(--color-sidebar-item-hover);
-  --el-dropdown-menuItem-hover-color: var(--color-text);
 
   /* Brand & status — global semantic tokens (see src/theme/presets.ts).
    * Scale variants are derived from the base token so a single color per role
@@ -133,152 +152,361 @@
   --el-overlay-color-darker:   var(--color-overlay);
   --el-mask-color:             color-mix(in srgb, var(--color-surface-raised) 90%, transparent);
   --el-mask-color-extra-light: color-mix(in srgb, var(--color-surface-raised) 30%, transparent);
+  --el-popup-modal-bg-color:   var(--color-overlay);
+  --el-popup-modal-opacity:    1;
+
+  /* EP's "black" is only used for the popup mask and as a neutral strong text colour
+   * (transfer header, autocomplete divider).  The mask is remapped above, so this
+   * can safely follow the theme text colour. */
+  --el-color-black: var(--color-text);
 }
 
-/* Keep filled primary controls readable when a theme uses a light primary hue. */
-.el-button.el-button--primary:not(.is-plain):not(.is-text):not(.is-link) {
+/* ─── Dark-only adjustments ───────────────────────────────────────────────────
+ *
+ * EP's own html.dark block (from dark/css-vars.css, loaded before this file)
+ * resets several vars back to hardcoded dark values.  The shared :root, html.dark
+ * block above re-asserts the token mappings.  Shadows have no vue-site token
+ * equivalent, so their dark-specific values stay here.
+ * ─────────────────────────────────────────────────────────────────────────── */
+html.dark[data-theme] {
+  --el-box-shadow:         0 12px 32px 4px rgba(0, 0, 0, 0.5), 0 8px 20px rgba(0, 0, 0, 0.6);
+  --el-box-shadow-light:   0 0 12px rgba(0, 0, 0, 0.6);
+  --el-box-shadow-lighter: 0 0 6px rgba(0, 0, 0, 0.5);
+  --el-box-shadow-dark:    0 16px 48px 16px rgba(0, 0, 0, 0.7), 0 12px 32px rgba(0, 0, 0, 0.6);
+}
+
+/* ─── Component-scoped token mappings ─────────────────────────────────────────
+ *
+ * These selectors repeat variables that Element Plus declares on the component
+ * root itself.  Without them the :root values above are shadowed by the
+ * component's own declarations, which is why tables/inputs previously stayed
+ * glued to the page background in tinted themes.
+ * ─────────────────────────────────────────────────────────────────────────── */
+
+/* Table / data grid */
+html[data-theme] .el-table,
+html[data-theme] .el-table-v2 {
+  --el-table-bg-color:               var(--color-table-bg);
+  --el-table-tr-bg-color:            var(--color-table-bg);
+  --el-table-header-bg-color:        var(--color-table-header-bg);
+  --el-table-header-text-color:      var(--color-text-secondary);
+  --el-table-text-color:             var(--color-text);
+  --el-table-border-color:           var(--color-table-border);
+  --el-table-border:                 1px solid var(--color-table-border);
+  --el-table-row-hover-bg-color:     var(--color-table-row-hover);
+  --el-table-current-row-bg-color:   var(--color-table-current-row-bg);
+  --el-table-expanded-cell-bg-color: color-mix(in srgb, var(--color-table-header-bg) 35%, var(--color-table-bg));
+  --el-table-fixed-box-shadow:       var(--el-box-shadow-light);
+}
+
+html[data-theme] .el-table-v2__main,
+html[data-theme] .el-table-v2__left,
+html[data-theme] .el-table-v2__right {
+  background-color: var(--color-table-bg);
+}
+
+/* EP hardcodes the striped-row background to --el-fill-color-lighter, which is also
+ * used for unrelated fills.  A dedicated token keeps stripes distinct from hover. */
+html[data-theme] .el-table--striped .el-table__body tr.el-table__row--striped td.el-table__cell {
+  background-color: var(--color-table-stripe-bg);
+}
+
+/* Fixed-column patches / header patches use hardcoded white in EP. */
+html[data-theme] .el-table .el-table__header-wrapper tr .el-table__fixed-right-patch {
+  background-color: var(--color-table-header-bg);
+}
+
+html[data-theme] .el-table .el-table__body-wrapper tr .el-table__fixed-right-patch,
+html[data-theme] .el-table .el-table__footer-wrapper tr .el-table__fixed-right-patch {
+  background-color: var(--color-table-bg);
+}
+
+/* Column-filter dropdown (EP hardcodes its background to white). */
+html[data-theme] .el-table-filter {
+  background-color: var(--color-surface-raised);
+}
+
+/* Inputs, textareas and date editors */
+html[data-theme] .el-input,
+html[data-theme] .el-textarea,
+html[data-theme] .el-autocomplete,
+html[data-theme] .el-date-editor {
+  --el-input-bg-color:           var(--color-surface-raised);
+  --el-input-text-color:         var(--color-text);
+  --el-input-border-color:       var(--color-border);
+  --el-input-hover-border-color: var(--el-border-color-hover);
+  --el-input-focus-border-color: var(--color-primary);
+  --el-input-placeholder-color:  var(--el-text-color-placeholder);
+  --el-input-icon-color:         var(--el-text-color-placeholder);
+  --el-input-clear-hover-color:  var(--color-text-secondary);
+}
+
+/* Date/time panels declare their own range background; use the primary tint rather
+ * than EP's neutral border tint so the selected range stays visible in every theme. */
+html[data-theme] .el-date-picker,
+html[data-theme] .el-date-range-picker {
+  --el-datepicker-inrange-bg-color: var(--el-color-primary-light-9);
+  --el-datepicker-inrange-hover-bg-color: var(--el-color-primary-light-9);
+}
+
+/* Header divide lines inside button groups. */
+html[data-theme] .el-button {
+  --el-button-divide-border-color: var(--color-border);
+}
+
+/* Floating surfaces: dialogs, drawers, message boxes and tours all default to the
+ * page background in EP, which makes them disappear into a tinted page. */
+html[data-theme] .el-dialog {
+  --el-dialog-bg-color: var(--color-surface-raised);
+}
+
+html[data-theme] .el-drawer {
+  --el-drawer-bg-color: var(--color-surface-raised);
+}
+
+html[data-theme] .el-message-box {
+  background-color: var(--color-surface-raised);
+}
+
+html[data-theme] .el-tour {
+  --el-tour-bg-color: var(--color-surface-raised);
+}
+
+/* Dropdown hover colours are declared on .el-dropdown/.el-dropdown__popper. */
+html[data-theme] .el-dropdown,
+html[data-theme] .el-dropdown__popper {
+  --el-dropdown-menuItem-hover-fill:  var(--color-sidebar-item-hover);
+  --el-dropdown-menuItem-hover-color: var(--color-text);
+}
+
+/* Avatars: use a strong neutral instead of EP's very light disabled fill. */
+html[data-theme] .el-avatar {
+  --el-avatar-bg-color:   var(--color-text-secondary);
+  --el-avatar-text-color: var(--color-primary-contrast);
+}
+
+/* Surfaces EP hardcodes to white. */
+html[data-theme] .el-color-picker__panel {
+  background-color: var(--color-surface-raised);
+}
+
+/* EP hardcodes the hex input in the colour-picker footer to black text. */
+html[data-theme] .el-color-picker-panel__footer .el-input {
+  color: var(--color-text);
+}
+
+html[data-theme] .el-date-range-picker__time-picker-wrap .el-picker-panel {
+  background: var(--color-surface-raised);
+}
+
+html[data-theme] .el-upload-cover__title,
+html[data-theme] .el-upload-list--picture .el-upload-list__item-thumbnail {
+  background-color: var(--color-surface-raised);
+}
+
+/* Anchor underline and the active date-picker shortcut use literal light-mode
+ * colours in EP. */
+html[data-theme] .el-anchor.el-anchor--vertical.el-anchor--underline:before,
+html[data-theme] .el-anchor.el-anchor--horizontal.el-anchor--underline:before {
+  background-color: color-mix(in srgb, var(--color-text) 8%, transparent);
+}
+
+html[data-theme] .el-picker-panel__shortcut.active {
+  background-color: var(--el-color-primary-light-9);
+}
+
+/* Alpha slider gradients: EP fades to the page background/white, which is wrong
+ * for the raised colour-picker panel in dark/tinted themes. */
+html[data-theme] .el-color-alpha-slider__bar {
+  background: linear-gradient(to right, transparent, var(--el-bg-color-overlay));
+}
+
+html[data-theme] .el-color-alpha-slider.is-vertical .el-color-alpha-slider__bar {
+  background: linear-gradient(transparent, var(--el-bg-color-overlay));
+}
+
+/* Image-viewer controls use text-regular as a dark backdrop with white icons.
+ * With theme-aware text that can become light-on-light in dark themes. */
+html[data-theme] .el-image-viewer__actions,
+html[data-theme] .el-image-viewer__prev,
+html[data-theme] .el-image-viewer__next,
+html[data-theme] .el-image-viewer__close {
+  background-color: color-mix(in srgb, var(--color-overlay) 80%, transparent);
+  border-color: transparent;
+}
+
+/* Card-style tabs blend their active edge into the page background. */
+html[data-theme] .el-tabs--left.el-tabs--card .el-tabs__item.is-left.is-active {
+  border-right-color: var(--el-bg-color);
+}
+
+html[data-theme] .el-tabs--right.el-tabs--card .el-tabs__item.is-right.is-active {
+  border-left-color: var(--el-bg-color);
+}
+
+html[data-theme] .el-tabs--left.el-tabs--border-card .el-tabs__item.is-left.is-active,
+html[data-theme] .el-tabs--right.el-tabs--border-card .el-tabs__item.is-right.is-active {
+  border-color: var(--el-border-color) transparent;
+}
+
+/* Alerts without a type class keep EP's hardcoded white base surface. */
+html[data-theme] .el-alert:not(.el-alert--primary):not(.el-alert--success):not(.el-alert--warning):not(.el-alert--error):not(.el-alert--info) {
+  background-color: var(--color-surface-raised);
+}
+
+/* Empty-state illustration: EP ships hardcoded cool greys (and re-declares darker
+ * ones in html.dark).  Derive the palette from the active theme so it warms up in
+ * sepia and inverts correctly in dark themes. */
+html[data-theme] .el-empty {
+  --el-empty-fill-color-0: color-mix(in srgb, var(--color-text) 2%, var(--color-bg));
+  --el-empty-fill-color-1: color-mix(in srgb, var(--color-text) 4%, var(--color-bg));
+  --el-empty-fill-color-2: color-mix(in srgb, var(--color-text) 6%, var(--color-bg));
+  --el-empty-fill-color-3: color-mix(in srgb, var(--color-text) 8%, var(--color-bg));
+  --el-empty-fill-color-4: color-mix(in srgb, var(--color-text) 10%, var(--color-bg));
+  --el-empty-fill-color-5: color-mix(in srgb, var(--color-text) 12%, var(--color-bg));
+  --el-empty-fill-color-6: color-mix(in srgb, var(--color-text) 14%, var(--color-bg));
+  --el-empty-fill-color-7: color-mix(in srgb, var(--color-text) 16%, var(--color-bg));
+  --el-empty-fill-color-8: color-mix(in srgb, var(--color-text) 19%, var(--color-bg));
+  --el-empty-fill-color-9: color-mix(in srgb, var(--color-text) 22%, var(--color-bg));
+}
+
+/* ─── Primary-contrast fixes ──────────────────────────────────────────────────
+ *
+ * EP paints text/icons on filled primary controls with --el-color-white.  A light
+ * primary hue (dark/ocean/custom themes) needs the theme background as contrast
+ * colour instead.  Status buttons keep EP's white-on-colour convention.
+ * ─────────────────────────────────────────────────────────────────────────── */
+html[data-theme] .el-button.el-button--primary:not(.is-plain):not(.is-text):not(.is-link) {
   --el-button-text-color: var(--color-primary-contrast);
   --el-button-hover-text-color: var(--color-primary-contrast);
   --el-button-hover-bg-color: var(--color-primary-hover);
   --el-button-hover-border-color: var(--color-primary-hover);
 }
 
-.el-radio-button {
+html[data-theme] .el-button--primary.is-plain {
+  --el-button-hover-text-color: var(--color-primary-contrast);
+  --el-button-active-text-color: var(--color-primary-contrast);
+}
+
+html[data-theme] .el-radio-button {
   --el-radio-button-checked-text-color: var(--color-primary-contrast);
 }
 
-.el-checkbox-button {
+html[data-theme] .el-checkbox {
+  --el-checkbox-checked-icon-color: var(--color-primary-contrast);
+}
+
+html[data-theme] .el-checkbox-button {
   --el-checkbox-button-checked-text-color: var(--color-primary-contrast);
 }
 
-.el-tag--dark:not(.el-tag--success):not(.el-tag--warning):not(.el-tag--danger):not(.el-tag--info) {
+html[data-theme] .el-radio__input.is-checked .el-radio__inner:after {
+  background-color: var(--color-primary-contrast);
+}
+
+html[data-theme] .el-segmented {
+  --el-segmented-item-selected-color: var(--color-primary-contrast);
+}
+
+html[data-theme] .el-pagination.is-background .btn-prev.is-active,
+html[data-theme] .el-pagination.is-background .btn-next.is-active,
+html[data-theme] .el-pagination.is-background .el-pager li.is-active {
+  color: var(--color-primary-contrast);
+}
+
+html[data-theme] .el-switch__core .el-switch__inner-wrapper {
+  color: var(--color-primary-contrast);
+}
+
+html[data-theme] .el-alert--primary.is-dark {
+  color: var(--color-primary-contrast);
+}
+
+html[data-theme] .el-alert--primary.is-dark .el-alert__close-btn,
+html[data-theme] .el-alert--primary.is-dark .el-alert__description {
+  color: var(--color-primary-contrast);
+}
+
+html[data-theme] .el-tree-node.is-drop-inner>.el-tree-node__content .el-tree-node__label {
+  color: var(--color-primary-contrast);
+}
+
+html[data-theme] .el-tag--dark:not(.el-tag--success):not(.el-tag--warning):not(.el-tag--danger):not(.el-tag--info) {
   --el-tag-text-color: var(--color-primary-contrast);
 }
 
-.el-tag--dark:not(.el-tag--success):not(.el-tag--warning):not(.el-tag--danger):not(.el-tag--info) .el-tag__close:hover {
+html[data-theme] .el-tag--dark:not(.el-tag--success):not(.el-tag--warning):not(.el-tag--danger):not(.el-tag--info) .el-tag__close:hover {
   color: var(--color-primary-contrast);
   background-color: var(--color-primary-hover);
 }
 
-.el-badge__content--primary {
+html[data-theme] .el-badge__content--primary {
   color: var(--color-primary-contrast);
 }
 
-/* ─── Dark-only adjustments ───────────────────────────────────────────────────
- *
- * EP's own html.dark block (from dark/css-vars.css, loaded before this file)
- * resets several vars back to hardcoded dark values.  Re-assert our var()
- * references here so they win via source-order for any var EP overrides in dark.
- *
- * Masks derive from `--color-surface-raised`; shadows have no vue-site token
- * equivalent, so the dark-specific values stay here.
- * ─────────────────────────────────────────────────────────────────────────── */
-html.dark {
-  /* Re-assert the same var() references so they beat EP's html.dark block */
-  --el-bg-color-page:    var(--color-bg);
-  --el-bg-color:         var(--color-content-bg);
-  --el-bg-color-overlay: var(--color-surface-raised);
+html[data-theme] .el-timeline-item .el-timeline-item__icon {
+  color: var(--color-primary-contrast);
+}
 
-  --el-text-color-primary:     var(--color-text);
-  --el-text-color-regular:     var(--color-sidebar-text);
-  --el-text-color-secondary:   var(--color-text-secondary);
-  --el-text-color-placeholder: color-mix(in srgb, var(--color-text-secondary) 70%, var(--color-bg));
-  --el-text-color-disabled:    color-mix(in srgb, var(--color-text-secondary) 50%, var(--color-bg));
+html[data-theme] .el-timeline-item__node.is-hollow {
+  background-color: var(--color-surface-raised);
+}
 
-  --el-border-color:             var(--color-border);
-  --el-border-color-light:       color-mix(in srgb, var(--color-border) 70%, var(--color-bg));
-  --el-border-color-lighter:     color-mix(in srgb, var(--color-border) 50%, var(--color-bg));
-  --el-border-color-extra-light: color-mix(in srgb, var(--color-border) 30%, var(--color-bg));
-  --el-border-color-dark:        color-mix(in srgb, var(--color-border) 80%, var(--color-text));
-  --el-border-color-darker:      color-mix(in srgb, var(--color-border) 60%, var(--color-text));
+/* Selected/current date cells are painted with the primary colour and literal white
+ * text in EP.  Use the theme contrast colour so light primaries stay readable. */
+html[data-theme] .el-date-table td.current:not(.disabled) .el-date-table-cell__text,
+html[data-theme] .el-date-table td.selected .el-date-table-cell__text,
+html[data-theme] .el-date-table td.today.start-date .el-date-table-cell__text,
+html[data-theme] .el-date-table td.today.end-date .el-date-table-cell__text,
+html[data-theme] .el-date-table td.start-date .el-date-table-cell,
+html[data-theme] .el-date-table td.end-date .el-date-table-cell,
+html[data-theme] .el-month-table td.current:not(.disabled) .el-date-table-cell__text,
+html[data-theme] .el-month-table td.start-date .el-date-table-cell__text,
+html[data-theme] .el-month-table td.end-date .el-date-table-cell__text,
+html[data-theme] .el-month-table td.today.start-date .el-date-table-cell__text,
+html[data-theme] .el-month-table td.today.end-date .el-date-table-cell__text,
+html[data-theme] .el-month-table td.start-date .el-date-table-cell,
+html[data-theme] .el-month-table td.end-date .el-date-table-cell,
+html[data-theme] .el-year-table td.current:not(.disabled) .el-date-table-cell__text,
+html[data-theme] .el-year-table td.start-date .el-date-table-cell__text,
+html[data-theme] .el-year-table td.end-date .el-date-table-cell__text,
+html[data-theme] .el-year-table td.today.start-date .el-date-table-cell__text,
+html[data-theme] .el-year-table td.today.end-date .el-date-table-cell__text,
+html[data-theme] .el-year-table td.start-date .el-date-table-cell,
+html[data-theme] .el-year-table td.end-date .el-date-table-cell {
+  color: var(--color-primary-contrast);
+}
 
-  --el-fill-color:             var(--color-table-header-bg);
-  --el-fill-color-light:       color-mix(in srgb, var(--color-table-header-bg) 80%, var(--color-bg));
-  --el-fill-color-lighter:     color-mix(in srgb, var(--color-table-header-bg) 50%, var(--color-bg));
-  --el-fill-color-extra-light: color-mix(in srgb, var(--color-table-header-bg) 30%, var(--color-bg));
-  --el-fill-color-dark:        color-mix(in srgb, var(--color-table-header-bg) 120%, var(--color-border));
-  --el-fill-color-darker:      color-mix(in srgb, var(--color-table-header-bg) 80%, var(--color-border));
-  --el-fill-color-blank:       var(--color-bg);
+html[data-theme] .el-table-filter__list-item.is-active {
+  color: var(--color-primary-contrast);
+}
 
-  --el-table-header-bg-color:        var(--color-table-header-bg);
-  --el-table-tr-bg-color:            var(--color-bg);
-  --el-table-expanded-cell-bg-color: color-mix(in srgb, var(--color-table-header-bg) 50%, var(--color-bg));
-  --el-table-row-hover-bg-color:     var(--color-table-row-hover);
+html[data-theme] .el-progress-bar__innerText {
+  color: var(--color-primary-contrast);
+}
 
-  --el-menu-bg-color:       var(--color-sidebar-bg);
-  --el-menu-text-color:     var(--color-sidebar-text);
-  --el-menu-active-color:   var(--color-link);
-  --el-menu-hover-bg-color: var(--color-sidebar-item-hover);
+/* Primary-coloured tour popovers hardcode white text and button surfaces. */
+html[data-theme] .el-tour.el-tour--primary {
+  --el-tour-bg-color: var(--color-primary);
+  --el-tour-title-text-color: var(--color-primary-contrast);
+  --el-tour-text-color: var(--color-primary-contrast);
+  --el-tour-close-color: var(--color-primary-contrast);
+}
 
-  --el-dropdown-menuItem-hover-fill:  var(--color-sidebar-item-hover);
-  --el-dropdown-menuItem-hover-color: var(--color-text);
+html[data-theme] .el-tour.el-tour--primary .el-button--default {
+  color: var(--color-primary);
+  border-color: var(--color-primary);
+  background: var(--color-surface-raised);
+}
 
-  /* Re-assert brand/status/disabled/overlay mappings over EP's dark block */
-  --el-color-primary: var(--color-primary);
-  --el-color-primary-light-3: color-mix(in srgb, var(--color-primary) 70%, var(--color-bg));
-  --el-color-primary-light-5: color-mix(in srgb, var(--color-primary) 50%, var(--color-bg));
-  --el-color-primary-light-7: color-mix(in srgb, var(--color-primary) 30%, var(--color-bg));
-  --el-color-primary-light-8: color-mix(in srgb, var(--color-primary) 20%, var(--color-bg));
-  --el-color-primary-light-9: color-mix(in srgb, var(--color-primary) 10%, var(--color-bg));
-  --el-color-primary-dark-2: color-mix(in srgb, var(--color-primary) 80%, var(--color-text));
+html[data-theme] .el-tour.el-tour--primary .el-button--primary {
+  border-color: var(--color-primary-contrast);
+}
 
-  --el-color-success: var(--color-success);
-  --el-color-success-light-3: color-mix(in srgb, var(--color-success) 70%, var(--color-bg));
-  --el-color-success-light-5: color-mix(in srgb, var(--color-success) 50%, var(--color-bg));
-  --el-color-success-light-7: color-mix(in srgb, var(--color-success) 30%, var(--color-bg));
-  --el-color-success-light-8: color-mix(in srgb, var(--color-success) 20%, var(--color-bg));
-  --el-color-success-light-9: color-mix(in srgb, var(--color-success) 10%, var(--color-bg));
-  --el-color-success-dark-2: color-mix(in srgb, var(--color-success) 80%, var(--color-text));
+html[data-theme] .el-tour.el-tour--primary .el-tour-indicator {
+  background: color-mix(in srgb, var(--color-primary-contrast) 15%, transparent);
+}
 
-  --el-color-warning: var(--color-warning);
-  --el-color-warning-light-3: color-mix(in srgb, var(--color-warning) 70%, var(--color-bg));
-  --el-color-warning-light-5: color-mix(in srgb, var(--color-warning) 50%, var(--color-bg));
-  --el-color-warning-light-7: color-mix(in srgb, var(--color-warning) 30%, var(--color-bg));
-  --el-color-warning-light-8: color-mix(in srgb, var(--color-warning) 20%, var(--color-bg));
-  --el-color-warning-light-9: color-mix(in srgb, var(--color-warning) 10%, var(--color-bg));
-  --el-color-warning-dark-2: color-mix(in srgb, var(--color-warning) 80%, var(--color-text));
-
-  --el-color-danger: var(--color-danger);
-  --el-color-danger-light-3: color-mix(in srgb, var(--color-danger) 70%, var(--color-bg));
-  --el-color-danger-light-5: color-mix(in srgb, var(--color-danger) 50%, var(--color-bg));
-  --el-color-danger-light-7: color-mix(in srgb, var(--color-danger) 30%, var(--color-bg));
-  --el-color-danger-light-8: color-mix(in srgb, var(--color-danger) 20%, var(--color-bg));
-  --el-color-danger-light-9: color-mix(in srgb, var(--color-danger) 10%, var(--color-bg));
-  --el-color-danger-dark-2: color-mix(in srgb, var(--color-danger) 80%, var(--color-text));
-
-  --el-color-error: var(--color-danger);
-  --el-color-error-light-3: color-mix(in srgb, var(--color-danger) 70%, var(--color-bg));
-  --el-color-error-light-5: color-mix(in srgb, var(--color-danger) 50%, var(--color-bg));
-  --el-color-error-light-7: color-mix(in srgb, var(--color-danger) 30%, var(--color-bg));
-  --el-color-error-light-8: color-mix(in srgb, var(--color-danger) 20%, var(--color-bg));
-  --el-color-error-light-9: color-mix(in srgb, var(--color-danger) 10%, var(--color-bg));
-  --el-color-error-dark-2: color-mix(in srgb, var(--color-danger) 80%, var(--color-text));
-
-  --el-color-info: var(--color-info);
-  --el-color-info-light-3: color-mix(in srgb, var(--color-info) 70%, var(--color-bg));
-  --el-color-info-light-5: color-mix(in srgb, var(--color-info) 50%, var(--color-bg));
-  --el-color-info-light-7: color-mix(in srgb, var(--color-info) 30%, var(--color-bg));
-  --el-color-info-light-8: color-mix(in srgb, var(--color-info) 20%, var(--color-bg));
-  --el-color-info-light-9: color-mix(in srgb, var(--color-info) 10%, var(--color-bg));
-  --el-color-info-dark-2: color-mix(in srgb, var(--color-info) 80%, var(--color-text));
-
-  --el-disabled-bg-color:     color-mix(in srgb, var(--color-text-secondary) 8%, var(--color-bg));
-  --el-disabled-text-color:   color-mix(in srgb, var(--color-text-secondary) 50%, var(--color-bg));
-  --el-disabled-border-color: color-mix(in srgb, var(--color-border) 70%, var(--color-bg));
-
-  --el-overlay-color:          var(--color-overlay);
-  --el-overlay-color-lighter:  color-mix(in srgb, var(--color-overlay) 60%, transparent);
-  --el-overlay-color-light:    color-mix(in srgb, var(--color-overlay) 85%, transparent);
-  --el-overlay-color-dark:     var(--color-overlay);
-  --el-overlay-color-darker:   var(--color-overlay);
-
-  /* Shadows — no vue-site token equivalent, keep dark-specific values */
-  --el-box-shadow:       0 12px 32px 4px rgba(0, 0, 0, 0.5), 0 8px 20px rgba(0, 0, 0, 0.6);
-  --el-box-shadow-light: 0 0 12px rgba(0, 0, 0, 0.6);
-  --el-box-shadow-lighter: 0 0 6px rgba(0, 0, 0, 0.5);
-  --el-box-shadow-dark:  0 16px 48px 16px rgba(0, 0, 0, 0.7), 0 12px 32px rgba(0, 0, 0, 0.6);
-
-  /* Masks */
-  --el-mask-color:             color-mix(in srgb, var(--color-surface-raised) 90%, transparent);
-  --el-mask-color-extra-light: color-mix(in srgb, var(--color-surface-raised) 30%, transparent);
+html[data-theme] .el-tour.el-tour--primary .el-tour-indicator.is-active {
+  background: var(--color-primary-contrast);
 }

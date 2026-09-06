@@ -250,9 +250,10 @@ export default defineConfig({
 ### 语义化颜色变量
 
 每个主题都由语义化的 `--color-*` CSS 变量驱动。Element Plus 的通用变量在
-`element-plus-theme.css` 中映射到这些变量，因此常见控件和表面会跟随当前主题。部分组件
-还有专属变量；新增 Element Plus 组件时，可能需要补充对应映射。内置调色板定义种子色，
-其余值通过 `color-mix()` / `var()` 派生，因此 `builtinThemePalettes` 中可能包含 CSS 表达式，
+`element-plus-theme.css` 中同时于主题根节点和组件选择器层级映射到这些变量，因此控件、表格、
+对话框和浮层都会跟随当前主题 —— 包括 `sepia` 这类有色主题。Element Plus 会把部分变量声明在
+组件根节点上（如 `.el-table`），所以这些变量也在组件选择器层级重新映射。内置调色板定义
+种子色，其余值通过 `color-mix()` / `var()` 派生，因此 `builtinThemePalettes` 中可能包含 CSS 表达式，
 而不只是字面色值。
 
 | 变量 | 用途 |
@@ -264,7 +265,10 @@ export default defineConfig({
 | `--color-warning` | 警告 |
 | `--color-danger` | 危险/错误（`--el-color-error` 复用该值） |
 | `--color-info` | 信息 |
-| `--color-surface-raised` | 浮层表面：下拉、对话框、遮罩背景 |
+| `--color-surface-raised` | 浮层表面：输入框、卡片、表格主体、下拉、对话框、遮罩背景 |
+| `--color-table-bg` | 表格主体表面，默认取 `--color-surface-raised` |
+| `--color-table-stripe-bg` | 表格斑马纹行表面，由文字色和表格背景色派生 |
+| `--color-table-current-row-bg` | 表格当前行高亮表面，由主色和表格背景色派生 |
 | `--color-overlay` | 弹窗 / 加载遮罩 |
 
 自定义主题只需定义这些基础色，框架会用 `color-mix()` 自动派生 Element Plus 的
