@@ -31,7 +31,6 @@ const navItems = computed(() => props.items ?? sidebarNav.value)
       v-if="!items"
       class="site-sidebar-collapse-toggle"
       native-type="button"
-      circle
       :aria-label="localize(collapsed
         ? { en: 'Expand sidebar', zh: '展开侧边栏' }
         : { en: 'Collapse sidebar', zh: '收起侧边栏' })"
@@ -53,33 +52,67 @@ const navItems = computed(() => props.items ?? sidebarNav.value)
   position: fixed;
   z-index: 15;
   top: 50vh;
-  left: calc(var(--site-sidebar-current-width) - 16px);
+  /* 16px of the button sits on the sidebar; the rest protrudes. */
+  --site-sidebar-toggle-inset: 16px;
+  left: calc(var(--site-sidebar-current-width) - var(--site-sidebar-toggle-inset));
   display: flex;
   align-items: center;
   justify-content: center;
   width: 28px;
   height: 28px;
+  border: 0;
+  border-radius: 4px;
   --el-button-size: 28px;
   padding: 0;
+  /* Keep the fill identical to the sidebar and draw the ring only on the protruding part,
+     so the toggle reads as a tab growing out of the edge. */
+  --site-sidebar-toggle-ring: color-mix(in srgb, var(--color-sidebar-bg) 76%, var(--color-sidebar-text) 24%);
+  --site-sidebar-toggle-ring-hover: color-mix(in srgb, var(--color-sidebar-bg) 62%, var(--color-sidebar-text) 38%);
   --el-button-text-color: var(--color-sidebar-text);
   --el-button-bg-color: var(--color-sidebar-bg);
-  --el-button-border-color: var(--color-sidebar-border);
   --el-button-hover-text-color: var(--color-sidebar-text);
-  --el-button-hover-bg-color: color-mix(in srgb, var(--color-sidebar-bg) 90%, var(--color-sidebar-text) 10%);
-  --el-button-hover-border-color: var(--color-sidebar-border);
+  --el-button-hover-bg-color: var(--color-sidebar-bg);
   cursor: pointer;
-  box-shadow: 0 2px 8px rgb(0 0 0 / 12%);
   transform: translateY(-50%);
-  transition: left 0.2s ease, box-shadow 0.15s ease;
+  transition: left 0.2s ease;
 }
 
-.site-sidebar-collapse-toggle:hover {
-  box-shadow: 0 3px 12px rgb(0 0 0 / 18%);
+.site-sidebar-collapse-toggle::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border: 1px solid var(--site-sidebar-toggle-ring);
+  border-radius: inherit;
+  clip-path: inset(0 0 0 var(--site-sidebar-toggle-inset));
+  pointer-events: none;
+  transition: border-color 0.15s ease;
 }
 
+.site-sidebar-collapse-toggle:hover::after {
+  border-color: var(--site-sidebar-toggle-ring-hover);
+}
+
+/* Nudge the chevron toward the protruding half instead of the sidebar edge. */
+.site-sidebar-collapse-toggle svg {
+  transform: translateX(6px);
+}
+
+/* Keyboard focus follows the protruding tab instead of outlining the merged half. */
 .site-sidebar-collapse-toggle:focus-visible {
+  outline: none;
+}
+
+.site-sidebar-collapse-toggle:focus-visible::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
   outline: 2px solid var(--color-link);
-  outline-offset: 2px;
+  outline-offset: 0;
+  /* Leave room for the outline above/right/below, but keep the open edge on the sidebar. */
+  clip-path: inset(-4px -4px -4px var(--site-sidebar-toggle-inset));
+  pointer-events: none;
+  z-index: 1;
 }
 
 /* Mobile breakpoint — keep in sync with MOBILE_BREAKPOINT_PX (src/composables/useMobileViewport.ts). */
@@ -90,7 +123,8 @@ const navItems = computed(() => props.items ?? sidebarNav.value)
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .site-sidebar-collapse-toggle {
+  .site-sidebar-collapse-toggle,
+  .site-sidebar-collapse-toggle::after {
     transition: none;
   }
 }
