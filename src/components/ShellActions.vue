@@ -15,8 +15,9 @@ import type { ShellAction, ShellActionLoader } from '../types'
 const props = withDefaults(
   defineProps<{
     placement?: 'top' | 'sidebar'
+    collapsed?: boolean
   }>(),
-  { placement: 'top' },
+  { placement: 'top', collapsed: false },
 )
 
 const { config } = useSiteConfig()
@@ -91,6 +92,7 @@ watch(actionComponents, async () => {
     :class="[
       `site-shell-actions--${props.placement}`,
       props.placement === 'sidebar' ? `site-shell-actions--align-${actionAlign}` : undefined,
+      { 'site-shell-actions--sidebar-collapsed': props.placement === 'sidebar' && props.collapsed },
       { 'site-shell-actions--empty': !hasRenderedActions },
     ]"
   >
@@ -150,6 +152,10 @@ watch(actionComponents, async () => {
 
 .site-shell-actions--align-right {
   justify-content: flex-end;
+}
+
+.site-shell-actions--sidebar-collapsed {
+  justify-content: center;
 }
 
 .site-shell-actions--sidebar::before {

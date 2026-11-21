@@ -395,6 +395,26 @@ your component so the framework does not need to define a user model.
 Set `align` to `'left'`, `'center'`, or `'right'` for sidebar-footer placement; it defaults to
 `'center'`. Top-header placement keeps the built-in toolbar flow.
 
+Use `useSidebarState()` in a shell action when its content should adapt to the desktop sidebar. It
+returns a read-only `collapsed` ref that is `false` on mobile, standalone pages, and layouts without
+a sidebar. For example, an avatar can hide its name in the icon rail while keeping the name as a
+tooltip and accessible label:
+
+```vue
+<script setup lang="ts">
+import { useSidebarState } from '@bndynet/vue-site'
+
+const { collapsed } = useSidebarState()
+</script>
+
+<template>
+  <button aria-label="Account" :title="collapsed ? 'Account' : undefined">
+    <AvatarIcon />
+    <span v-if="!collapsed">Account</span>
+  </button>
+</template>
+```
+
 ## Internationalization (`i18n`)
 
 Set `i18n` to enable multi-language support. The framework adds a locale switcher to the header,
@@ -750,7 +770,7 @@ app.mount('#app')
 
 Use a top-level `await` in your entry (or an async IIFE): `createSiteApp` is async and **awaits** `configureApp` when it returns a `Promise`. If you set optional `bootstrap` in config, that module loads before the app is created; if you omit `bootstrap`, that step is skipped.
 
-Exports: `createSiteApp`, `defineConfig`, `useTheme`, `useMobileViewport`, `useSiteConfig`, `getSiteConfig`, `useLocale`, `useLocalize`, `tk`, `resolveLocalized`, `resolveField`, `resolveMessage`, `mergeCatalog`, `flattenMessages`, `isMessageRef`, `localizedPage`, `builtinMessages`, `themeRefKey`, `localeRefKey`. Types: `SiteConfig`, `SiteEnvConfig`, `SiteViteConfig`, `SiteCustomConfig`, `SiteExternalLink`, `ShellConfig`, `ShellAction`, `ShellActionLoader`, `NavItem`, `StandalonePage`, `PageLayout`, `AuthRule`, `AuthContext`, `AuthConfig`, `RouterConfig`, `ThemeConfig`, `ThemeOption`, `ThemePaletteVars`, `ResolvedNavItem`, `I18nConfig`, `LocaleOption`, `LocaleCode`, `LocalizedString`, `IconRegistry`, `MessageRef`, `MessageTree`, `MessageCatalog`, `PageLoader`, `LocalizedPageOptions`.
+Exports: `createSiteApp`, `defineConfig`, `useTheme`, `useMobileViewport`, `useSidebarState`, `useSiteConfig`, `getSiteConfig`, `useLocale`, `useLocalize`, `tk`, `resolveLocalized`, `resolveField`, `resolveMessage`, `mergeCatalog`, `flattenMessages`, `isMessageRef`, `localizedPage`, `builtinMessages`, `themeRefKey`, `localeRefKey`. Types: `SiteConfig`, `SiteEnvConfig`, `SiteViteConfig`, `SiteCustomConfig`, `SiteExternalLink`, `ShellConfig`, `ShellAction`, `ShellActionLoader`, `NavItem`, `StandalonePage`, `PageLayout`, `AuthRule`, `AuthContext`, `AuthConfig`, `RouterConfig`, `ThemeConfig`, `ThemeOption`, `ThemePaletteVars`, `ResolvedNavItem`, `I18nConfig`, `LocaleOption`, `LocaleCode`, `LocalizedString`, `IconRegistry`, `MessageRef`, `MessageTree`, `MessageCatalog`, `PageLoader`, `LocalizedPageOptions`.
 
 ### Theme in Vue pages (`useTheme`)
 

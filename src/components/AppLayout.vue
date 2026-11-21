@@ -5,6 +5,7 @@ import { useSiteConfig } from '../composables/useSiteConfig'
 import { useNavLayout } from '../composables/useNavLayout'
 import { useLocalize } from '../composables/useLocalize'
 import { MOBILE_BREAKPOINT_PX, provideMobileViewport } from '../composables/useMobileViewport'
+import { provideSidebarState } from '../composables/useSidebarState'
 import type { PageLayout } from '../types'
 import SideNav from './SideNav.vue'
 import SiteExternalLinks from './SiteExternalLinks.vue'
@@ -20,6 +21,9 @@ const route = useRoute()
 const isMobileViewport = ref(false)
 const mobileMenuOpen = ref(false)
 const sidebarCollapsed = ref(false)
+const isSidebarCollapsed = computed(
+  () => sidebarCollapsed.value && !isMobileViewport.value && showSidebar.value,
+)
 const menuButton = ref<HTMLButtonElement | null>(null)
 const drawerCloseButton = ref<HTMLButtonElement | null>(null)
 const mobileDrawer = ref<HTMLElement | null>(null)
@@ -30,6 +34,7 @@ let previousScrollY = 0
 let scrollLocked = false
 
 provideMobileViewport(isMobileViewport)
+provideSidebarState(isSidebarCollapsed)
 
 function updateMobileViewport() {
   isMobileViewport.value = mobileMediaQuery?.matches ?? false
@@ -160,7 +165,7 @@ watchEffect(() => {
       'site-layout--tiered-nav': tieredNav,
       'site-layout--tiered-no-sidebar': tieredNav && !showSidebar,
       'site-layout--blank': standalone,
-      'site-layout--sidebar-collapsed': sidebarCollapsed && !isMobileViewport && showSidebar,
+      'site-layout--sidebar-collapsed': isSidebarCollapsed,
     }"
   >
     <header v-if="!standalone" class="site-mobile-header">
@@ -268,7 +273,11 @@ watchEffect(() => {
           <SiteExternalLinks compact />
           <LocaleSwitch v-if="localeEnabled" compact />
           <ThemeSwitch v-if="themeEnabled" compact />
-          <ShellActions v-if="!isMobileViewport" placement="sidebar" />
+          <ShellActions
+            v-if="!isMobileViewport"
+            placement="sidebar"
+            :collapsed="isSidebarCollapsed"
+          />
         </div>
         <p v-if="siteFooter" class="site-footer-text">{{ siteFooter }}</p>
       </div>

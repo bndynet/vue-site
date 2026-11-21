@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import { useLocalize, useMobileViewport, useSiteConfig } from '@bndynet/vue-site'
+import { useLocalize, useMobileViewport, useSidebarState, useSiteConfig } from '@bndynet/vue-site'
 
 const router = useRouter()
 const { localize } = useLocalize()
 const isMobileViewport = useMobileViewport()
+const { collapsed: sidebarCollapsed } = useSidebarState()
 const { refreshAuthNav } = useSiteConfig()
 
 const root = ref<HTMLElement | null>(null)
@@ -94,17 +95,26 @@ watch(open, async (value) => {
 </script>
 
 <template>
-  <div v-if="role" ref="root" class="user-avatar" :class="{ 'user-avatar--mobile': isMobileViewport }">
+  <div
+    v-if="role"
+    ref="root"
+    class="user-avatar"
+    :class="{
+      'user-avatar--mobile': isMobileViewport,
+      'user-avatar--sidebar-collapsed': sidebarCollapsed,
+    }"
+  >
     <button
       class="user-avatar-trigger"
       type="button"
       :aria-expanded="open"
       :aria-label="displayName"
+      :title="sidebarCollapsed ? displayName : undefined"
       aria-haspopup="menu"
       @click.stop="open = !open"
     >
       <span class="user-avatar-mark">{{ initials }}</span>
-      <span class="user-avatar-name">{{ displayName }}</span>
+      <span v-if="!sidebarCollapsed" class="user-avatar-name">{{ displayName }}</span>
     </button>
 
     <Teleport to="body">
@@ -206,8 +216,17 @@ watch(open, async (value) => {
   justify-content: center;
 }
 
-.user-avatar--mobile .user-avatar-name {
+.user-avatar--mobile .user-avatar-name,
+.user-avatar--sidebar-collapsed .user-avatar-name {
   display: none;
+}
+
+.user-avatar--sidebar-collapsed .user-avatar-trigger {
+  width: 40px;
+  height: 40px;
+  max-width: 40px;
+  padding: 0;
+  justify-content: center;
 }
 
 .user-avatar-menu {
