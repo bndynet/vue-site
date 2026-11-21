@@ -76,6 +76,10 @@
   max-width: var(--site-sidebar-current-width);
 }
 
+.site-layout--sidebar-collapsed .site-primary-nav-title {
+  display: none;
+}
+
 /* 3+ level nav: primary row fixed under top */
 .site-layout--tiered-nav .site-sidebar {
   top: var(--site-top-nav-height);
