@@ -85,6 +85,9 @@ npx vue-site preview -c site.config.prod.ts
 When `--config` is omitted, the CLI keeps auto-discovering `site.config.ts`, `site.config.js`,
 `site.config.mts`, or `site.config.mjs` in that order.
 
+While `dev` is running, changes to the selected config file automatically reload the config and
+restart the Vite server. The restart is briefly debounced so a single save triggers one restart.
+
 Subpath deploy: pass Vite’s public base on the CLI (overrides `env.vite.base` in `site.config`):
 
 ```bash

@@ -1068,6 +1068,99 @@ async function buildViteConfig(options = {}) {
   return mergeConfig(userViteRest, baseConfig)
 }
 
+async function startDevServer(viteConfig) {
+  const server = await createServer(viteConfig)
+  await server.listen()
+  server.printUrls()
+  server.bindCLIShortcuts({ print: true })
+  return server
+}
+
+async function runDevWithConfigWatch({ cliBase, configFile }) {
+  const siteConfig = await loadSiteConfig(configFile)
+  const viteConfig = await buildViteConfig({ cliBase, configFile, siteConfig })
+  let server = await startDevServer(viteConfig)
+  const absoluteConfigPath = resolve(cwd, configFile)
+  const configDir = dirname(absoluteConfigPath)
+  const configName = basename(absoluteConfigPath)
+  const getConfigSignature = () => {
+    const { ctimeMs, ino, mtimeMs, size } = fs.statSync(absoluteConfigPath)
+    return `${ctimeMs}:${ino}:${mtimeMs}:${size}`
+  }
+  let configSignature = getConfigSignature()
+  let restartTimer
+  let restartPromise
+  let restartQueued = false
+  let shuttingDown = false
+
+  const scheduleRestart = () => {
+    clearTimeout(restartTimer)
+    restartTimer = setTimeout(() => {
+      if (restartPromise) {
+        restartQueued = true
+        return
+      }
+
+      restartPromise = (async () => {
+        try {
+          // Load and validate the new config before taking down the working server.
+          const nextSiteConfig = await loadSiteConfig(configFile)
+          const nextViteConfig = await buildViteConfig({
+            cliBase,
+            configFile,
+            siteConfig: nextSiteConfig,
+          })
+
+          await server?.close()
+          server = undefined
+          server = await startDevServer(nextViteConfig)
+          console.log(`[vue-site] Reloaded ${configFile}`)
+        } catch (error) {
+          console.error(`[vue-site] Could not reload ${configFile}:`)
+          console.error(error)
+        }
+      })().finally(() => {
+        restartPromise = undefined
+        if (restartQueued && !shuttingDown) {
+          restartQueued = false
+          scheduleRestart()
+        }
+      })
+    }, 200)
+  }
+
+  const watcher = fs.watch(configDir, (_eventType, filename) => {
+    // Watching the directory also catches editors that save by replacing the file.
+    // Some platforms omit filename, so compare file metadata in that case.
+    const changedName = filename?.toString()
+    if (changedName && changedName !== configName) return
+    let nextSignature
+    try {
+      nextSignature = getConfigSignature()
+    } catch {
+      return
+    }
+    if (nextSignature === configSignature) return
+    configSignature = nextSignature
+    scheduleRestart()
+  })
+  console.log(`[vue-site] Watching ${configFile} for changes`)
+  watcher.on('error', (error) => {
+    console.error(`[vue-site] Could not watch ${configFile}:`, error)
+  })
+
+  const shutdown = async () => {
+    if (shuttingDown) return
+    shuttingDown = true
+    clearTimeout(restartTimer)
+    watcher.close()
+    if (restartPromise) await restartPromise
+    await server?.close()
+  }
+  process.once('SIGINT', shutdown)
+  process.once('SIGTERM', shutdown)
+}
+
 async function run() {
   const { command, cliBase, cliConfig } = parseCliArgv()
   if (command === 'init') {
@@ -1076,15 +1169,12 @@ async function run() {
   }
 
   const configFile = resolveSiteConfig(cliConfig)
-  const siteConfig = await loadSiteConfig(configFile)
-  const viteConfig = await buildViteConfig({ cliBase, configFile, siteConfig })
 
   if (command === 'dev') {
-    const server = await createServer(viteConfig)
-    await server.listen()
-    server.printUrls()
-    server.bindCLIShortcuts({ print: true })
+    await runDevWithConfigWatch({ cliBase, configFile })
   } else if (command === 'build') {
+    const siteConfig = await loadSiteConfig(configFile)
+    const viteConfig = await buildViteConfig({ cliBase, configFile, siteConfig })
     const tempHtml = resolve(cwd, 'index.html')
     const hadHtml = fs.existsSync(tempHtml)
 
@@ -1108,6 +1198,8 @@ async function run() {
       }
     }
   } else if (command === 'preview') {
+    const siteConfig = await loadSiteConfig(configFile)
+    const viteConfig = await buildViteConfig({ cliBase, configFile, siteConfig })
     const server = await preview(
       mergeConfig(viteConfig, { preview: { open: true } }),
     )
