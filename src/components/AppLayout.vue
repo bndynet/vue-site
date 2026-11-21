@@ -223,9 +223,9 @@ watchEffect(() => {
       </router-link>
       <TopPrimaryNav />
       <div class="site-primary-nav-end">
-        <SiteExternalLinks />
-        <LocaleSwitch v-if="localeEnabled" />
-        <ThemeSwitch v-if="themeEnabled" class="site-primary-nav-theme" />
+        <SiteExternalLinks v-if="!isSidebarCollapsed" />
+        <LocaleSwitch v-if="localeEnabled && !isSidebarCollapsed" />
+        <ThemeSwitch v-if="themeEnabled && !isSidebarCollapsed" class="site-primary-nav-theme" />
         <ShellActions />
       </div>
     </header>
@@ -280,15 +280,16 @@ watchEffect(() => {
         @toggle-collapse="sidebarCollapsed = !sidebarCollapsed"
       />
       <div
-        v-if="!tieredNav || siteFooter || isMobileViewport"
+        v-if="!tieredNav || siteFooter || isMobileViewport || isSidebarCollapsed"
         class="site-sidebar-footer"
       >
-        <div v-if="!tieredNav || (isMobileViewport && !standalone)" class="site-sidebar-toolbar">
-          <SiteExternalLinks compact />
+        <div v-if="!tieredNav || (isMobileViewport && !standalone) || isSidebarCollapsed" class="site-sidebar-toolbar">
+          <SiteExternalLinks v-if="!isSidebarCollapsed" compact />
           <LocaleSwitch v-if="localeEnabled" compact />
           <ThemeSwitch v-if="themeEnabled" compact />
+          <SiteExternalLinks v-if="isSidebarCollapsed" compact />
           <ShellActions
-            v-if="!isMobileViewport"
+            v-if="!isMobileViewport && !tieredNav"
             placement="sidebar"
             :collapsed="isSidebarCollapsed"
           />
