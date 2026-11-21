@@ -81,16 +81,46 @@ function clampMenuToViewport() {
   if (!detailsRef.value?.open || !menuRef.value) return
   requestAnimationFrame(() => {
     const menu = menuRef.value
-    if (!menu) return
-    menu.style.left = ''
-    menu.style.transform = ''
+    const trigger = summaryRef.value
+    if (!menu || !trigger) return
+
+    if (props.compact) {
+      const triggerRect = trigger.getBoundingClientRect()
+      const viewportHeight = window.innerHeight
+      const pad = 8
+      const gap = 6
+      const availableAbove = triggerRect.top - gap - pad
+      const availableBelow = viewportHeight - triggerRect.bottom - gap - pad
+      const openAbove = availableAbove >= availableBelow
+      const availableHeight = Math.max(36, (openAbove ? availableAbove : availableBelow) - 12)
+
+      menu.style.position = 'fixed'
+      menu.style.left = `${triggerRect.left + triggerRect.width / 2}px`
+      menu.style.right = 'auto'
+      menu.style.bottom = 'auto'
+      menu.style.maxHeight = `${availableHeight}px`
+      menu.style.transform = 'translateX(-50%)'
+      const menuHeight = menu.getBoundingClientRect().height
+      menu.style.top = openAbove
+        ? `${triggerRect.top - gap - menuHeight}px`
+        : `${triggerRect.bottom + gap}px`
+    }
+
+    if (!props.compact) {
+      menu.style.left = ''
+      menu.style.transform = ''
+    }
     const rect = menu.getBoundingClientRect()
     const pad = 8
     const vw = window.innerWidth
     let dx = 0
     if (rect.left < pad) dx = pad - rect.left
     else if (rect.right > vw - pad) dx = vw - pad - rect.right
-    if (dx !== 0) menu.style.transform = `translateX(calc(-50% + ${dx}px))`
+    if (dx !== 0) {
+      menu.style.transform = `translateX(calc(-50% + ${dx}px))`
+    } else if (props.compact) {
+      menu.style.transform = 'translateX(-50%)'
+    }
   })
 }
 </script>
@@ -267,8 +297,9 @@ function clampMenuToViewport() {
 }
 
 .locale-switch--compact .locale-switch-menu {
-  top: auto;
-  bottom: calc(100% + 6px);
+  position: fixed;
+  top: 0;
+  bottom: auto;
   transform: translateX(-50%);
   padding: 4px;
   border-radius: 10px;
