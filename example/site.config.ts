@@ -55,6 +55,9 @@ export default defineConfig({
     apiBaseUrl: 'http://localhost/api/v1',
   },
   logo: 'https://static.bndy.net/images/logo.png',
+  // Optional compact mark for desktop sidebar mini mode (sidebar-only and top-nav layouts).
+  // Falls back to `logo` when omitted.
+  // collapsedLogo: './assets/logo-mark.svg',
   footer: tk('site.footer'),
   links: [
     {

@@ -401,6 +401,11 @@ export interface SiteConfig {
   */
   favicon?: string
   logo?: string
+  /**
+   * Optional logo variant shown when the desktop sidebar is collapsed, in both sidebar-only and
+   * top-navigation layouts. Falls back to `logo` when omitted.
+   */
+  collapsedLogo?: string
   nav: NavItem[]
   /**
    * Navigation placement. Set to `'top'` to force the primary nav into the top header (with the

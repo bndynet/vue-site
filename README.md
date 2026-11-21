@@ -109,6 +109,7 @@ Add `"dev": "vue-site dev"` (or `vs dev`) in `package.json` scripts if you like.
 | `defaultPath` | Path the site opens at; `/` and unknown paths redirect here. Must match a registered route (a `nav` item's resolved path or a `pages` entry's `path`). Defaults to the first registered page in navigation order, then the first visible standalone page |
 | `favicon` | Browser tab icon URL. Use a public asset path, remote URL, or imported asset URL |
 | `logo` | Logo URL or imported image |
+| `collapsedLogo` | Optional compact logo URL or imported image used when the desktop sidebar is collapsed, including sidebar-only layouts. Falls back to `logo` when omitted |
 | `theme` | See `ThemeConfig` below; set to `false` to disable theming (hides the switcher, forces a fixed `light` palette, no localStorage persistence) |
 | `i18n` | Multi-language config (`I18nConfig`) — see [Internationalization](#internationalization-i18n) |
 | `footer` | Footer text. `LocalizedString` |

@@ -37,6 +37,9 @@ const sidebarCollapsed = ref(false)
 const isSidebarCollapsed = computed(
   () => sidebarCollapsed.value && !isMobileViewport.value && showSidebar.value,
 )
+const brandLogo = computed(() =>
+  isSidebarCollapsed.value ? config.collapsedLogo || config.logo : config.logo,
+)
 const menuButton = ref<HTMLButtonElement | null>(null)
 const drawerCloseButton = ref<HTMLButtonElement | null>(null)
 const mobileDrawer = ref<HTMLElement | null>(null)
@@ -213,9 +216,9 @@ watchEffect(() => {
     <header v-if="tieredNav && !isMobileViewport" class="site-primary-nav">
       <router-link to="/" class="site-primary-nav-brand">
         <img
-          v-if="config.logo"
+          v-if="brandLogo"
           class="site-primary-nav-logo"
-          :src="config.logo"
+          :src="brandLogo"
           :alt="logoAlt"
           decoding="async"
         />
@@ -253,9 +256,9 @@ watchEffect(() => {
         </div>
         <div v-else class="site-sidebar-brand">
           <img
-            v-if="config.logo"
+            v-if="brandLogo"
             class="site-sidebar-logo"
-            :src="config.logo"
+            :src="brandLogo"
             :alt="logoAlt"
             decoding="async"
           />
