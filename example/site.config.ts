@@ -61,7 +61,7 @@ export default defineConfig({
   // The CLI resolves string paths like page strings, so no top-level .vue import is needed here.
   shell: {
     actions: ['./components/UserAvatar.vue'],
-    align: 'left',
+    align: 'center',
   },
   // Central authorization policy. Pages opt in by adding an `auth` rule (see `nav` below).
   // This demo stores the current role in localStorage (set by the `/login` page). `authorize`
