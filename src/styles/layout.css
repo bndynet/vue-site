@@ -2,18 +2,19 @@
   --site-top-nav-height: 48px;
   --site-mobile-header-height: 56px;
   --site-sidebar-width: 200px;
-  --site-sidebar-current-width: var(--site-sidebar-width);
+  --site-sidebar-collapsed-width: 64px;
   --site-content-default-width: 860px;
   --site-content-wide-width: 1200px;
 }
 
 .site-layout {
+  --site-sidebar-current-width: var(--site-sidebar-width);
   display: flow-root;
   min-height: 100vh;
 }
 
 .site-layout--sidebar-collapsed {
-  --site-sidebar-current-width: 64px;
+  --site-sidebar-current-width: var(--site-sidebar-collapsed-width);
 }
 
 .site-layout--sidebar-collapsed .site-sidebar {

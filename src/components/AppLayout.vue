@@ -17,6 +17,19 @@ import ShellActions from './ShellActions.vue'
 const { config, resolvedNav } = useSiteConfig()
 const { tieredNav, showSidebar, standalone } = useNavLayout()
 const { localize } = useLocalize()
+const sidebarLayoutStyle = computed(() => {
+  const sidebar = config.layout?.sidebar
+  const style: Record<string, string> = {}
+
+  if (Number.isFinite(sidebar?.width) && (sidebar?.width ?? 0) > 0) {
+    style['--site-sidebar-width'] = `${sidebar?.width}px`
+  }
+  if (Number.isFinite(sidebar?.collapsedWidth) && (sidebar?.collapsedWidth ?? 0) > 0) {
+    style['--site-sidebar-collapsed-width'] = `${sidebar?.collapsedWidth}px`
+  }
+
+  return style
+})
 const route = useRoute()
 const isMobileViewport = ref(false)
 const mobileMenuOpen = ref(false)
@@ -167,6 +180,7 @@ watchEffect(() => {
       'site-layout--blank': standalone,
       'site-layout--sidebar-collapsed': isSidebarCollapsed,
     }"
+    :style="sidebarLayoutStyle"
   >
     <header v-if="!standalone" class="site-mobile-header">
       <button

@@ -368,6 +368,20 @@ export interface SiteCustomConfig {
   [key: string]: unknown
 }
 
+/** Layout dimensions for the site shell. */
+export interface SiteLayoutConfig {
+  /** Sidebar widths in CSS pixels. Omit either value to use the framework default. */
+  sidebar?: SidebarLayoutConfig
+}
+
+/** Configurable expanded and mini widths for the sidebar. */
+export interface SidebarLayoutConfig {
+  /** Expanded sidebar width in CSS pixels. Defaults to 200px on desktop and 180px on tablets. */
+  width?: number
+  /** Mini sidebar width in CSS pixels. Defaults to 64px. */
+  collapsedWidth?: number
+}
+
 export interface SiteConfig {
   /**
    * Brand name shown next to the logo in the header and sidebar. Accepts a `LocalizedString` for
@@ -395,6 +409,8 @@ export interface SiteConfig {
    * nav trees use the top/tiered layout, while shallow trees use the sidebar-only layout.
    */
   navPosition?: 'top' | 'sidebar'
+  /** Layout dimensions for the site shell. Omit to use framework defaults. */
+  layout?: SiteLayoutConfig
   /**
    * Path the site opens at: the root `/` and any unknown path redirect here. Must match a
    * registered route — a `nav` item's resolved path or a `pages` entry's `path`.

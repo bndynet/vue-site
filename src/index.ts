@@ -20,6 +20,8 @@ export {
 } from 'element-plus'
 export type {
   SiteConfig,
+  SiteLayoutConfig,
+  SidebarLayoutConfig,
   SiteEnvConfig,
   SiteViteConfig,
   SiteCustomConfig,
