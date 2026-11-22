@@ -283,7 +283,7 @@ watchEffect(() => {
         @toggle-collapse="sidebarCollapsed = !sidebarCollapsed"
       />
       <div
-        v-if="!tieredNav || siteFooter || isMobileViewport || isSidebarCollapsed"
+        v-if="!tieredNav || (isMobileViewport && !standalone) || (siteFooter && !isSidebarCollapsed)"
         class="site-sidebar-footer"
       >
         <div v-if="!tieredNav || (isMobileViewport && !standalone)" class="site-sidebar-toolbar">
