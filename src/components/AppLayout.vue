@@ -37,8 +37,6 @@ const sidebarCollapsed = ref(false)
 const isSidebarCollapsed = computed(
   () => sidebarCollapsed.value && !isMobileViewport.value && !standalone.value,
 )
-/** Collapsed sidebar hosts the utilities in its footer; without a sidebar they stay in the header. */
-const showHeaderUtilities = computed(() => !isSidebarCollapsed.value || !showSidebar.value)
 const brandLogo = computed(() =>
   isSidebarCollapsed.value ? config.collapsedLogo || config.logo : config.logo,
 )
@@ -228,9 +226,9 @@ watchEffect(() => {
       </router-link>
       <TopPrimaryNav />
       <div class="site-primary-nav-end">
-        <SiteExternalLinks v-if="showHeaderUtilities" />
-        <LocaleSwitch v-if="localeEnabled && showHeaderUtilities" />
-        <ThemeSwitch v-if="themeEnabled && showHeaderUtilities" class="site-primary-nav-theme" />
+        <SiteExternalLinks />
+        <LocaleSwitch v-if="localeEnabled" />
+        <ThemeSwitch v-if="themeEnabled" class="site-primary-nav-theme" />
         <ShellActions />
       </div>
     </header>
@@ -288,7 +286,7 @@ watchEffect(() => {
         v-if="!tieredNav || siteFooter || isMobileViewport || isSidebarCollapsed"
         class="site-sidebar-footer"
       >
-        <div v-if="!tieredNav || (isMobileViewport && !standalone) || isSidebarCollapsed" class="site-sidebar-toolbar">
+        <div v-if="!tieredNav || (isMobileViewport && !standalone)" class="site-sidebar-toolbar">
           <SiteExternalLinks v-if="!isSidebarCollapsed" compact />
           <LocaleSwitch v-if="localeEnabled" compact />
           <ThemeSwitch v-if="themeEnabled" compact />
