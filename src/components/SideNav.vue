@@ -69,9 +69,18 @@ const navItems = computed(() => props.items ?? sidebarNav.value)
   --site-sidebar-toggle-ring: color-mix(in srgb, var(--color-sidebar-bg) 76%, var(--color-sidebar-text) 24%);
   --site-sidebar-toggle-ring-hover: color-mix(in srgb, var(--color-sidebar-bg) 62%, var(--color-sidebar-text) 38%);
   --el-button-text-color: var(--color-sidebar-text);
-  --el-button-bg-color: var(--color-sidebar-bg);
+  /* Keep the sidebar-facing half transparent so a hovered/active nav item behind it
+     stays visible. Paint only the protruding half, starting 1px early to cover the
+     sidebar's right border at the seam. */
+  --el-button-bg-color: transparent;
   --el-button-hover-text-color: var(--color-sidebar-text);
-  --el-button-hover-bg-color: var(--color-sidebar-bg);
+  --el-button-hover-bg-color: transparent;
+  --el-button-active-bg-color: transparent;
+  background: linear-gradient(
+    to right,
+    transparent 0 calc(var(--site-sidebar-toggle-inset) - 1px),
+    var(--color-sidebar-bg) calc(var(--site-sidebar-toggle-inset) - 1px)
+  );
   cursor: pointer;
   transform: translateY(-50%);
   transition: left 0.2s ease;
