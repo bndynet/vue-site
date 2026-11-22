@@ -35,8 +35,10 @@ const isMobileViewport = ref(false)
 const mobileMenuOpen = ref(false)
 const sidebarCollapsed = ref(false)
 const isSidebarCollapsed = computed(
-  () => sidebarCollapsed.value && !isMobileViewport.value && showSidebar.value,
+  () => sidebarCollapsed.value && !isMobileViewport.value && !standalone.value,
 )
+/** Collapsed sidebar hosts the utilities in its footer; without a sidebar they stay in the header. */
+const showHeaderUtilities = computed(() => !isSidebarCollapsed.value || !showSidebar.value)
 const brandLogo = computed(() =>
   isSidebarCollapsed.value ? config.collapsedLogo || config.logo : config.logo,
 )
@@ -226,9 +228,9 @@ watchEffect(() => {
       </router-link>
       <TopPrimaryNav />
       <div class="site-primary-nav-end">
-        <SiteExternalLinks v-if="!isSidebarCollapsed" />
-        <LocaleSwitch v-if="localeEnabled && !isSidebarCollapsed" />
-        <ThemeSwitch v-if="themeEnabled && !isSidebarCollapsed" class="site-primary-nav-theme" />
+        <SiteExternalLinks v-if="showHeaderUtilities" />
+        <LocaleSwitch v-if="localeEnabled && showHeaderUtilities" />
+        <ThemeSwitch v-if="themeEnabled && showHeaderUtilities" class="site-primary-nav-theme" />
         <ShellActions />
       </div>
     </header>

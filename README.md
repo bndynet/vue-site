@@ -146,6 +146,11 @@ export default defineConfig({
 })
 ```
 
+Collapsing the sidebar switches the shell into its compact layout. The `site-layout--sidebar-collapsed`
+class stays on the root layout while navigating to pages that do not render a sidebar (for example a
+tiered top-level page with no children), so the header brand keeps the collapsed width instead of
+jumping back to the expanded size.
+
 ### Custom client configuration (`custom`)
 
 Use `custom` for public, application-specific values that the framework should preserve without
@@ -418,9 +423,10 @@ Set `align` to `'left'`, `'center'`, or `'right'` for sidebar-footer placement; 
 `'center'`. Top-header placement keeps the built-in toolbar flow.
 
 Use `useSidebarState()` in a shell action when its content should adapt to the desktop sidebar. It
-returns a read-only `collapsed` ref that is `false` on mobile, standalone pages, and layouts without
-a sidebar. For example, an avatar can hide its name in the icon rail while keeping the name as a
-tooltip and accessible label:
+returns a read-only `collapsed` ref that is `false` on mobile and standalone pages. Once the sidebar
+has been collapsed, the ref stays `true` on pages that do not render a sidebar, so the shell keeps
+its collapsed layout while navigating. For example, an avatar can hide its name in the icon rail
+while keeping the name as a tooltip and accessible label:
 
 ```vue
 <script setup lang="ts">

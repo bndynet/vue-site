@@ -11,8 +11,10 @@ export function provideSidebarState(collapsed: Ref<boolean>) {
 /**
  * Return whether the desktop sidebar is currently collapsed.
  *
- * The read-only ref is `false` on mobile layouts, standalone pages, and when no sidebar is shown.
- * This composable must be called from a Vue component rendered inside `createSiteApp()`.
+ * The read-only ref is `false` on mobile layouts and standalone pages. Once the desktop sidebar
+ * has been collapsed, it stays `true` on pages that do not render a sidebar, so the shell keeps
+ * its collapsed layout while navigating. This composable must be called from a Vue component
+ * rendered inside `createSiteApp()`.
  *
  * @example
  * ```vue
