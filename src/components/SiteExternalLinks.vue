@@ -92,7 +92,7 @@ const items = computed(() => {
       v-if="isCollapsed"
       ref="trigger"
       type="button"
-      class="site-external-link site-external-links-trigger"
+      class="site-external-link site-icon-action site-external-links-trigger"
       :aria-label="localize({ en: 'External links', zh: '外部链接' })"
       :aria-expanded="popupOpen"
       @focus="openPopup"
@@ -113,7 +113,7 @@ const items = computed(() => {
         #="{ describedBy }"
       >
         <a
-          class="site-external-link"
+          class="site-external-link site-icon-action"
           :href="item.link"
           target="_blank"
           rel="noopener noreferrer"
@@ -143,7 +143,7 @@ const items = computed(() => {
           #="{ describedBy }"
         >
           <a
-            class="site-external-link"
+            class="site-external-link site-icon-action"
             :href="item.link"
             target="_blank"
             rel="noopener noreferrer"
@@ -162,50 +162,7 @@ const items = computed(() => {
 .site-external-links {
   display: flex;
   align-items: center;
-  gap: 6px;
-}
-
-/* Match `.theme-switch-trigger` for a unified icon toolbar */
-.site-external-link {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 34px;
-  height: 34px;
-  padding: 0;
-  border-radius: 999px;
-  text-decoration: none;
-  cursor: pointer;
-  background: transparent;
-  color: var(--color-theme-switch-text);
-  border: 1px solid transparent;
-  box-shadow: none;
-  transition:
-    background-color 0.2s ease,
-    border-color 0.2s ease,
-    box-shadow 0.2s ease,
-    color 0.2s ease;
-}
-
-.site-external-link:hover {
-  background: var(--color-theme-switch-hover);
-  border-color: color-mix(in srgb, var(--color-theme-switch-text) 16%, transparent);
-  box-shadow:
-    0 1px 2px 0 rgba(0, 0, 0, 0.1),
-    0 6px 14px rgba(0, 0, 0, 0.08);
-  text-decoration: none;
-}
-
-.site-external-link:focus-visible {
-  outline: none;
-  box-shadow:
-    0 0 0 2px var(--color-sidebar-bg),
-    0 0 0 4px color-mix(in srgb, var(--color-link) 85%, transparent);
-}
-
-.site-external-links--compact .site-external-link {
-  width: 28px;
-  height: 28px;
+  gap: var(--site-icon-action-gap);
 }
 
 .site-external-links--collapsed {
@@ -232,12 +189,4 @@ const items = computed(() => {
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.16);
 }
 
-/* Touch devices get the recommended ≥44px hit target regardless of viewport width. */
-@media (pointer: coarse) {
-  .site-external-link,
-  .site-external-links--compact .site-external-link {
-    width: 44px;
-    height: 44px;
-  }
-}
 </style>

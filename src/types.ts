@@ -66,6 +66,15 @@ export interface NavItem {
   label: LocalizedString
   icon?: string
   /**
+   * Position of a top-level item in the desktop top navigation. Items default to `'left'`.
+   * Set to `'right'` to place the item after the primary links and show its icon with the label
+   * as a tooltip. Its children continue to appear in the sidebar. The label remains visible in the
+   * sidebar and mobile navigation.
+   * Right-positioned items should provide an `icon`.
+   * @default 'left'
+   */
+  position?: 'left' | 'right'
+  /**
    * Page content for this item's route. Either:
    * - a **loader function** — `() => import('./Page.vue')` / `() => import('./page.md?raw')`, or a
    *   per-locale loader from {@link localizedPage}; or

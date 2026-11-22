@@ -107,7 +107,7 @@ Add `"dev": "vue-site dev"` (or `vs dev`) in `package.json` scripts if you like.
 | `name` | Brand name shown next to the logo (header + sidebar). `LocalizedString`. Optional — omitted or empty means no brand text is rendered |
 | `title` | Browser tab title. `LocalizedString`. Optional — omitted or empty means the document title is left unchanged |
 | `nav` | `NavItem[]` |
-| `navPosition` | Optional navigation placement: `'top'` forces the top/tiered layout, `'sidebar'` forces the full nav tree into the sidebar. Omit to keep automatic behavior based on nav depth |
+| `navPosition` | Optional navigation placement: `'top'` forces the top/tiered layout, `'sidebar'` forces the full nav tree into the sidebar. In top navigation, top-level `NavItem.position` can place selected items on the right. Omit to keep automatic behavior based on nav depth |
 | `layout` | Site shell dimensions (`SiteLayoutConfig`), including optional expanded and mini sidebar widths |
 | `defaultPath` | Path the site opens at; `/` and unknown paths redirect here. Must match a registered route (a `nav` item's resolved path or a `pages` entry's `path`). Defaults to the first registered page in navigation order, then the first visible standalone page |
 | `favicon` | Browser tab icon URL. Use a public asset path, remote URL, or imported asset URL |
@@ -228,6 +228,7 @@ tokens, private keys, or other secrets in this field.
 |----------|-------------|
 | `label` | Sidebar text. `LocalizedString` |
 | `icon` | [Lucide](https://lucide.dev/icons) name |
+| `position` | Top-level placement in desktop top navigation: `'left'` (default) or `'right'`. Right-positioned items show only the icon with the label as a tooltip; their children still appear in the sidebar. The sidebar and mobile drawer keep the label visible. Provide an `icon` for icon-only rendering. |
 | `page` | Page content. Simplest is a **file-path string** like `'./pages/AdminView.vue'` or `'./README.md'` (auto-loads per-locale siblings, falls back to the base file). Also accepts a loader (`() => import('./Page.vue')` / `() => import('./page.md?raw')`) or a `localizedPage(...)` result. See [Per-locale page content](#per-locale-page-content) and [Advanced page loaders](#advanced-page-loaders) |
 | `path` | Route path (derived from `label`'s default-locale value if omitted; stays stable across languages) |
 | `layout` | Page content width: `'default'` keeps the standard centered reading width, `'wide'` uses a wider centered canvas, `'full'` fills the available parent container with no framework padding. Ignored for groups and links. |

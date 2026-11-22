@@ -109,6 +109,7 @@ export default defineConfig({
   },
   // `icons` is omitted here because the CLI auto-generates a Lucide icon registry from the icon
   // names used in nav, links, languages, and themes. Only direct `createSiteApp` usage needs it.
+  // Top-level items default to the left when `position` is omitted; `Docs` below demonstrates the right.
   nav: [
     // Labels reference the central catalog via `tk('id')`. Brand names like `API` / `Element Plus`
     // stay plain strings since they read the same in every language.
@@ -199,7 +200,30 @@ export default defineConfig({
       label: tk('nav.login'),
       icon: 'log-in',
       link: '/login',
-    }
+    },
+    {
+      label: { en: 'Help', zh: '帮助' },
+      icon: 'circle-help',
+      position: 'right',
+      page: './pages/HelpView.vue',
+      children: [
+        {
+          label: { en: 'Quick Start', zh: '快速开始' },
+          icon: 'rocket',
+          link: 'https://github.com/bndynet/vue-site#readme',
+        },
+        {
+          label: { en: 'Vue Guide', zh: 'Vue 指南' },
+          icon: 'book-open',
+          link: 'https://vuejs.org/guide/',
+        },
+        {
+          label: { en: 'Report an Issue', zh: '反馈问题' },
+          icon: 'bug',
+          link: 'https://github.com/bndynet/vue-site/issues',
+        },
+      ],
+    },
   ],
   // Standalone, full-screen pages (no top bar / sidebar / footer). Open at `#/landing`.
   pages: [
