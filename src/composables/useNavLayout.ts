@@ -21,7 +21,7 @@ export function useNavLayout() {
 
   const sidebarNav = computed(() => {
     if (!tieredNav.value) return resolvedNav
-    const top = findActiveTopLevelItem(resolvedNav, route.path)
+    const top = findActiveTopLevelItem(resolvedNav, route)
     return top?.resolvedChildren ?? []
   })
 

@@ -2,7 +2,7 @@
 import { ref, computed, watch, nextTick, onBeforeUnmount } from 'vue'
 import { useRoute } from 'vue-router'
 import type { ResolvedNavItem } from '../types'
-import { subtreeContainsPath } from '../nav-utils'
+import { subtreeContainsRoute } from '../nav-utils'
 import { useLocalize } from '../composables/useLocalize'
 import DynamicIcon from './DynamicIcon.vue'
 import NavLink from './NavItem.vue'
@@ -22,7 +22,7 @@ const { localize } = useLocalize()
 
 const hasActiveChild = computed(() => {
   return props.item.resolvedChildren?.some((child) =>
-    subtreeContainsPath(child, route.path),
+    subtreeContainsRoute(child, route),
   ) ?? false
 })
 
