@@ -1,4 +1,7 @@
+import type { RouteLocationNormalized } from 'vue-router'
 import type { ResolvedNavItem } from './types'
+
+type NavRoute = Pick<RouteLocationNormalized, 'path' | 'matched' | 'meta'>
 
 /** Deepest path from any root item (1 = only top-level leaves). */
 export function maxNavDepth(items: ResolvedNavItem[]): number {
@@ -12,19 +15,29 @@ export function maxNavDepth(items: ResolvedNavItem[]): number {
   return max
 }
 
-export function subtreeContainsPath(item: ResolvedNavItem, path: string): boolean {
-  if (item.resolvedPath === path) return true
-  if (!item.resolvedChildren?.length) return false
-  return item.resolvedChildren.some((c) => subtreeContainsPath(c, path))
+/** Match the associated menu page, falling back to the route URL. */
+export function matchesNavPath(path: string, route: NavRoute): boolean {
+  if (isExternalLink(path)) return false
+  const navPath = (route.meta.navItem as ResolvedNavItem | undefined)?.resolvedPath
+  const record = route.matched[route.matched.length - 1]
+  // A record's own metadata can contain a parameterized path. Keep matching its concrete URL.
+  const activePath = navPath && navPath !== record?.path ? navPath : route.path
+  return path === activePath
 }
 
-/** First top-level item whose subtree contains `path` (fallback: first item). */
+export function subtreeContainsRoute(item: ResolvedNavItem, route: NavRoute): boolean {
+  if (matchesNavPath(item.link ?? item.resolvedPath, route)) return true
+  if (!item.resolvedChildren?.length) return false
+  return item.resolvedChildren.some((child) => subtreeContainsRoute(child, route))
+}
+
+/** First top-level item whose subtree matches the active route (fallback: first item). */
 export function findActiveTopLevelItem(
   items: ResolvedNavItem[],
-  path: string,
+  route: NavRoute,
 ): ResolvedNavItem | undefined {
   for (const item of items) {
-    if (subtreeContainsPath(item, path)) return item
+    if (subtreeContainsRoute(item, route)) return item
   }
   return items[0]
 }

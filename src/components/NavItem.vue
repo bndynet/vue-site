@@ -2,7 +2,7 @@
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
 import type { ResolvedNavItem } from '../types'
-import { isExternalLink } from '../nav-utils'
+import { isExternalLink, matchesNavPath } from '../nav-utils'
 import { useLocalize } from '../composables/useLocalize'
 import DynamicIcon from './DynamicIcon.vue'
 
@@ -20,7 +20,7 @@ const { localize } = useLocalize()
 
 const isExternal = computed(() => !!props.item.link && isExternalLink(props.item.link))
 const target = computed(() => props.item.link ?? props.item.resolvedPath)
-const isActive = computed(() => !isExternal.value && route.path === target.value)
+const isActive = computed(() => matchesNavPath(target.value, route))
 </script>
 
 <template>

@@ -2,7 +2,7 @@
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { useSiteConfig } from '../composables/useSiteConfig'
-import { getFirstLeafPath, subtreeContainsPath, isExternalLink } from '../nav-utils'
+import { getFirstLeafPath, isExternalLink, matchesNavPath, subtreeContainsRoute } from '../nav-utils'
 import { useLocalize } from '../composables/useLocalize'
 import DynamicIcon from './DynamicIcon.vue'
 import UiTooltip from './UiTooltip.vue'
@@ -15,11 +15,7 @@ const links = computed(() =>
   resolvedNav.map((item) => {
     const external = !!item.link && isExternalLink(item.link)
     const to = item.link ?? (item.isGroup ? getFirstLeafPath(item) ?? '/' : item.resolvedPath)
-    const active = external
-      ? false
-      : item.link
-        ? route.path === item.link
-        : subtreeContainsPath(item, route.path)
+    const active = item.link ? matchesNavPath(item.link, route) : subtreeContainsRoute(item, route)
     return { item, to, external, active }
   }),
 )
